@@ -465,6 +465,39 @@ r = await a.req('POST', '/api/tabungan', { santriId: sid, jenis: 'setor', jumlah
 r = await a.req('GET', `/api/tabungan?santriId=${sid}`)
 check('catatan tabungan tersimpan', r.json.transaksi.some((t) => t.catatan === 'Setoran mingguan'))
 
+// ---------- Laporan / Export ----------
+r = await g2.req('GET', '/api/kbm/guru')
+check('nama guru untuk jadwal: tanpa honor/HP', r.status === 200 && r.json.guru.length > 0 && r.json.guru.every((x) => !('honor' in x) && !('hp' in x)), JSON.stringify(r.json).slice(0, 160))
+r = await g2.req('GET', '/api/laporan/ringkasan')
+check('guru: ringkasan tanpa data keuangan', r.status === 200 && r.json.keuangan === undefined && r.json.perJenjang.TPQ.aktif > 0, JSON.stringify(Object.keys(r.json)))
+r = await a.req('GET', '/api/laporan/ringkasan')
+const rk = r.json
+check('Pimpinan: ringkasan memuat keuangan', rk.keuangan && typeof rk.keuangan.saldoKas === 'number' && rk.keuangan.spp.periode.length === 7, JSON.stringify(rk.keuangan))
+check('ringkasan: L+P = aktif per jenjang', rk.perJenjang.TPQ.L + rk.perJenjang.TPQ.P === rk.perJenjang.TPQ.aktif)
+check('ringkasan: isian santri/guru/kelas terhitung', rk.isian.santri > 0 && rk.isian.guru > 0 && rk.isian.kelas > 0)
+check('ringkasan: rata kehadiran 0-100', rk.rataKehadiran >= 0 && rk.rataKehadiran <= 100)
+check('saldo kas ringkasan = saldo halaman Keuangan', rk.keuangan.saldoKas === (await a.req('GET', '/api/keuangan')).json.ringkasan.saldo)
+
+await a.req('POST', '/api/santri', { nis: 'INJ1', nama: '=HYPERLINK("http://evil")', jenisKelamin: 'L', jenjang: 'TPQ' })
+const csvRes = await fetch('http://localhost:5199/api/laporan/export/santri', { headers: { cookie: a.cookie } })
+const csvBuf = new Uint8Array(await csvRes.clone().arrayBuffer())
+const csv = await csvRes.text()
+check('export santri: header CSV + nama file', csvRes.status === 200 && /text\/csv/.test(csvRes.headers.get('content-type')) && /filename="tpq-santri-\d{4}-\d{2}-\d{2}\.csv"/.test(csvRes.headers.get('content-disposition')))
+check('export santri: byte BOM UTF-8 (EF BB BF) terkirim + kepala kolom', csvBuf[0] === 0xef && csvBuf[1] === 0xbb && csvBuf[2] === 0xbf && csv.startsWith('NIS,Nama,'))
+check('export santri: CSV injection dinetralkan (apostrof)', csv.includes(`"'=HYPERLINK(""http://evil"")"`) && !/,=HYPERLINK/.test(csv), csv.split('\r\n').find((l) => l.includes('INJ1')))
+for (const j of ['nilai', 'absensi', 'keuangan', 'tabungan', 'guru']) {
+  const x = await fetch(`http://localhost:5199/api/laporan/export/${j}`, { headers: { cookie: a.cookie } })
+  check(`export ${j} berhasil (Pimpinan)`, x.status === 200 && (await x.text()).split('\r\n').length > 1)
+}
+for (const j of ['guru', 'keuangan', 'tabungan']) {
+  r = await g2.req('GET', `/api/laporan/export/${j}`)
+  check(`guru ditolak export ${j} (403)`, r.status === 403)
+}
+r = await g2.req('GET', '/api/laporan/export/santri')
+check('guru boleh export santri', r.status === 200)
+r = await a.req('GET', '/api/laporan/export/rahasia')
+check('jenis export tak dikenal -> 404', r.status === 404)
+
 // Logout
 r = await a.req('POST', '/api/auth/logout')
 r = await a.req('GET', '/api/auth/me')
@@ -472,4 +505,5 @@ check('logout menghapus sesi', r.status === 401)
 
 console.log(`\n${pass} lulus, ${fail} gagal`)
 process.exit(fail ? 1 : 0)
+
 

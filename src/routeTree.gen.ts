@@ -26,6 +26,7 @@ import { Route as AuthenticatedRapbmIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPengumumanIndexRouteImport } from './routes/_authenticated/pengumuman/index'
 import { Route as AuthenticatedPenggunaIndexRouteImport } from './routes/_authenticated/pengguna/index'
 import { Route as AuthenticatedNilaiIndexRouteImport } from './routes/_authenticated/nilai/index'
+import { Route as AuthenticatedLaporanIndexRouteImport } from './routes/_authenticated/laporan/index'
 import { Route as AuthenticatedKeuanganIndexRouteImport } from './routes/_authenticated/keuangan/index'
 import { Route as AuthenticatedKelasIndexRouteImport } from './routes/_authenticated/kelas/index'
 import { Route as AuthenticatedKbmIndexRouteImport } from './routes/_authenticated/kbm/index'
@@ -126,6 +127,12 @@ const AuthenticatedNilaiIndexRoute = AuthenticatedNilaiIndexRouteImport.update({
   path: '/nilai/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLaporanIndexRoute =
+  AuthenticatedLaporanIndexRouteImport.update({
+    id: '/laporan/',
+    path: '/laporan/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedKeuanganIndexRoute =
   AuthenticatedKeuanganIndexRouteImport.update({
     id: '/keuangan/',
@@ -197,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/kbm/': typeof AuthenticatedKbmIndexRoute
   '/kelas/': typeof AuthenticatedKelasIndexRoute
   '/keuangan/': typeof AuthenticatedKeuanganIndexRoute
+  '/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/pengguna/': typeof AuthenticatedPenggunaIndexRoute
   '/pengumuman/': typeof AuthenticatedPengumumanIndexRoute
@@ -223,6 +231,7 @@ export interface FileRoutesByTo {
   '/kbm': typeof AuthenticatedKbmIndexRoute
   '/kelas': typeof AuthenticatedKelasIndexRoute
   '/keuangan': typeof AuthenticatedKeuanganIndexRoute
+  '/laporan': typeof AuthenticatedLaporanIndexRoute
   '/nilai': typeof AuthenticatedNilaiIndexRoute
   '/pengguna': typeof AuthenticatedPenggunaIndexRoute
   '/pengumuman': typeof AuthenticatedPengumumanIndexRoute
@@ -252,6 +261,7 @@ export interface FileRoutesById {
   '/_authenticated/kbm/': typeof AuthenticatedKbmIndexRoute
   '/_authenticated/kelas/': typeof AuthenticatedKelasIndexRoute
   '/_authenticated/keuangan/': typeof AuthenticatedKeuanganIndexRoute
+  '/_authenticated/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/_authenticated/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/_authenticated/pengguna/': typeof AuthenticatedPenggunaIndexRoute
   '/_authenticated/pengumuman/': typeof AuthenticatedPengumumanIndexRoute
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/kbm/'
     | '/kelas/'
     | '/keuangan/'
+    | '/laporan/'
     | '/nilai/'
     | '/pengguna/'
     | '/pengumuman/'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/kbm'
     | '/kelas'
     | '/keuangan'
+    | '/laporan'
     | '/nilai'
     | '/pengguna'
     | '/pengumuman'
@@ -335,6 +347,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kbm/'
     | '/_authenticated/kelas/'
     | '/_authenticated/keuangan/'
+    | '/_authenticated/laporan/'
     | '/_authenticated/nilai/'
     | '/_authenticated/pengguna/'
     | '/_authenticated/pengumuman/'
@@ -476,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNilaiIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/laporan/': {
+      id: '/_authenticated/laporan/'
+      path: '/laporan'
+      fullPath: '/laporan/'
+      preLoaderRoute: typeof AuthenticatedLaporanIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/keuangan/': {
       id: '/_authenticated/keuangan/'
       path: '/keuangan'
@@ -570,6 +590,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKbmIndexRoute: typeof AuthenticatedKbmIndexRoute
   AuthenticatedKelasIndexRoute: typeof AuthenticatedKelasIndexRoute
   AuthenticatedKeuanganIndexRoute: typeof AuthenticatedKeuanganIndexRoute
+  AuthenticatedLaporanIndexRoute: typeof AuthenticatedLaporanIndexRoute
   AuthenticatedNilaiIndexRoute: typeof AuthenticatedNilaiIndexRoute
   AuthenticatedPenggunaIndexRoute: typeof AuthenticatedPenggunaIndexRoute
   AuthenticatedPengumumanIndexRoute: typeof AuthenticatedPengumumanIndexRoute
@@ -588,6 +609,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKbmIndexRoute: AuthenticatedKbmIndexRoute,
   AuthenticatedKelasIndexRoute: AuthenticatedKelasIndexRoute,
   AuthenticatedKeuanganIndexRoute: AuthenticatedKeuanganIndexRoute,
+  AuthenticatedLaporanIndexRoute: AuthenticatedLaporanIndexRoute,
   AuthenticatedNilaiIndexRoute: AuthenticatedNilaiIndexRoute,
   AuthenticatedPenggunaIndexRoute: AuthenticatedPenggunaIndexRoute,
   AuthenticatedPengumumanIndexRoute: AuthenticatedPengumumanIndexRoute,

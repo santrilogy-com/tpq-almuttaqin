@@ -8,6 +8,7 @@ import { guruRoutes } from './routes/guru'
 import { kbmRoutes } from './routes/kbm'
 import { keuanganRoutes } from './routes/keuangan'
 import { kelasRoutes } from './routes/kelas'
+import { laporanRoutes } from './routes/laporan'
 import { lembagaRoutes } from './routes/lembaga'
 import { nilaiRoutes, raporRoutes } from './routes/nilai'
 import { pengumumanRoutes } from './routes/pengumuman'
@@ -43,6 +44,7 @@ api.route('/setoran', setoranRoutes)
 api.route('/pengumuman', pengumumanRoutes)
 api.route('/kbm', kbmRoutes)
 api.route('/anggaran', anggaranRoutes)
+api.route('/laporan', laporanRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
 api.onError((err, c) => {
   console.error(err)
@@ -52,6 +54,7 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 
 

@@ -1,4 +1,5 @@
 ﻿import {
+  BarChart3,
   BookOpen,
   Building2,
   CalendarClock,
@@ -36,6 +37,7 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
       { title: 'Hafalan dan Iqra', url: '/hafalan', icon: BookOpen },
       { title: 'KBM', url: '/kbm', icon: CalendarClock },
       { title: 'Pengumuman', url: '/pengumuman', icon: Megaphone },
+      { title: 'Laporan', url: '/laporan', icon: BarChart3 },
       ...(pimpinan ? [{ title: 'Guru', url: '/guru', icon: UserRoundCheck }] : []),
     ],
   }
@@ -63,4 +65,5 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
   }
   return pimpinan ? [utama, keuangan, pengaturan] : [utama, pengaturan]
 }
+
 
