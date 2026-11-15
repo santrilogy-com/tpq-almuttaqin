@@ -1,85 +1,80 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b3a3d">
-<meta name="description" content="Aplikasi manajemen TPQ Al-Muttaqin: TPQ dan Ibtidaiyah dalam satu aplikasi. Santri, tabungan, keuangan, kelas, hafalan, guru, penilaian, KBM, kemuridan, RAPBM. Bekerja offline.">
-<title>TPQ Al-Muttaqin</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="mockup.css">
-</head>
-<body>
-<!-- Onboarding: markup + ilustrasi dari mockup v3 (3 slide, aset
-     ob-illus.webp asli dari file mockup). Tampil di kunjungan pertama saja. -->
-<section class="onboarding mk p-onboard" id="onboarding" hidden aria-label="Selamat datang di TPQ Al-Muttaqin">
-  <svg class="waves" width="342" height="150" viewBox="0 0 342 150" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true">
-    <path d="M-10 22 C 60 4, 130 40, 200 22 S 330 6, 356 20"/>
-    <path d="M-10 48 C 60 30, 130 66, 200 48 S 330 32, 356 46"/>
-    <path d="M-10 74 C 60 56, 130 92, 200 74 S 330 58, 356 72"/>
-    <path d="M-10 100 C 60 82, 130 118, 200 100 S 330 84, 356 98"/>
-  </svg>
-  <div class="ob-illus">
-    <img src="icons/ob-illus.webp" alt="Ilustrasi 3D tangan memegang HP dengan tombol putar video">
-  </div>
-  <div class="ob-dots" role="group" aria-label="Geser halaman pembuka">
-    <button class="active" data-slide="0" aria-label="Halaman 1" onclick="obSlide(0)"></button>
-    <button data-slide="1" aria-label="Halaman 2" onclick="obSlide(1)"></button>
-    <button data-slide="2" aria-label="Halaman 3" onclick="obSlide(2)"></button>
-  </div>
-  <div class="ob-panel">
-    <h2 id="ob-title">Lebih mudah mengakses TPQ dengan mobile</h2>
-    <p class="ob-sub" id="ob-sub">Sekarang kamu bisa mengakses jadwal, hafalan, dan tabungan santri dengan lebih mudah.</p>
-    <button class="ob-btn" id="btn-mulai" onclick="tutupOnboarding(); go('dashboard')">Mulai</button>
-    <p class="ob-note">DATA CONTOH UNTUK PRATINJAU</p>
-    <a class="onb-skip" href="#/dashboard" onclick="tutupOnboarding()">Lewati</a>
-  </div>
-</section>
-<div id="auth-root"></div>
-<div class="app">
-  <aside class="sidebar" id="sidebar" aria-label="Menu utama"></aside>
-  <main class="main">
-    <div class="topbar">
-      <div class="logo-m">
-        <img src="icons/icon-192.png" alt="Logo TPQ Al-Muttaqin">
-        <div><b>TPQ Al-Muttaqin</b><div class="muted" style="font-size:13px">Tahun ajaran <span data-ta>2026/2027</span></div></div>
-      </div>
-      <span class="badge-contoh" id="badge-contoh">Data contoh</span>
-    </div>
-    <div class="content" id="view"></div>
-  </main>
-</div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/images/favicon.svg"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/images/favicon_light.svg"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/images/favicon.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/images/favicon_light.png"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<nav class="bottomnav" id="bottomnav" aria-label="Navigasi bawah"></nav>
-<!-- Banner install PWA: muncul saat browser menawarkan install
-     (beforeinstallprompt), atau dibuka manual dari Pengaturan. -->
-<div class="install-banner" id="install-banner" hidden role="dialog" aria-label="Install aplikasi">
-  <img class="ib-icon" src="icons/icon-192.png" alt="">
-  <div class="ib-text"><b>Install Aplikasi TPQ</b><span>Pasang di layar utama HP supaya dibuka seperti aplikasi, tetap bisa offline.</span></div>
-  <div class="ib-actions">
-    <button class="ib-install" type="button" onclick="installApp()">Install</button>
-    <button class="ib-later" type="button" onclick="tutupInstallBanner()">Nanti</button>
-  </div>
-</div>
-<div class="home-indicator" aria-hidden="true"></div>
-<div id="sheet-root"></div>
-<div id="modal-root"></div>
-<div id="toast-root"></div>
-<div id="selftest-root" style="display:none"></div>
+    <!-- Primary Meta Tags -->
+    <title>Shadcn Admin</title>
+    <meta name="title" content="Shadcn Admin" />
+    <meta
+      name="description"
+      content="Admin Dashboard UI built with Shadcn and Vite."
+    />
 
-<script src="engine.js"></script>
-<script src="app.js"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function (e) {
-        console.warn('Service worker gagal didaftarkan:', e);
-      });
-    });
-  }
-</script>
-</body>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shadcn-admin.netlify.app" />
+    <meta property="og:title" content="Shadcn Admin" />
+    <meta
+      property="og:description"
+      content="Admin Dashboard UI built with Shadcn and Vite."
+    />
+    <meta
+      property="og:image"
+      content="https://shadcn-admin.netlify.app/images/shadcn-admin.png"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://shadcn-admin.netlify.app" />
+    <meta property="twitter:title" content="Shadcn Admin" />
+    <meta
+      property="twitter:description"
+      content="Admin Dashboard UI built with Shadcn and Vite."
+    />
+    <meta
+      property="twitter:image"
+      content="https://shadcn-admin.netlify.app/images/shadcn-admin.png"
+    />
+
+    <!-- font family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap"
+      rel="stylesheet"
+    />
+
+    <meta name="theme-color" content="#fff" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
