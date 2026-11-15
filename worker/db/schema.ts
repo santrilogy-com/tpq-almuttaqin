@@ -196,6 +196,7 @@ export const tabungan = sqliteTable(
     jenis: text('jenis', { enum: ['setor', 'tarik'] }).notNull(),
     jumlah: integer('jumlah').notNull(),
     tanggal: text('tanggal').notNull(),
+    catatan: text('catatan').notNull().default(''),
   },
   (t) => [index('tabungan_santri_idx').on(t.santriId)]
 )
@@ -210,6 +211,7 @@ export const transaksi = sqliteTable(
     nama: text('nama').notNull(),
     jumlah: integer('jumlah').notNull(),
     tanggal: text('tanggal').notNull(),
+    catatan: text('catatan').notNull().default(''),
     // Terisi bila transaksi dibuat otomatis dari pelunasan SPP.
     tagihanSppId: text('tagihan_spp_id'),
   },
@@ -246,3 +248,70 @@ export const pengumuman = sqliteTable('pengumuman', {
 
 
 
+
+
+// ---------- KBM ----------
+export const HARI = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const
+
+export const jadwalKbm = sqliteTable('jadwal_kbm', {
+  id: id(),
+  kelasId: text('kelas_id').references(() => kelas.id, { onDelete: 'set null' }),
+  hari: text('hari', { enum: HARI }).notNull(),
+  jamMulai: text('jam_mulai').notNull(), // HH:MM
+  jamSelesai: text('jam_selesai').notNull(),
+  mapel: text('mapel').notNull(),
+  guruId: text('guru_id').references(() => guru.id, { onDelete: 'set null' }),
+})
+
+export const alokasiWaktu = sqliteTable('alokasi_waktu', {
+  id: id(),
+  kelasId: text('kelas_id').references(() => kelas.id, { onDelete: 'set null' }),
+  mapel: text('mapel').notNull(),
+  jamPerMinggu: integer('jam_per_minggu').notNull(),
+  hari: text('hari').notNull().default(''),
+})
+
+export const piket = sqliteTable('piket', {
+  id: id(),
+  guruId: text('guru_id')
+    .notNull()
+    .references(() => guru.id, { onDelete: 'cascade' }),
+  hari: text('hari', { enum: HARI }).notNull(),
+  keterangan: text('keterangan').notNull().default(''),
+})
+
+export const absensiGuru = sqliteTable(
+  'absensi_guru',
+  {
+    tanggal: text('tanggal').notNull(),
+    guruId: text('guru_id')
+      .notNull()
+      .references(() => guru.id, { onDelete: 'cascade' }),
+    status: text('status', { enum: ['H', 'I', 'S', 'A'] }).notNull(),
+    kelompok: text('kelompok', { enum: ['Guru', 'Pimpinan'] }).notNull().default('Guru'),
+  },
+  (t) => [uniqueIndex('absensi_guru_uq').on(t.tanggal, t.guruId, t.kelompok)]
+)
+
+// ---------- Anggaran ----------
+export const rapbm = sqliteTable('rapbm', {
+  id: id(),
+  pos: text('pos').notNull(), // sama dengan transaksi.kategori agar realisasi bisa dihitung
+  jenis: text('jenis', { enum: ['masuk', 'keluar'] }).notNull(),
+  jenjang: text('jenjang', { enum: JENJANG }).notNull(),
+  rencana: integer('rencana').notNull(),
+})
+
+export const biaya = sqliteTable('biaya', {
+  id: id(),
+  nama: text('nama').notNull(),
+  jumlah: integer('jumlah').notNull(),
+  keterangan: text('keterangan').notNull().default(''),
+})
+
+export const targetTabungan = sqliteTable('target_tabungan', {
+  id: id(),
+  nama: text('nama').notNull(),
+  target: integer('target').notNull(),
+  terkumpul: integer('terkumpul').notNull().default(0),
+})

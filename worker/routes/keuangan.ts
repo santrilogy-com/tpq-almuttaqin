@@ -65,6 +65,7 @@ keuanganRoutes.post('/', async (c) => {
       nama: z.string().trim().min(1, 'Nama transaksi wajib diisi').max(200),
       jumlah,
       tanggal,
+      catatan: z.string().trim().max(300).optional(),
     })
   )
   if (!p.ok) return p.res
@@ -208,4 +209,5 @@ keuanganRoutes.patch('/spp/:id', async (c) => {
   }
   return c.json({ ok: true, status: p.data.status })
 })
+
 

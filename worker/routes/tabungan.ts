@@ -54,6 +54,7 @@ tabunganRoutes.post('/', async (c) => {
         .min(1, 'Jumlah harus lebih dari 0')
         .max(MAKS_JUMLAH, 'Jumlah terlalu besar'),
       tanggal: z.string().refine(tglValid, 'Tanggal tidak valid').optional(),
+      catatan: z.string().trim().max(200).optional(),
       // Wajib true untuk penarikan di atas batas; UI memintanya lewat dialog.
       konfirmasi: z.boolean().optional(),
     })
@@ -67,7 +68,7 @@ tabunganRoutes.post('/', async (c) => {
     return c.json({ error: 'Santri tidak ditemukan' }, 404)
   }
   if (jenis === 'setor') {
-    const [row] = await db.insert(tabungan).values({ santriId, jenis, jumlah, tanggal: tgl }).returning()
+    const [row] = await db.insert(tabungan).values({ santriId, jenis, jumlah, tanggal: tgl, catatan: p.data.catatan }).returning()
     return c.json({ transaksi: row }, 201)
   }
 
@@ -81,8 +82,8 @@ tabunganRoutes.post('/', async (c) => {
   // sama-sama lolos dan membuat saldo minus.
   const id = crypto.randomUUID()
   const res = await db.run(sql`
-    INSERT INTO tabungan (id, santri_id, jenis, jumlah, tanggal)
-    SELECT ${id}, ${santriId}, 'tarik', ${jumlah}, ${tgl}
+    INSERT INTO tabungan (id, santri_id, jenis, jumlah, tanggal, catatan)
+    SELECT ${id}, ${santriId}, 'tarik', ${jumlah}, ${tgl}, ${p.data.catatan ?? ''}
     WHERE (SELECT coalesce(sum(case when jenis = 'setor' then jumlah else -jumlah end), 0)
            FROM tabungan WHERE santri_id = ${santriId}) >= ${jumlah}`)
   if (!res.meta.changes) {
@@ -91,3 +92,4 @@ tabunganRoutes.post('/', async (c) => {
   const row = await db.select().from(tabungan).where(eq(tabungan.id, id)).get()
   return c.json({ transaksi: row }, 201)
 })
+

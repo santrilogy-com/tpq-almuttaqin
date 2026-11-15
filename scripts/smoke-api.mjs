@@ -1,4 +1,4 @@
-// Smoke test API auth terhadap server yang sedang jalan.
+﻿// Smoke test API auth terhadap server yang sedang jalan.
 // Pakai DB lokal yang KOSONG:  node scripts/smoke-api.mjs http://localhost:5199
 const base = process.argv[2] ?? 'http://localhost:5199'
 let pass = 0
@@ -361,6 +361,110 @@ check('santri tak ada -> 404', r.status === 404)
 r = await a.req('GET', '/api/tabungan/saldo')
 check('daftar saldo per santri', r.json.saldo.find((x) => x.santriId === murid)?.saldo === 10000, JSON.stringify(r.json))
 
+// ---------- Hafalan / Pengumuman / KBM / Anggaran ----------
+const sid = (await a.req('GET', '/api/santri?jenjang=TPQ')).json.santri[0].id
+r = await g2.req('POST', '/api/setoran', { santriId: sid, jenis: 'Iqra', materi: 'Iqra 3 hal 14', nilai: 'Lancar', tanggal: '2026-11-14' })
+check('guru mencatat setoran', r.status === 201, JSON.stringify(r))
+const setId = r.json.setoran?.id
+r = await g2.req('POST', '/api/setoran', { santriId: sid, jenis: 'Iqra', materi: 'x', nilai: 'Sempurna', tanggal: '2026-11-14' })
+check('nilai setoran tak dikenal ditolak', r.status === 400)
+r = await g2.req('POST', '/api/setoran', { santriId: sid, jenis: 'Hafalan', materi: '', nilai: 'Cukup', tanggal: '2026-11-14' })
+check('materi kosong ditolak', r.status === 400)
+r = await g2.req('GET', `/api/setoran?santriId=${sid}`)
+check('riwayat setoran terbaca', r.json.setoran.length === 1)
+r = await g2.req('GET', '/api/setoran/progres')
+check('progres: jumlah + terakhir', r.json.progres.find((x) => x.santriId === sid)?.jumlah === 1)
+r = await g2.req('DELETE', `/api/setoran/${setId}`)
+check('guru tidak boleh hapus setoran (403)', r.status === 403)
+
+r = await a.req('POST', '/api/pengumuman', { judul: 'Libur', isi: 'Libur Kamis' })
+const pgId = r.json.pengumuman?.id
+check('Pimpinan membuat pengumuman (tampil default)', r.status === 201 && r.json.pengumuman.tampil === true, JSON.stringify(r))
+r = await g2.req('POST', '/api/pengumuman', { judul: 'Liar', isi: 'x' })
+check('guru tidak boleh membuat pengumuman (403)', r.status === 403)
+r = await g2.req('GET', '/api/pengumuman')
+check('guru melihat pengumuman yang tampil', r.json.pengumuman.length === 1)
+r = await a.req('PATCH', `/api/pengumuman/${pgId}`, { tampil: false })
+check('PATCH tampil=false tidak mereset judul/isi', r.json.pengumuman?.judul === 'Libur' && r.json.pengumuman?.isi === 'Libur Kamis' && r.json.pengumuman?.tampil === false, JSON.stringify(r.json))
+r = await g2.req('GET', '/api/pengumuman')
+check('pengumuman ditutup hilang dari guru', r.json.pengumuman.length === 0)
+r = await a.req('GET', '/api/pengumuman')
+check('Pimpinan masih melihat yang ditutup', r.json.pengumuman.length === 1)
+
+const kls = (await a.req('POST', '/api/kelas', { nama: 'Kelas KBM', jenjang: 'TPQ' })).json.kelas.id
+const gr = (await a.req('POST', '/api/guru', { nama: 'Ustadz KBM', jenjang: 'TPQ' })).json.guru.id
+r = await a.req('POST', '/api/kbm/jadwal', { kelasId: kls, hari: 'Senin', jamMulai: '15:30', jamSelesai: '16:30', mapel: 'Iqra', guruId: gr })
+check('jadwal KBM dibuat', r.status === 201, JSON.stringify(r))
+const jdId = r.json.row?.id
+r = await a.req('POST', '/api/kbm/jadwal', { kelasId: kls, hari: 'Senin', jamMulai: '16:30', jamSelesai: '15:30', mapel: 'X' })
+check('jam selesai sebelum mulai ditolak', r.status === 400)
+r = await a.req('POST', '/api/kbm/jadwal', { hari: 'Senin', jamMulai: '25:00', jamSelesai: '26:00', mapel: 'X' })
+check('jam tidak valid (25:00) ditolak', r.status === 400)
+r = await a.req('POST', '/api/kbm/jadwal', { hari: 'Hari Raya', jamMulai: '15:30', jamSelesai: '16:30', mapel: 'X' })
+check('hari tidak dikenal ditolak', r.status === 400)
+r = await a.req('PATCH', `/api/kbm/jadwal/${jdId}`, { mapel: 'Tajwid' })
+check('PATCH jadwal tidak mereset jam/hari/guru', r.json.row?.mapel === 'Tajwid' && r.json.row?.jamMulai === '15:30' && r.json.row?.hari === 'Senin' && r.json.row?.guruId === gr, JSON.stringify(r.json))
+r = await a.req('PATCH', `/api/kbm/jadwal/${jdId}`, { jamMulai: '17:00' })
+r = await a.req('PATCH', `/api/kbm/jadwal/${jdId}`, { jamSelesai: '16:00', jamMulai: '17:00' })
+check('PATCH jam terbalik ditolak', r.status === 400)
+r = await g2.req('GET', '/api/kbm/jadwal')
+check('guru boleh melihat jadwal', r.status === 200 && r.json.rows.length === 1)
+r = await g2.req('POST', '/api/kbm/jadwal', { hari: 'Senin', jamMulai: '15:30', jamSelesai: '16:30', mapel: 'X' })
+check('guru tidak boleh ubah jadwal (403)', r.status === 403)
+r = await a.req('POST', '/api/kbm/piket', { guruId: gr, hari: 'Rabu', keterangan: 'Piket sore' })
+check('piket dibuat', r.status === 201)
+r = await a.req('POST', '/api/kbm/alokasi', { kelasId: kls, mapel: 'Iqra', jamPerMinggu: 0 })
+check('alokasi 0 jam ditolak', r.status === 400)
+r = await a.req('POST', '/api/kbm/alokasi', { kelasId: kls, mapel: 'Iqra', jamPerMinggu: 4, hari: 'Senin, Kamis' })
+check('alokasi dibuat', r.status === 201)
+
+r = await a.req('PUT', '/api/kbm/absensi-guru', { tanggal: '2026-11-14', kelompok: 'Guru', catatan: [{ guruId: gr, status: 'H' }] })
+check('Pimpinan menyimpan absensi guru', r.status === 200 && r.json.tersimpan === 1)
+r = await a.req('PUT', '/api/kbm/absensi-guru', { tanggal: '2026-11-14', kelompok: 'Guru', catatan: [{ guruId: gr, status: 'I' }] })
+r = await a.req('GET', `/api/kbm/absensi-guru?tanggal=2026-11-14&kelompok=Guru`)
+check('simpan ulang menimpa (bukan dobel)', r.json.catatan.length === 1 && r.json.catatan[0].status === 'I')
+r = await a.req('PUT', '/api/kbm/absensi-guru', { tanggal: '2026-11-14', kelompok: 'Guru', catatan: [{ guruId: 'hantu', status: 'H' }] })
+check('guru tak dikenal ditolak', r.status === 400)
+r = await g2.req('PUT', '/api/kbm/absensi-guru', { tanggal: '2026-11-14', kelompok: 'Guru', catatan: [] })
+check('guru tidak boleh isi absensi guru (403)', r.status === 403)
+
+for (const p of ['/api/anggaran/pos', '/api/anggaran/realita', '/api/anggaran/biaya', '/api/anggaran/target', '/api/anggaran/arus-kas?tahun=2026']) {
+  r = await g2.req('GET', p)
+  check(`guru ditolak ${p} (403)`, r.status === 403)
+}
+r = await a.req('POST', '/api/anggaran/pos', { pos: 'Infaq', jenis: 'masuk', jenjang: 'TPQ', rencana: 500000 })
+check('pos RAPBM dibuat', r.status === 201, JSON.stringify(r))
+const posId = r.json.row?.id
+r = await a.req('POST', '/api/anggaran/pos', { pos: 'Infaq', jenis: 'masuk', jenjang: 'TPQ', rencana: -1 })
+check('rencana negatif ditolak', r.status === 400)
+await a.req('POST', '/api/keuangan', { jenis: 'masuk', jenjang: 'TPQ', kategori: 'Infaq', nama: 'Infaq Jumat', jumlah: 200000, tanggal: '2026-11-07', catatan: 'Kotak infaq' })
+await a.req('POST', '/api/keuangan', { jenis: 'masuk', jenjang: 'MI', kategori: 'Infaq', nama: 'Infaq MI', jumlah: 99000, tanggal: '2026-11-07' })
+await a.req('POST', '/api/keuangan', { jenis: 'keluar', jenjang: 'TPQ', kategori: 'ATK', nama: 'Spidol', jumlah: 30000, tanggal: '2026-12-02' })
+r = await a.req('GET', '/api/anggaran/realita')
+const infaq = r.json.realita.find((x) => x.id === posId)
+check('realisasi hanya jenis+jenjang yang cocok (Rp200.000, tanpa Infaq MI)', infaq?.realisasi === 200000 && infaq?.selisih === -300000, JSON.stringify(infaq))
+r = await a.req('GET', '/api/anggaran/arus-kas?tahun=2026')
+const nov = r.json.arusKas.find((x) => x.bulan === '2026-11')
+const des = r.json.arusKas.find((x) => x.bulan === '2026-12')
+check('arus kas 12 bulan, Nov masuk 299.000+ & Des keluar 30.000', r.json.arusKas.length === 12 && nov.masuk >= 299000 && des.keluar === 30000 && des.bersih === -30000, JSON.stringify([nov, des]))
+r = await a.req('GET', '/api/anggaran/arus-kas?tahun=abcd')
+check('tahun tidak valid ditolak', r.status === 400)
+r = await a.req('POST', '/api/anggaran/biaya', { nama: 'Seragam', jumlah: 150000 })
+check('biaya dibuat', r.status === 201)
+r = await a.req('POST', '/api/anggaran/target', { nama: 'Kitab', target: 0 })
+check('target 0 ditolak', r.status === 400)
+r = await a.req('POST', '/api/anggaran/target', { nama: 'Kitab', target: 75000, terkumpul: 45000 })
+const tgId = r.json.row?.id
+r = await a.req('PATCH', `/api/anggaran/target/${tgId}`, { terkumpul: 60000 })
+check('PATCH target tidak mereset nama/target', r.json.row?.nama === 'Kitab' && r.json.row?.target === 75000 && r.json.row?.terkumpul === 60000, JSON.stringify(r.json))
+r = await a.req('PATCH', `/api/anggaran/target/${tgId}`, {})
+check('PATCH kosong ditolak', r.status === 400)
+r = await a.req('DELETE', `/api/anggaran/pos/${posId}`)
+check('hapus pos', r.status === 200)
+r = await a.req('POST', '/api/tabungan', { santriId: sid, jenis: 'setor', jumlah: 25000, catatan: 'Setoran mingguan' })
+r = await a.req('GET', `/api/tabungan?santriId=${sid}`)
+check('catatan tabungan tersimpan', r.json.transaksi.some((t) => t.catatan === 'Setoran mingguan'))
+
 // Logout
 r = await a.req('POST', '/api/auth/logout')
 r = await a.req('GET', '/api/auth/me')
@@ -368,3 +472,4 @@ check('logout menghapus sesi', r.status === 401)
 
 console.log(`\n${pass} lulus, ${fail} gagal`)
 process.exit(fail ? 1 : 0)
+

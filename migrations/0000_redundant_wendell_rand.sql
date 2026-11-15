@@ -7,6 +7,31 @@ CREATE TABLE `absensi` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `absensi_uq` ON `absensi` (`pertemuan_id`,`santri_id`);--> statement-breakpoint
+CREATE TABLE `absensi_guru` (
+	`tanggal` text NOT NULL,
+	`guru_id` text NOT NULL,
+	`status` text NOT NULL,
+	`kelompok` text DEFAULT 'Guru' NOT NULL,
+	FOREIGN KEY (`guru_id`) REFERENCES `guru`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `absensi_guru_uq` ON `absensi_guru` (`tanggal`,`guru_id`,`kelompok`);--> statement-breakpoint
+CREATE TABLE `alokasi_waktu` (
+	`id` text PRIMARY KEY NOT NULL,
+	`kelas_id` text,
+	`mapel` text NOT NULL,
+	`jam_per_minggu` integer NOT NULL,
+	`hari` text DEFAULT '' NOT NULL,
+	FOREIGN KEY (`kelas_id`) REFERENCES `kelas`(`id`) ON UPDATE no action ON DELETE set null
+);
+--> statement-breakpoint
+CREATE TABLE `biaya` (
+	`id` text PRIMARY KEY NOT NULL,
+	`nama` text NOT NULL,
+	`jumlah` integer NOT NULL,
+	`keterangan` text DEFAULT '' NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `guru` (
 	`id` text PRIMARY KEY NOT NULL,
 	`nama` text NOT NULL,
@@ -22,6 +47,18 @@ CREATE TABLE `guru` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `guru_nama_unique` ON `guru` (`nama`);--> statement-breakpoint
+CREATE TABLE `jadwal_kbm` (
+	`id` text PRIMARY KEY NOT NULL,
+	`kelas_id` text,
+	`hari` text NOT NULL,
+	`jam_mulai` text NOT NULL,
+	`jam_selesai` text NOT NULL,
+	`mapel` text NOT NULL,
+	`guru_id` text,
+	FOREIGN KEY (`kelas_id`) REFERENCES `kelas`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`guru_id`) REFERENCES `guru`(`id`) ON UPDATE no action ON DELETE set null
+);
+--> statement-breakpoint
 CREATE TABLE `kelas` (
 	`id` text PRIMARY KEY NOT NULL,
 	`nama` text NOT NULL,
@@ -75,6 +112,22 @@ CREATE TABLE `pertemuan` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `pertemuan_kelas_tgl_uq` ON `pertemuan` (`kelas_id`,`tanggal`);--> statement-breakpoint
+CREATE TABLE `piket` (
+	`id` text PRIMARY KEY NOT NULL,
+	`guru_id` text NOT NULL,
+	`hari` text NOT NULL,
+	`keterangan` text DEFAULT '' NOT NULL,
+	FOREIGN KEY (`guru_id`) REFERENCES `guru`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `rapbm` (
+	`id` text PRIMARY KEY NOT NULL,
+	`pos` text NOT NULL,
+	`jenis` text NOT NULL,
+	`jenjang` text NOT NULL,
+	`rencana` integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `santri` (
 	`id` text PRIMARY KEY NOT NULL,
 	`nis` text NOT NULL,
@@ -121,6 +174,7 @@ CREATE TABLE `tabungan` (
 	`jenis` text NOT NULL,
 	`jumlah` integer NOT NULL,
 	`tanggal` text NOT NULL,
+	`catatan` text DEFAULT '' NOT NULL,
 	FOREIGN KEY (`santri_id`) REFERENCES `santri`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -135,6 +189,13 @@ CREATE TABLE `tagihan_spp` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `spp_santri_periode_uq` ON `tagihan_spp` (`santri_id`,`periode`);--> statement-breakpoint
+CREATE TABLE `target_tabungan` (
+	`id` text PRIMARY KEY NOT NULL,
+	`nama` text NOT NULL,
+	`target` integer NOT NULL,
+	`terkumpul` integer DEFAULT 0 NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `transaksi` (
 	`id` text PRIMARY KEY NOT NULL,
 	`jenis` text NOT NULL,
@@ -143,6 +204,7 @@ CREATE TABLE `transaksi` (
 	`nama` text NOT NULL,
 	`jumlah` integer NOT NULL,
 	`tanggal` text NOT NULL,
+	`catatan` text DEFAULT '' NOT NULL,
 	`tagihan_spp_id` text
 );
 --> statement-breakpoint

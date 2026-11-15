@@ -22,11 +22,15 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedTabunganIndexRouteImport } from './routes/_authenticated/tabungan/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSantriIndexRouteImport } from './routes/_authenticated/santri/index'
+import { Route as AuthenticatedRapbmIndexRouteImport } from './routes/_authenticated/rapbm/index'
+import { Route as AuthenticatedPengumumanIndexRouteImport } from './routes/_authenticated/pengumuman/index'
 import { Route as AuthenticatedPenggunaIndexRouteImport } from './routes/_authenticated/pengguna/index'
 import { Route as AuthenticatedNilaiIndexRouteImport } from './routes/_authenticated/nilai/index'
 import { Route as AuthenticatedKeuanganIndexRouteImport } from './routes/_authenticated/keuangan/index'
 import { Route as AuthenticatedKelasIndexRouteImport } from './routes/_authenticated/kelas/index'
+import { Route as AuthenticatedKbmIndexRouteImport } from './routes/_authenticated/kbm/index'
 import { Route as AuthenticatedIdentitasIndexRouteImport } from './routes/_authenticated/identitas/index'
+import { Route as AuthenticatedHafalanIndexRouteImport } from './routes/_authenticated/hafalan/index'
 import { Route as AuthenticatedGuruIndexRouteImport } from './routes/_authenticated/guru/index'
 import { Route as AuthenticatedAbsensiIndexRouteImport } from './routes/_authenticated/absensi/index'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
@@ -100,6 +104,17 @@ const AuthenticatedSantriIndexRoute =
     path: '/santri/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRapbmIndexRoute = AuthenticatedRapbmIndexRouteImport.update({
+  id: '/rapbm/',
+  path: '/rapbm/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPengumumanIndexRoute =
+  AuthenticatedPengumumanIndexRouteImport.update({
+    id: '/pengumuman/',
+    path: '/pengumuman/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPenggunaIndexRoute =
   AuthenticatedPenggunaIndexRouteImport.update({
     id: '/pengguna/',
@@ -122,10 +137,21 @@ const AuthenticatedKelasIndexRoute = AuthenticatedKelasIndexRouteImport.update({
   path: '/kelas/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKbmIndexRoute = AuthenticatedKbmIndexRouteImport.update({
+  id: '/kbm/',
+  path: '/kbm/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedIdentitasIndexRoute =
   AuthenticatedIdentitasIndexRouteImport.update({
     id: '/identitas/',
     path: '/identitas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHafalanIndexRoute =
+  AuthenticatedHafalanIndexRouteImport.update({
+    id: '/hafalan/',
+    path: '/hafalan/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedGuruIndexRoute = AuthenticatedGuruIndexRouteImport.update({
@@ -166,11 +192,15 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi/': typeof AuthenticatedAbsensiIndexRoute
   '/guru/': typeof AuthenticatedGuruIndexRoute
+  '/hafalan/': typeof AuthenticatedHafalanIndexRoute
   '/identitas/': typeof AuthenticatedIdentitasIndexRoute
+  '/kbm/': typeof AuthenticatedKbmIndexRoute
   '/kelas/': typeof AuthenticatedKelasIndexRoute
   '/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/pengguna/': typeof AuthenticatedPenggunaIndexRoute
+  '/pengumuman/': typeof AuthenticatedPengumumanIndexRoute
+  '/rapbm/': typeof AuthenticatedRapbmIndexRoute
   '/santri/': typeof AuthenticatedSantriIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tabungan/': typeof AuthenticatedTabunganIndexRoute
@@ -188,11 +218,15 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi': typeof AuthenticatedAbsensiIndexRoute
   '/guru': typeof AuthenticatedGuruIndexRoute
+  '/hafalan': typeof AuthenticatedHafalanIndexRoute
   '/identitas': typeof AuthenticatedIdentitasIndexRoute
+  '/kbm': typeof AuthenticatedKbmIndexRoute
   '/kelas': typeof AuthenticatedKelasIndexRoute
   '/keuangan': typeof AuthenticatedKeuanganIndexRoute
   '/nilai': typeof AuthenticatedNilaiIndexRoute
   '/pengguna': typeof AuthenticatedPenggunaIndexRoute
+  '/pengumuman': typeof AuthenticatedPengumumanIndexRoute
+  '/rapbm': typeof AuthenticatedRapbmIndexRoute
   '/santri': typeof AuthenticatedSantriIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tabungan': typeof AuthenticatedTabunganIndexRoute
@@ -213,11 +247,15 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/absensi/': typeof AuthenticatedAbsensiIndexRoute
   '/_authenticated/guru/': typeof AuthenticatedGuruIndexRoute
+  '/_authenticated/hafalan/': typeof AuthenticatedHafalanIndexRoute
   '/_authenticated/identitas/': typeof AuthenticatedIdentitasIndexRoute
+  '/_authenticated/kbm/': typeof AuthenticatedKbmIndexRoute
   '/_authenticated/kelas/': typeof AuthenticatedKelasIndexRoute
   '/_authenticated/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/_authenticated/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/_authenticated/pengguna/': typeof AuthenticatedPenggunaIndexRoute
+  '/_authenticated/pengumuman/': typeof AuthenticatedPengumumanIndexRoute
+  '/_authenticated/rapbm/': typeof AuthenticatedRapbmIndexRoute
   '/_authenticated/santri/': typeof AuthenticatedSantriIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tabungan/': typeof AuthenticatedTabunganIndexRoute
@@ -238,11 +276,15 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/absensi/'
     | '/guru/'
+    | '/hafalan/'
     | '/identitas/'
+    | '/kbm/'
     | '/kelas/'
     | '/keuangan/'
     | '/nilai/'
     | '/pengguna/'
+    | '/pengumuman/'
+    | '/rapbm/'
     | '/santri/'
     | '/settings/'
     | '/tabungan/'
@@ -260,11 +302,15 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/absensi'
     | '/guru'
+    | '/hafalan'
     | '/identitas'
+    | '/kbm'
     | '/kelas'
     | '/keuangan'
     | '/nilai'
     | '/pengguna'
+    | '/pengumuman'
+    | '/rapbm'
     | '/santri'
     | '/settings'
     | '/tabungan'
@@ -284,11 +330,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/absensi/'
     | '/_authenticated/guru/'
+    | '/_authenticated/hafalan/'
     | '/_authenticated/identitas/'
+    | '/_authenticated/kbm/'
     | '/_authenticated/kelas/'
     | '/_authenticated/keuangan/'
     | '/_authenticated/nilai/'
     | '/_authenticated/pengguna/'
+    | '/_authenticated/pengumuman/'
+    | '/_authenticated/rapbm/'
     | '/_authenticated/santri/'
     | '/_authenticated/settings/'
     | '/_authenticated/tabungan/'
@@ -398,6 +448,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSantriIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rapbm/': {
+      id: '/_authenticated/rapbm/'
+      path: '/rapbm'
+      fullPath: '/rapbm/'
+      preLoaderRoute: typeof AuthenticatedRapbmIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pengumuman/': {
+      id: '/_authenticated/pengumuman/'
+      path: '/pengumuman'
+      fullPath: '/pengumuman/'
+      preLoaderRoute: typeof AuthenticatedPengumumanIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pengguna/': {
       id: '/_authenticated/pengguna/'
       path: '/pengguna'
@@ -426,11 +490,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKelasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/kbm/': {
+      id: '/_authenticated/kbm/'
+      path: '/kbm'
+      fullPath: '/kbm/'
+      preLoaderRoute: typeof AuthenticatedKbmIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/identitas/': {
       id: '/_authenticated/identitas/'
       path: '/identitas'
       fullPath: '/identitas/'
       preLoaderRoute: typeof AuthenticatedIdentitasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hafalan/': {
+      id: '/_authenticated/hafalan/'
+      path: '/hafalan'
+      fullPath: '/hafalan/'
+      preLoaderRoute: typeof AuthenticatedHafalanIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/guru/': {
@@ -487,11 +565,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAbsensiIndexRoute: typeof AuthenticatedAbsensiIndexRoute
   AuthenticatedGuruIndexRoute: typeof AuthenticatedGuruIndexRoute
+  AuthenticatedHafalanIndexRoute: typeof AuthenticatedHafalanIndexRoute
   AuthenticatedIdentitasIndexRoute: typeof AuthenticatedIdentitasIndexRoute
+  AuthenticatedKbmIndexRoute: typeof AuthenticatedKbmIndexRoute
   AuthenticatedKelasIndexRoute: typeof AuthenticatedKelasIndexRoute
   AuthenticatedKeuanganIndexRoute: typeof AuthenticatedKeuanganIndexRoute
   AuthenticatedNilaiIndexRoute: typeof AuthenticatedNilaiIndexRoute
   AuthenticatedPenggunaIndexRoute: typeof AuthenticatedPenggunaIndexRoute
+  AuthenticatedPengumumanIndexRoute: typeof AuthenticatedPengumumanIndexRoute
+  AuthenticatedRapbmIndexRoute: typeof AuthenticatedRapbmIndexRoute
   AuthenticatedSantriIndexRoute: typeof AuthenticatedSantriIndexRoute
   AuthenticatedTabunganIndexRoute: typeof AuthenticatedTabunganIndexRoute
 }
@@ -501,11 +583,15 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAbsensiIndexRoute: AuthenticatedAbsensiIndexRoute,
   AuthenticatedGuruIndexRoute: AuthenticatedGuruIndexRoute,
+  AuthenticatedHafalanIndexRoute: AuthenticatedHafalanIndexRoute,
   AuthenticatedIdentitasIndexRoute: AuthenticatedIdentitasIndexRoute,
+  AuthenticatedKbmIndexRoute: AuthenticatedKbmIndexRoute,
   AuthenticatedKelasIndexRoute: AuthenticatedKelasIndexRoute,
   AuthenticatedKeuanganIndexRoute: AuthenticatedKeuanganIndexRoute,
   AuthenticatedNilaiIndexRoute: AuthenticatedNilaiIndexRoute,
   AuthenticatedPenggunaIndexRoute: AuthenticatedPenggunaIndexRoute,
+  AuthenticatedPengumumanIndexRoute: AuthenticatedPengumumanIndexRoute,
+  AuthenticatedRapbmIndexRoute: AuthenticatedRapbmIndexRoute,
   AuthenticatedSantriIndexRoute: AuthenticatedSantriIndexRoute,
   AuthenticatedTabunganIndexRoute: AuthenticatedTabunganIndexRoute,
 }

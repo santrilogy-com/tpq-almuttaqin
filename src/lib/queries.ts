@@ -37,3 +37,11 @@ export const useLembaga = () =>
     queryFn: async () =>
       (await api.get<{ lembaga: import('./types').Lembaga[] }>('/lembaga')).data.lembaga,
   })
+
+export type GuruRef = { id: string; nama: string; peranGuru: string; jenjang: 'TPQ' | 'MI' }
+/** Nama guru tanpa honor/HP; boleh dibaca semua pengguna yang login. */
+export const useGuruRef = () =>
+  useQuery({
+    queryKey: ['guru-ref'],
+    queryFn: async () => (await api.get<{ guru: GuruRef[] }>('/kbm/guru')).data.guru,
+  })
