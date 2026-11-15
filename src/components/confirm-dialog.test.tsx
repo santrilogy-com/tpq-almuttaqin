@@ -1,4 +1,4 @@
-import type { SubmitEvent } from 'react'
+﻿import type { SubmitEvent } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
@@ -23,7 +23,7 @@ describe('ConfirmDialog', () => {
       .element(getByText('This action cannot be undone.'))
       .toBeInTheDocument()
     await expect
-      .element(getByRole('button', { name: 'Cancel' }))
+      .element(getByRole('button', { name: 'Batal' }))
       .toBeInTheDocument()
     await expect
       .element(getByRole('button', { name: 'Continue' }))
@@ -78,7 +78,7 @@ describe('ConfirmDialog', () => {
       />
     )
 
-    await expect.element(getByRole('button', { name: 'Cancel' })).toBeDisabled()
+    await expect.element(getByRole('button', { name: 'Batal' })).toBeDisabled()
     await expect
       .element(getByRole('button', { name: 'Continue' }))
       .toBeDisabled()
@@ -216,3 +216,4 @@ describe('ConfirmDialog', () => {
     expect(handleFormSubmit).not.toHaveBeenCalled()
   })
 })
+
