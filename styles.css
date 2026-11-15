@@ -1,0 +1,1224 @@
+/* TPQ Madin PWA - sistem visual Registrar (uiCookies): teal gelap #0e5e61,
+   aksen amber #e3a52b, netral slate, latar #f2f5f6, Figtree.
+   Token diekstrak dari demo Registrar (lihat DESIGN-TOKENS.md); implementasi
+   ditulis ulang sendiri, bukan salinan CSS demo. */
+:root {
+  --blue: #0e5e61;
+  --blue2: #0a4b4e;
+  --purple: #0d4245;
+  --bg: #f2f5f6;
+  --card: #ffffff;
+  --ink: #15222b;
+  --muted: #5c6a75;
+  --line: #e2e7eb;
+  --green: #17703f;
+  --amber: #8a5300;
+  --red: #b1261d;
+  /* ===== Token Registrar (nama --rg-*) =====
+     --blue/--blue2/--purple di atas dipetakan ke token ini supaya semua
+     pemakaian lama ikut berubah: biru royal -> teal Registrar. */
+  --ink2: #3a4853;
+  --line2: #cfd7dd;
+  --faint: #a3adb5;
+  --focus: #1f8589;
+  --surface2: #f6f8f9;
+  --primary-soft: #e2f0ef;
+  --accent: #e3a52b;
+  --accent-soft: #fcf0d6;
+  --accent-ink: #3b2600;
+  --good-soft: #e1f3e8;
+  --good-fill: #22804b;
+  --warn-soft: #fcefd3;
+  --warn-fill: #e3a52b;
+  --bad-soft: #fbe5e2;
+  --bad-fill: #c73e32;
+  --info: #1d5c9b;
+  --info-soft: #e3edf9;
+  --neutral-soft: #edf0f2;
+  --sb-top: #0d4245;
+  --sb-bottom: #0a2f32;
+  --ring: rgba(14, 94, 97, .22);
+  --viz-bar: #2b8d8f;
+  --tip-bg: #15222b;
+  /* Nama kanonis Registrar (DESIGN-TOKENS.md §2, dipakai tes Wira BLOK R):
+     nilai literal supaya nama + hex-nya bisa digrep langsung di stylesheet.
+     Token --blue/--focus/--accent di atas adalah alias lama yang dipertahankan
+     karena seluruh komponen memakainya. */
+  --rg-primary: #0e5e61;
+  --rg-primary-btn-hover: #0a4b4e;
+  --rg-primary-soft: #e2f0ef;
+  --rg-ring: rgba(14, 94, 97, .22);
+  --rg-accent: #e3a52b;
+  --rg-accent-soft: #fcf0d6;
+  --rg-accent-ink: #3b2600;
+  --rg-bg: #f2f5f6;
+  --rg-surface: #ffffff;
+  --rg-surface-2: #f6f8f9;
+  --rg-ink: #15222b;
+  --rg-ink-2: #3a4853;
+  --rg-muted: #5c6a75;
+  --rg-faint: #a3adb5;
+  --rg-line: #e2e7eb;
+  --rg-line-2: #cfd7dd;
+  --rg-good: #17703f;
+  --rg-good-soft: #e1f3e8;
+  --rg-good-fill: #22804b;
+  --rg-warn: #8a5300;
+  --rg-warn-soft: #fcefd3;
+  --rg-warn-fill: #e3a52b;
+  --rg-bad: #b1261d;
+  --rg-bad-soft: #fbe5e2;
+  --rg-bad-fill: #c73e32;
+  --rg-info: #1d5c9b;
+  --rg-info-soft: #e3edf9;
+  --rg-focus: #1f8589;
+  --rg-sb-top: #0d4245;
+  --rg-sb-bottom: #0a2f32;
+  --rg-viz-bar: #2b8d8f;
+  --rg-radius: 14px;
+  --rg-radius-sm: 10px;
+  --rg-shadow-sm: 0 1px 2px rgba(21, 34, 43, .04), 0 1px 3px rgba(21, 34, 43, .04);
+  --rg-shadow: 0 12px 32px rgba(21, 34, 43, .12);
+  --rg-gap: 16px;
+  /* ===== SKALA TUNGGAL (Kirana, ronde siap produksi, 15 Nov) =====
+     Sumber: ui-ux-pro-max (ritme 4/8dp, hierarki seksi 16/24/32) +
+     frontend-ui-engineering (satu spacing scale, tanpa nilai arbitrer).
+     Jarak: 4/8/12/16/20/24/32/48. Tipografi: micro 12, caption 13,
+     kecil 14, body 15 (Registrar .9375rem), h3 17, h2 20, h1 24.
+     Radius Registrar: field 10, kartu 14, pill 999. Sentuh: min 44,
+     utama 48, tab bar 52. Semua layar baru/ubah memakai token ini;
+     mockup.css tetap gaya mockup v3 (pengecualian tercatat: gaya mockup v3,
+     onboarding, kartu profil santri mobile, dan tab bar mockup). */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 48px;
+  --fs-micro: 12px;
+  --fs-caption: 13px;
+  --fs-small: 14px;
+  --fs-label: 15px;
+  --fs-body: 15px;
+  --fs-h3: 17px;
+  --fs-h2: 20px;
+  --fs-h1: 24px;
+  --r-sm: 10px;
+  --r-field: 10px;
+  --r-md: 12px;
+  --r-tile: 14px;
+  --r-card: 14px;
+  --r-pill: 999px;
+  --touch: 44px;
+  --touch-lg: 48px;
+  --touch-xl: 52px;
+  --radius: 14px;
+  /* Bayangan Registrar: kartu memakai shadow-sm yang kalem (bukan soft-UI
+     besar); elevasi besar hanya untuk menu/modal/toast. */
+  --shadow: 0 1px 2px rgba(21, 34, 43, .04), 0 1px 3px rgba(21, 34, 43, .04);
+  --shadow-lg: 0 12px 32px rgba(21, 34, 43, .12);
+}
+/* Figtree (SIL OFL, font demo Registrar) — di-bundle lokal sebagai satu
+   file variable font supaya tampil sama persis dengan demo meski offline;
+   tanpa ini HP hanya memakai font sistem (Roboto) dan tampilannya terasa
+   beda. JANGAN CDN Google Fonts: PWA harus offline. */
+@font-face { font-family: 'Figtree'; font-style: normal; font-weight: 300 900; font-display: swap; src: url('fonts/Figtree.woff2') format('woff2'); }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3 { margin: 0 0 var(--sp-2); line-height: 1.25; }
+/* Judul halaman Registrar: clamp 24–30px, 800, tracking -0.02em. */
+h1 { font-size: clamp(24px, 20px + .9vw, 30px); font-weight: 800; letter-spacing: -.02em; }
+/* h2 di aplikasi ini adalah judul kartu/panel Registrar: 16px, 700. */
+h2 { font-size: 16px; font-weight: 700; }
+h3 { font-size: var(--fs-h3); }
+p { margin: 0 0 var(--sp-3); }
+a { color: var(--blue); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { min-height: var(--touch); cursor: pointer; }
+input, select, textarea {
+  min-height: var(--touch);
+  border: 1px solid var(--line2);
+  border-radius: var(--r-field);
+  padding: var(--sp-2) var(--sp-3);
+  background: #fff;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--ring); }
+label { display: block; font-weight: 600; font-size: var(--fs-small); margin: var(--sp-3) 0 var(--sp-1); }
+textarea { min-height: 88px; resize: vertical; }
+
+/* ---------- Layout ---------- */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 264px; flex: 0 0 264px;
+  background: linear-gradient(180deg, var(--blue), var(--purple));
+  color: #fff; padding: var(--sp-5) var(--sp-3);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: none;
+}
+.brand { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-2) var(--sp-4); }
+.brand img { width: 52px; height: 52px; border-radius: var(--r-md); background: #fff; }
+.brand b { font-size: var(--fs-h2); display: block; }
+.brand span { font-size: var(--fs-caption); opacity: .85; }
+.nav-group { font-size: var(--fs-micro); text-transform: uppercase; letter-spacing: .08em; opacity: .95; padding: var(--sp-3) var(--sp-2) var(--sp-2); }
+.nav-item {
+  display: flex; align-items: center; gap: var(--sp-2); width: 100%;
+  background: transparent; border: 0; color: #fff; text-align: left;
+  padding: var(--sp-2) var(--sp-3); border-radius: var(--r-field); font-size: var(--fs-label); min-height: var(--touch);
+}
+.nav-item:hover { background: rgba(255,255,255,.14); }
+.nav-item.active { background: #fff; color: var(--blue); font-weight: 700; }
+.nav-item .ico { font-size: 18px; width: 24px; text-align: center; }
+.main { flex: 1; min-width: 0; padding: var(--sp-5) var(--sp-6) 132px; }
+/* Topbar Registrar: menempel di atas saat gulir + kaca buram (surface 88%,
+   blur 10px, saturate 1.4). Tidak dibuat selebar viewport penuh seperti
+   Registrar karena .main punya padding — bilah tetap di dalam kolom konten. */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  margin-bottom: var(--sp-4); padding: var(--sp-2) var(--sp-1);
+  background: rgba(255, 255, 255, .88);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .logo-m { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; flex: 1; }
+.topbar .logo-m img { width: 44px; height: 44px; border-radius: var(--r-sm); flex: none; object-fit: contain; background: #fff; }
+.topbar .logo-m b { font-size: var(--fs-h3); }
+.badge-contoh {
+  display: inline-block; background: #fcefd3; color: #8a5300;
+  border: 1px solid #e3a52b; border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-caption); font-weight: 700;
+}
+.content { max-width: 1060px; margin: 0 auto; }
+
+/* ---------- Cards, grid, stats ---------- */
+/* Panel Registrar: putih, border 1px garis, radius 14px, bayangan kalem. */
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+  box-shadow: var(--shadow); padding: var(--sp-5); margin-bottom: var(--sp-4);
+}
+.profile-card {
+  background: linear-gradient(135deg, var(--blue), var(--blue2) 55%, var(--purple));
+  color: #fff; border-radius: var(--r-card); padding: var(--sp-6); margin-bottom: var(--sp-4);
+  box-shadow: var(--shadow);
+}
+.profile-card h1 { color: #fff; }
+.profile-card p { opacity: 1; }
+/* Chip di kartu profil dibuat badge putih (sesuai mockup Alma Ata) supaya teks biru di atasnya kontras 6.43:1. */
+.profile-card .chip { background: #fff; color: var(--blue); border-color: transparent; }
+.profile-card .meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+.chip {
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+  border-radius: var(--r-pill); padding: var(--sp-2) var(--sp-3); font-size: var(--fs-caption); font-weight: 600;
+}
+.grid { display: grid; gap: var(--sp-4); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.stat { text-align: left; }
+.stat .num { font-size: 30px; font-weight: 800; color: var(--blue); line-height: 1.1; }
+.stat .lbl { font-size: var(--fs-small); color: var(--ink2); font-weight: 700; }
+.stat .sub { font-size: var(--fs-caption); color: var(--muted); }
+.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
+.menu-tile {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-tile);
+  padding: var(--sp-4); text-align: left; min-height: 84px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: var(--sp-1);
+}
+.menu-tile .ico { font-size: 26px; }
+.menu-tile b { font-size: var(--fs-label); }
+.menu-tile span { font-size: var(--fs-caption); color: var(--muted); }
+
+/* ---------- Buttons ---------- */
+/* Tombol Registrar: radius 10px (bukan pil), font 14px tebal, bayangan tipis. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  background: var(--blue); color: #fff; border: 0; border-radius: var(--r-field);
+  padding: var(--sp-2) 15px; font-size: var(--fs-small); font-weight: 700; min-height: var(--touch); text-decoration: none;
+  box-shadow: 0 1px 2px rgba(14, 94, 97, .25);
+}
+.btn:hover { background: var(--blue2); }
+.btn.secondary { background: #e2f0ef; color: var(--blue); }
+.btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.danger { background: #fbe5e2; color: #b1261d; }
+.btn.success { background: #e1f3e8; color: #17703f; }
+.btn.warn { background: #fcefd3; color: #8a5300; }
+.btn.small { min-height: var(--touch); padding: var(--sp-2) var(--sp-3); font-size: var(--fs-small); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.btn-row .btn { flex: 1 1 auto; }
+
+/* ---------- Tables (Registrar) ---------- */
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-label); font-variant-numeric: tabular-nums; }
+th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+thead th { background: var(--surface2); border-top: 1px solid var(--line); }
+th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 800; white-space: nowrap; }
+tbody tr { transition: background-color .15s ease; }
+tbody tr:hover td { background: rgba(14, 94, 97, .04); }
+tr:last-child td { border-bottom: 0; }
+
+/* Tabel jadi kartu bertumpuk label-nilai di HP — pola Registrar
+   (lihat DESIGN-TOKENS.md §5). Berlaku untuk tabel yang membawa
+   class="table-stack" + data-label di tiap sel: di desktop tetap tabel,
+   di HP (≤767px atau mode-mobile paksa) tiap baris jadi kartu 2 kolom
+   dengan sel judul (.cell-main) selebar kartu dan aksi (.cell-actions)
+   di pojok kanan atas. */
+@media (max-width: 767.98px) {
+  .table-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .table-stack, .table-stack tbody, .table-stack tfoot { display: block; width: 100%; }
+  .table-stack tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding: 14px 16px; border-bottom: 1px solid var(--line); position: relative; }
+  .table-stack tbody tr:last-child { border-bottom: 0; }
+  .table-stack td, .table-stack th { display: block; padding: 0 !important; border: 0 !important; background: none !important; min-width: 0; }
+  .table-stack [data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+  .table-stack .cell-main, .table-stack tbody th[scope="row"] { grid-column: 1 / -1; order: -1; }
+  .table-stack tbody tr:has(.cell-actions:not(:empty)) .cell-main { padding-right: 140px !important; min-height: 44px; }
+  .table-stack .cell-main::before, .table-stack tbody th[scope="row"]::before { display: none; }
+  .table-stack .cell-actions { position: absolute; top: 14px; right: 16px; width: auto; }
+  .table-stack .cell-actions:empty { display: none; }
+  .table-stack .text-end { text-align: left !important; }
+  .table-stack td[colspan] { grid-column: 1 / -1; }
+  .table-stack tfoot tr { background: var(--surface2); }
+}
+body.mode-mobile .table-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.mode-mobile .table-stack, body.mode-mobile .table-stack tbody, body.mode-mobile .table-stack tfoot { display: block; width: 100%; }
+body.mode-mobile .table-stack tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding: 14px 16px; border-bottom: 1px solid var(--line); position: relative; }
+body.mode-mobile .table-stack tbody tr:last-child { border-bottom: 0; }
+body.mode-mobile .table-stack td, body.mode-mobile .table-stack th { display: block; padding: 0 !important; border: 0 !important; background: none !important; min-width: 0; }
+body.mode-mobile .table-stack [data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+body.mode-mobile .table-stack .cell-main, body.mode-mobile .table-stack tbody th[scope="row"] { grid-column: 1 / -1; order: -1; }
+body.mode-mobile .table-stack tbody tr:has(.cell-actions:not(:empty)) .cell-main { padding-right: 140px !important; min-height: 44px; }
+body.mode-mobile .table-stack .cell-main::before, body.mode-mobile .table-stack tbody th[scope="row"]::before { display: none; }
+body.mode-mobile .table-stack .cell-actions { position: absolute; top: 14px; right: 16px; width: auto; }
+body.mode-mobile .table-stack .cell-actions:empty { display: none; }
+body.mode-mobile .table-stack .text-end { text-align: left !important; }
+body.mode-mobile .table-stack td[colspan] { grid-column: 1 / -1; }
+body.mode-mobile .table-stack tfoot tr { background: var(--surface2); }
+
+/* ---------- Baris label-nilai (kv) untuk kartu daftar di HP ----------
+   Pasangan pola table-stack untuk layar yang memakai kartu, bukan tabel
+   (mis. daftar santri mobile): label kecil uppercase di kiri, nilai tebal
+   di kanan, dipisah garis halus. Dipakai tes Wira BLOK R (R4). */
+.kv-list { margin-top: 10px; border-top: 1px solid var(--line); }
+.kv-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.kv-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+.kv-label { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.kv-value { color: var(--ink); font-size: 14px; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+
+/* ---------- Badges, bars, misc ---------- */
+/* Badge status Registrar: pil dengan titik warna di depan. */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: var(--r-pill); padding: 3px 9px 3px 8px;
+  font-size: 12px; font-weight: 700; white-space: nowrap; line-height: 1.4;
+}
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.b-green { background: #e1f3e8; color: #17703f; }
+.b-amber { background: #fcefd3; color: #8a5300; }
+.b-red { background: #fbe5e2; color: #b1261d; }
+.b-blue { background: #e3edf9; color: #1d5c9b; }
+.b-grey { background: #edf0f2; color: #3a4853; }
+/* Meter Registrar: bilah tipis 6px, trek teal lembut, isi teal viz-bar. */
+.progress { height: 6px; background: var(--primary-soft); border-radius: 3px; overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--viz-bar); border-radius: 3px; }
+.bar-chart { display: flex; align-items: flex-end; gap: var(--sp-2); height: 190px; padding: var(--sp-3) var(--sp-1) 0; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); height: 100%; justify-content: flex-end; min-width: 0; }
+.bar-col .bar {
+  width: 100%; max-width: 64px; border-radius: var(--r-sm) var(--r-sm) var(--sp-1) var(--sp-1);
+  background: var(--viz-bar);
+  min-height: 4px;
+}
+.bar-col .val { font-weight: 800; font-size: 11px; white-space: nowrap; overflow-wrap: normal; }
+.bar-col .cat { font-size: var(--fs-micro); color: var(--muted); text-align: center; word-break: break-word; }
+.bar-col .bar-gender { font-size: var(--fs-micro); color: var(--muted); text-align: center; white-space: nowrap; }
+/* Batang grafik yang bisa diklik (Grafik Murid per kelas): tetap batang,
+   kursor + cincin fokus keyboard terlihat, tanpa mengubah tampilan batang. */
+.bar-col[role="button"] { cursor: pointer; }
+.bar-col[role="button"]:focus-visible { outline: 2px solid var(--rg-focus); outline-offset: 2px; border-radius: var(--r-sm); }
+/* Kontrol tersegmentasi Registrar (.seg): trek abu, tombol aktif putih +
+   bayangan. Tinggi tombol dipertahankan 44px (bukan ~30px ala Registrar)
+   supaya target sentuh tetap memenuhi ui-ux-pro-max prioritas 2. */
+.tabs { display: inline-flex; gap: 2px; flex-wrap: wrap; margin-bottom: var(--sp-4); padding: 3px; background: var(--surface2); border: 1px solid var(--line); border-radius: 11px; }
+.tab {
+  border: 0; background: transparent; border-radius: 8px;
+  padding: 6px 12px; font-size: var(--fs-caption); font-weight: 700; min-height: var(--touch); color: var(--ink2);
+}
+.tab.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(21, 34, 43, .1), 0 0 0 1px var(--line); }
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+.toolbar > * { flex: 1 1 160px; }
+/* Avatar Registrar: kotak membulat berisi inisial (BUKAN lingkaran),
+   latar tint teal, teks teal gelap. Foto <img> memakai radius yang sama. */
+.avatar {
+  width: 44px; height: 44px; border-radius: 12px; object-fit: cover;
+  background: #d8eeec;
+  color: #0b4f52; display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; flex: 0 0 44px;
+}
+.row-flex { display: flex; align-items: center; gap: var(--sp-3); }
+.row-flex .grow { flex: 1; min-width: 0; }
+/* Baris Tunggakan SPP: nama + pil status sebaris dan terpotong rapi (elipsis)
+   bila sempit, bukan membungkus kata per kata; meta satu baris. Tanpa ini,
+   di 390px nama 2 kata membungkus 2 baris dan pil berpindah-pindah posisi. */
+.spp-nama { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.spp-nama b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.spp-nama .badge { flex: none; }
+.spp-meta { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.muted { color: var(--muted); font-size: var(--fs-small); }
+.money { font-weight: 800; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.big-attend { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); margin: var(--sp-2) 0; }
+.big-attend button { border-radius: var(--r-md); border: 2px solid var(--line); background: #fff; font-weight: 700; padding: var(--sp-3) var(--sp-1); min-height: var(--touch-xl); }
+.big-attend button.on-hadir { background: #e1f3e8; border-color: var(--green); color: #17703f; }
+.big-attend button.on-izin { background: #e3edf9; border-color: var(--blue); color: var(--blue); }
+.big-attend button.on-sakit { background: #fcefd3; border-color: var(--amber); color: #8a5300; }
+.big-attend button.on-alpa { background: #fbe5e2; border-color: var(--red); color: #b1261d; }
+.notice {
+  background: #fcefd3; border: 1px solid #e3a52b; border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4);
+}
+.notice .close-x { float: right; background: none; border: 0; font-size: 20px; min-height: 44px; min-width: 44px; padding: 0; }
+.empty { text-align: center; color: var(--muted); padding: var(--sp-6) var(--sp-2); }
+.toast {
+  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--tip-bg); color: #fff; padding: var(--sp-3) var(--sp-5); border-radius: 12px;
+  font-weight: 600; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  max-width: 92vw; text-align: center;
+}
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(11, 26, 30, .55);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+}
+.modal {
+  background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 560px;
+  max-height: 92vh; overflow-y: auto; padding: var(--sp-5);
+  box-shadow: var(--shadow-lg); position: relative;
+}
+.modal h2 { margin-bottom: var(--sp-1); padding-right: 48px; }
+/* Tombol tutup modal (S4): 44x44px di kanan atas, selalu terlihat tanpa
+   menggulir ke tombol Batal di bawah form. */
+.modal-x {
+  position: absolute; top: 8px; right: 8px;
+  width: 44px; height: 44px; min-height: 44px;
+  border: 0; background: none; color: var(--muted);
+  font-size: 26px; line-height: 1; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.modal-x:hover { background: #f2f5f6; }
+/* Bottom nav WAJIB gaya iOS (arahan Mas 15 Nov 15:03 WIB): MENGAMBANG +
+   BLUR TRANSPARAN. Bar terlepas dari tepi: 12px dari kiri/kanan/bawah
+   (+ safe-area iPhone berponi), radius 26px, bayangan lembut, latar putih
+   tembus pandang 0.85 + blur 20px + saturate 180% — kaca buram khas iOS,
+   konten di bawahnya terlihat samar. BUKAN full-width menempel bawah.
+   Tinggi bar ±70px (tombol 54px + padding 16px); padding bawah konten
+   (.main 132px / 150px) sudah menghitung 12px jarak + tinggi bar +
+   safe-area, jadi konten terakhir tidak tertutup. */
+/* K2 (Kirana): pil nav 0,85 (dulu 0,60) supaya label terbaca di atas
+   konten berwarna; label non-aktif memakai ink2 #3a4853 (dulu muted). */
+.bottomnav {
+  position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 90;
+  background: rgba(255, 255, 255, .85);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(21, 34, 43, .08);
+  border-radius: 26px;
+  display: flex; justify-content: space-around;
+  padding: var(--sp-2) var(--sp-1);
+  box-shadow: 0 8px 24px rgba(21, 34, 43, .12), 0 2px 6px rgba(21, 34, 43, .06);
+}
+.bottomnav button {
+  flex: 1; background: none; border: 0; min-height: 52px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: 11px; font-weight: 700; color: var(--ink2); padding: 4px 0;
+}
+.bottomnav button .ico { font-size: 21px; }
+.bottomnav button.active { color: var(--blue); }
+/* Home indicator ala mockup v3: bilah kecil di bawah tab bar (elemen di index.html).
+   Dengan nav mengambang, ia duduk di celah 12px antara pil dan tepi layar. */
+.home-indicator {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(4px + env(safe-area-inset-bottom)); z-index: 91;
+  width: 134px; height: 5px; border-radius: var(--r-pill); background: #111827;
+  pointer-events: none;
+}
+
+/* ---------- Onboarding layar 1 (mockup v3) ---------- */
+/* Tersembunyi sampai patch app.js menampilkannya di kunjungan pertama
+   (cek localStorage, tombol Mulai/Lewati menutupnya). Ilustrasi HP di bawah
+   ini digambar CSS sebagai miniatur produk sendiri; ilustrasi 3D tangan
+   memegang HP dari mockup butuh aset gambar asli yang disetujui Mas. */
+.onboarding {
+  position: fixed; inset: 0; z-index: 300;
+  background: linear-gradient(160deg, var(--blue) 0%, var(--blue2) 48%, var(--purple) 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 24px calc(28px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.onboarding[hidden] { display: none; }
+.onb-inner { max-width: 340px; width: 100%; text-align: center; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.onb-phone { width: 188px; height: 320px; border-radius: 36px; background: #fff; padding: 12px; box-shadow: 0 24px 60px rgba(21, 34, 43, .35); flex: 0 0 auto; }
+.onb-screen { height: 100%; border-radius: 26px; background: linear-gradient(160deg, #e2f0ef, #d5e7e5); padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.onb-screen-bar { height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--blue), var(--purple)); }
+.onb-screen-card { height: 46px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(21, 34, 43, .12); }
+.onboarding h1 { color: #fff; font-size: 26px; font-weight: 800; line-height: 1.3; margin: 6px 0 0; text-wrap: balance; }
+.onb-btn { display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--blue); border-radius: 999px; min-height: 52px; padding: 12px 48px; font-weight: 800; font-size: 17px; text-decoration: none; box-shadow: 0 10px 24px rgba(21, 34, 43, .25); }
+.onb-btn:hover { background: #e2f0ef; }
+.onb-skip { color: #fff; font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; }
+/* A1/A2: kotak info di layar login/ganti sandi (data contoh / hapus data). */
+.auth-contoh { background:#fcefd3; border:1px solid #e3a52b; color:#3b2600; border-radius:12px; padding:10px 12px; font-size:13px; line-height:1.5; margin:0 0 14px; }
+.sheet {
+  position: fixed; inset: 0; z-index: 95; background: rgba(11, 26, 30, .45);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet .panel {
+  background: #fff; border-radius: var(--r-card) var(--r-card) 0 0; width: 100%; max-width: 560px;
+  max-height: 80vh; overflow-y: auto; padding: var(--sp-4) var(--sp-4) var(--sp-7);
+}
+.sheet .panel button.item {
+  display: flex; gap: var(--sp-3); align-items: center; width: 100%;
+  background: none; border: 0; border-bottom: 1px solid var(--line);
+  padding: var(--sp-3) var(--sp-2); text-align: left; font-size: var(--fs-body); font-weight: 600;
+}
+.sheet .panel button.item .ico { font-size: 22px; width: 30px; }
+.hidden { display: none !important; }
+
+/* ---------- Desktop >= 900px ---------- */
+@media (min-width: 900px) {
+  .sidebar { display: block; }
+  .main { padding: var(--sp-7) var(--sp-7) var(--sp-8); }
+  .bottomnav { display: none; }
+  .home-indicator { display: none; }
+  .topbar .logo-m { display: none; }
+  .menu-grid { grid-template-columns: repeat(4, 1fr); }
+  .modal-backdrop { align-items: center; }
+  .modal { border-radius: 16px; }
+  .toast { bottom: 32px; }
+}
+@media (max-width: 899px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .stat .num { font-size: 24px; }
+  /* Bar jenjang global: di layar sempit teks + pil jenjang HARUS bertumpuk
+     vertikal. Sebelumnya .row-flex (teks flex:1 + min-width:0) membuat teks
+     terjepit ke kolom ~55px di 390px karena pil tidak mau membungkus ke
+     baris baru — kartu jadi setinggi ~470px dengan satu kata per baris. */
+  .jenjang-bar .row-flex { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+  .jenjang-bar .chip-row { width: 100%; }
+}
+@media (max-width: 520px) {
+  .main { padding: var(--sp-3) var(--sp-3) 150px; }
+  /* Layar 2 dan 3 mockup v3 berlatar putih; lavender hanya latar luar gambar referensi. */
+  body { background: #fff; }
+  /* Kartu profil: padding lebih ringkas dan teks info lebih kecil supaya kartu tidak terlalu tinggi di HP. */
+  .profile-card { padding: var(--sp-5); }
+  .profile-card p { font-size: 14px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr 1fr; }
+  .big-attend { grid-template-columns: repeat(2, 1fr); }
+  /* Menu Beranda persis mockup Alma Ata: 4 kolom, tile hanya ikon + label.
+     Sub-angka disembunyikan di HP karena angkanya sudah ada di 4 kartu statistik di atas. */
+  .menu-grid { grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
+  .menu-tile { padding: var(--sp-3) var(--sp-2); min-height: 104px; align-items: center; text-align: center; border: 0; }
+  /* Ikon 48px: aturan ronde 1 (36px) ternyata kalah spesifik dari aturan monogram di bawah
+     file ini, jadi tidak pernah berlaku. Selektor .menu-grid di depan menaikkan spesifisitas. */
+  .menu-grid .menu-tile .ico { width: 48px; height: 48px; border-radius: var(--r-md); font-size: var(--fs-label); }
+  /* Ikon warna-warni di atas pastel, mengikuti grid menu mockup v3. Urutan tile tetap
+     dari app.js, jadi warna melekat ke posisi (8 warna berulang untuk 12 tile).
+     Semua pasangan dihitung kontrasnya >= 4.5:1 (terendah hijau 4.57:1). */
+  .menu-grid .menu-tile:nth-child(8n+1) .ico { background: #e3edf9; color: #1d5c9b; }
+  .menu-grid .menu-tile:nth-child(8n+2) .ico { background: #e1f3e8; color: #17703f; }
+  .menu-grid .menu-tile:nth-child(8n+3) .ico { background: #fcefd3; color: #8a5300; }
+  .menu-grid .menu-tile:nth-child(8n+4) .ico { background: #fce7f3; color: #be185d; }
+  .menu-grid .menu-tile:nth-child(8n+5) .ico { background: #ede9fe; color: #6d28d9; }
+  .menu-grid .menu-tile:nth-child(8n+6) .ico { background: #fbe5e2; color: #b1261d; }
+  .menu-grid .menu-tile:nth-child(8n+7) .ico { background: #cffafe; color: #0e7490; }
+  .menu-grid .menu-tile:nth-child(8n+8) .ico { background: #fcefd3; color: #8a5300; }
+  .menu-tile b { font-size: var(--fs-caption); }
+  .menu-tile > span:last-child { display: none; }
+  /* Baris fleksibel boleh membungkus supaya tidak terjepit di layar sempit:
+     bar jenjang, baris santri/nilai, dan chip murid terpilih. */
+  .row-flex { flex-wrap: wrap; }
+  /* Toolbar Santri: pencarian selebar layar, filter 2 per baris. Sebelumnya
+     basis 160px membuat placeholder "Cari nama atau NIS" dan "Semua angkatan"
+     terpotong di 390px. */
+  .toolbar > input[type="search"] { flex: 1 1 100%; }
+  .toolbar > select { flex: 1 1 40%; }
+  /* Baris pengguna (Pengaturan): tombol Reset/Hapus pindah ke baris sendiri
+     supaya nama tidak terjepit sampai membungkus kata per kata ("Pimpin/an"). */
+  .user-row { flex-wrap: wrap; }
+  .user-row .btn-row { flex: 1 1 100%; margin-top: var(--sp-2); }
+  .selected-chip { flex-wrap: wrap; }
+  .topbar { flex-wrap: wrap; }
+  /* Angka rupiah "Rp2.900.000" (11 karakter) harus muat di kartu statistik setengah lebar. */
+  .stat .num { font-size: 20px; }
+  /* Label kategori grafik 9 kelas membungkus 2 baris; beri ruang supaya tidak meluber. */
+  .bar-chart { height: 212px; gap: var(--sp-2); }
+  /* Pengumuman tampil sebagai kartu notifikasi putih ala mockup v3, bukan banner kuning. */
+  .notice { background: #fff; border: 0; border-radius: var(--r-card); box-shadow: var(--shadow); padding: var(--sp-4); }
+  /* Tombol export di Penilaian jadi tombol biru penuh ala layar 3 mockup v3.
+     Tanpa ubah app.js: selektor atribut menarget tombol export rapor dan export nilai.
+     Label tombol tetap dari app.js ("Export rapor (CSV)" / "Export CSV nilai"). */
+  .btn-row button[onclick^="exportRaporCSV"], .btn-row button[onclick^="exportNilaiCSV"] {
+    background: var(--blue); color: #fff; flex: 1 1 100%; min-height: 48px;
+  }
+  .btn-row button[onclick^="exportRaporCSV"]:hover, .btn-row button[onclick^="exportNilaiCSV"]:hover { background: var(--blue2); }
+  /* Ronde Kirana R3: utilitas tampil mobile saja / desktop saja (struktur
+     Beranda mockup v3). .only-mobile tampil sebagai block di HP; baris judul
+     Notifikasi butuh flex, jadi ada aturan khususnya di bawah. */
+  .only-mobile { display: block !important; }
+  .only-mobile.dash-sec-row { display: flex !important; }
+  .only-desktop { display: none !important; }
+  /* Grid Menu Informasi mobile hanya 8 tile (7 modul + Lainnya); tile ke-9
+     sampai ke-12 (KBM, Kemuridan, Sahabat Khidmah, Grafik, Laporan) tetap
+     bisa dijangkau lewat sheet Lainnya. */
+  .menu-extra { display: none !important; }
+}
+
+/* ---------- Mode tampilan: Desktop / Mobile (sakelar manual di Pengaturan) ---------- */
+/* Mode desktop dipaksa lewat body.mode-desktop, mode mobile lewat body.mode-mobile.
+   Tanpa kelas itu, tampilan ikut lebar layar (otomatis): >=900px desktop, <900px mobile. */
+body.mode-desktop .sidebar { display: block; }
+body.mode-desktop .bottomnav { display: none; }
+body.mode-desktop .home-indicator { display: none; }
+body.mode-desktop { background: var(--bg); }
+body.mode-desktop .topbar .logo-m { display: none; }
+body.mode-desktop .main { padding: var(--sp-7) var(--sp-7) var(--sp-8); }
+body.mode-desktop .menu-grid { grid-template-columns: repeat(4, 1fr); }
+body.mode-desktop .modal-backdrop { align-items: center; }
+body.mode-desktop .modal { border-radius: 16px; }
+body.mode-desktop .toast { bottom: 32px; }
+body.mode-mobile .sidebar { display: none; }
+body.mode-mobile .bottomnav { display: flex; }
+body.mode-mobile .topbar .logo-m { display: flex; }
+body.mode-mobile { background: #fff; }
+body.mode-mobile .main { padding: var(--sp-3) var(--sp-3) 150px; }
+/* Mode Mobile paksa juga memakai grid menu 4 kolom seperti mockup, bukan 2 kolom. */
+body.mode-mobile .menu-grid { grid-template-columns: repeat(4, 1fr); }
+body.mode-mobile .grid-4 { grid-template-columns: repeat(2, 1fr); }
+/* Mode Mobile paksa memakai aturan mobile yang sama seperti <=520px di atas. */
+body.mode-mobile .profile-card { padding: var(--sp-5); }
+body.mode-mobile .profile-card p { font-size: 14px; }
+body.mode-mobile .menu-tile { border: 0; min-height: 104px; }
+body.mode-mobile .menu-grid .menu-tile .ico { width: 48px; height: 48px; border-radius: var(--r-md); font-size: var(--fs-label); }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+1) .ico { background: #e3edf9; color: #1d5c9b; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+2) .ico { background: #e1f3e8; color: #17703f; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+3) .ico { background: #fcefd3; color: #8a5300; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+4) .ico { background: #fce7f3; color: #be185d; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+5) .ico { background: #ede9fe; color: #6d28d9; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+6) .ico { background: #fbe5e2; color: #b1261d; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+7) .ico { background: #cffafe; color: #0e7490; }
+body.mode-mobile .menu-grid .menu-tile:nth-child(8n+8) .ico { background: #fcefd3; color: #8a5300; }
+body.mode-mobile .notice { background: #fff; border: 0; border-radius: var(--r-card); box-shadow: var(--shadow); padding: var(--sp-4); }
+body.mode-mobile .btn-row button[onclick^="exportRaporCSV"], body.mode-mobile .btn-row button[onclick^="exportNilaiCSV"] {
+  background: var(--blue); color: #fff; flex: 1 1 100%; min-height: 48px;
+}
+/* Ronde Kirana R3: cermin aturan <=520px untuk mode Mobile paksa. */
+body.mode-mobile .only-mobile { display: block !important; }
+body.mode-mobile .only-mobile.dash-sec-row { display: flex !important; }
+body.mode-mobile .only-desktop { display: none !important; }
+body.mode-mobile .menu-extra { display: none !important; }
+
+/* Monogram huruf pengganti ikon (tanpa emoji dekoratif, sesuai anti-slop R-04) */
+.nav-item .ico, .bottomnav button .ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex: 0 0 30px; border-radius: 10px;
+  background: rgba(255,255,255,.18); color: #fff;
+  font-size: 13px; font-weight: 800; font-style: normal;
+}
+.nav-item.active .ico { background: #e2f0ef; color: var(--blue); }
+.bottomnav button .ico { background: #e2f0ef; color: var(--blue); width: 28px; height: 28px; flex-basis: 28px; font-size: 12px; }
+.bottomnav button.active .ico { background: var(--blue); color: #fff; }
+/* Ikon tile gaya Registrar (.panel-icon): kotak teal lembut + glyph teal,
+   bukan gradien. (Di HP, aturan pastel per posisi di bawah tetap menang.) */
+.menu-tile .ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--r-sm);
+  background: var(--primary-soft); color: var(--blue);
+  font-size: 15px; font-weight: 800; font-style: normal;
+}
+
+/* ---------- Indikator status sinkron (selalu terlihat di header) ---------- */
+.sync-status {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  border-radius: var(--r-pill); padding: var(--sp-2) var(--sp-3); font-size: var(--fs-caption); font-weight: 700;
+  background: #e2f0ef; color: var(--blue); border: 1px solid #cfd7dd;
+  white-space: nowrap;
+}
+.sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue2); flex: 0 0 10px; }
+.sync-status.offline { background: #fcefd3; color: #8a5300; border-color: #e3a52b; }
+.sync-status.offline .sync-dot { background: #e3a52b; }
+.sync-status.pending { background: #fcefd3; color: #8a5300; border-color: #e3a52b; }
+.sync-status.pending .sync-dot { background: #e3a52b; }
+.sync-status.ok { background: #e1f3e8; color: #17703f; border-color: #9fd0b4; }
+.sync-status.ok .sync-dot { background: #22804b; }
+.sync-status.idle { background: #edf0f2; color: #3a4853; border-color: #cfd7dd; }
+.sync-status.idle .sync-dot { background: #5c6a75; }
+
+/* ---------- Pesan sukses / gagal yang jelas (bukan toast samar) ---------- */
+.alert { border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4); font-size: var(--fs-label); }
+.alert-success { background: #e1f3e8; border: 1px solid #9fd0b4; color: #17703f; }
+.alert-error { background: #fbe5e2; border: 1px solid #e8a49d; color: #b1261d; }
+.alert-info { background: #e3edf9; border: 1px solid #a3c2e0; color: #1d5c9b; }
+.alert b { display: block; margin-bottom: var(--sp-1); }
+.alert ul { margin: var(--sp-2) 0 0; padding-left: var(--sp-5); }
+
+/* ---------- Picker: cari + chip filter + tampil bertahap ---------- */
+.chip-filter {
+  border: 1.5px solid var(--line); background: #fff; border-radius: var(--r-pill);
+  padding: var(--sp-2) var(--sp-3); font-weight: 700; font-size: var(--fs-small); min-height: var(--touch); color: var(--ink);
+}
+.chip-filter.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.chip-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin: var(--sp-2) 0; }
+.picker-row {
+  display: flex; align-items: center; gap: var(--sp-3); width: 100%;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-3); margin-bottom: var(--sp-2); text-align: left; min-height: 64px;
+}
+.picker-row:hover { border-color: var(--blue2); }
+.picker-row .nm { font-weight: 700; }
+.picker-row .sb { font-size: var(--fs-caption); color: var(--muted); }
+.selected-chip {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: #e2f0ef; border: 1.5px solid var(--blue2); border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-3); margin: var(--sp-2) 0;
+}
+.selected-chip .nm { font-weight: 700; }
+.picker-count { font-size: var(--fs-caption); color: var(--muted); margin: var(--sp-2) 0; }
+
+/* ---------- Detail dan lain-lain ---------- */
+.kv { width: 100%; border-collapse: collapse; }
+.kv td { padding: var(--sp-2) var(--sp-1); border-bottom: 1px solid var(--line); }
+.kv td:first-child { color: var(--muted); width: 42%; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--focus); outline-offset: 2px;
+}
+.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { color: var(--blue); }
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--blue); color: #fff; font-weight: 800; font-size: var(--fs-small); flex: 0 0 28px;
+}
+.howto { display: flex; gap: var(--sp-3); margin-bottom: var(--sp-3); align-items: flex-start; }
+.howto p { margin: 0; }
+.file-drop {
+  border: 2px dashed var(--blue2); border-radius: var(--r-md); padding: var(--sp-4); text-align: center;
+  background: #f6f8f9; margin: var(--sp-2) 0;
+}
+pre.code {
+  background: #15222b; color: #edf0f2; border-radius: var(--r-md); padding: var(--sp-4);
+  overflow-x: auto; font-size: 13px; line-height: 1.5; white-space: pre;
+}
+
+/* ================= DESKTOP 1280px: tata letak mockup (ronde Kirana) ================= */
+/* Arah: mockup desktop TPQ Al-Muttaqin yang disetujui Mas (15 Nov), sistem visual Alma Ata
+   yang sama dengan mobile: gradien #0e5e61 ke #0d4245, latar lavender #f2f5f6, kartu putih
+   radius 24px dengan token bayangan --shadow. Aturan di sini hanya berlaku di desktop
+   (lebar >= 900px atau body.mode-desktop), jadi tampilan mobile tidak berubah.
+   Aritmetika lebar di 1280px: sidebar 272 + padding main 32 + konten 944 + padding main 32 = 1280.
+   Nilai visual dari ui-ux-pro-max (sidebar dashboard, tabel data, grafik batang) dan
+   Addy Osmani (skala spasi kelipatan 4px, kontras AA, target sentuh 44px, tanpa font eksternal).
+   Design Read: dashboard admin untuk pengurus TPQ dan Ibtidaiyah, bahasa visual Alma Ata,
+   dial ENERGY 2 / RHYTHM 2 / MOTION 1 (hover saja, transisi 0.15s, tanpa animasi berulang).
+   Alasan gradien (anti-slop R-01): gradien hanya menandai yang aktif, yaitu menu sidebar yang
+   sedang dibuka dan chip jenjang yang sedang dipilih, bukan hiasan halaman. Bayangan (R-12)
+   hanya penanda elevasi: kartu timbul dan sidebar di atas bidang konten. */
+
+/* ---- Mode otomatis: lebar >= 900px ---- */
+@media (min-width: 900px) {
+  /* Shell Registrar: sidebar teal gelap 272px (gradien drawer demo),
+     konten 944px (272 + 32 + 944 + 32 = 1280). */
+  .sidebar {
+    width: 272px; flex-basis: 272px;
+    background: linear-gradient(180deg, var(--sb-top), var(--sb-bottom));
+    color: rgba(255, 255, 255, .8);
+    box-shadow: 6px 0 24px rgba(21, 34, 43, .12);
+    padding: var(--sp-5) var(--sp-4);
+  }
+  .content { max-width: 944px; }
+  .topbar { margin-bottom: var(--sp-5); }
+  /* Brand: nama putih, subjudul putih redup, pemisah garis putih tipis. */
+  .brand { padding: var(--sp-1) var(--sp-2) var(--sp-4); border-bottom: 1px solid rgba(255, 255, 255, .12); margin-bottom: var(--sp-2); }
+  .brand img { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .15); }
+  .brand b { color: #fff; font-size: 19px; }
+  .brand span { color: rgba(255, 255, 255, .64); opacity: 1; }
+  /* Menu Registrar: label kelompok putih redup huruf kapital, item putih
+     redup, hover putih 7%, aktif putih 11% + bilah amber 4px di kiri +
+     ikon amber (persis drawer demo). */
+  .nav-group { color: rgba(255, 255, 255, .62); font-weight: 700; opacity: 1; padding: var(--sp-4) var(--sp-3) var(--sp-2); }
+  .nav-item { position: relative; color: rgba(255, 255, 255, .8); font-weight: 600; border-radius: var(--r-sm); }
+  .nav-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+  .nav-item.active {
+    background: rgba(255, 255, 255, .11);
+    color: #fff; font-weight: 700;
+    box-shadow: none;
+  }
+  .nav-item.active::before { content: ""; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: var(--accent); }
+  .nav-item .ico { background: transparent; color: rgba(255, 255, 255, .85); }
+  .nav-item.active .ico { background: transparent; color: var(--accent); }
+  /* Pemilih jenjang: kontrol tersegmentasi Registrar di atas konten,
+     yang aktif teal datar (bukan gradien).
+     Bar jenjang selalu anak pertama #view (render() menaruh jenjangBarHtml di depan),
+     jadi selektor ini hanya kena bar itu, bukan chip picker di modal. */
+  #view > .card:first-child .chip-row { background: var(--surface2); border-radius: var(--r-pill); padding: var(--sp-1); }
+  #view > .card:first-child .chip-filter { border-color: transparent; background: transparent; color: var(--muted); padding: var(--sp-2) var(--sp-4); }
+  #view > .card:first-child .chip-filter:hover { color: var(--blue); }
+  #view > .card:first-child .chip-filter.active {
+    background: var(--blue);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 12px rgba(14, 94, 97, .35);
+  }
+  /* Statistik: 4 kartu, angka besar tebal dengan clamp supaya rupiah muat sampai 1100px. */
+  .grid-4 { gap: var(--sp-4); }
+  .stat { padding: var(--sp-5); }
+  .stat .num { font-size: clamp(19px, 2vw, 26px); white-space: nowrap; }
+  /* Tabel: baris lebih lega, hover tint teal Registrar, avatar inisial 40px, kolom cari lebih lebar. */
+  th { padding: var(--sp-3); white-space: nowrap; }
+  td { padding: var(--sp-3); }
+  tbody tr { transition: background-color .15s ease; }
+  tbody tr:hover td { background: rgba(14, 94, 97, .04); }
+  .table-wrap .avatar { width: 40px; height: 40px; flex-basis: 40px; font-size: 15px; }
+  .toolbar { gap: var(--sp-3); }
+  .toolbar input[type="search"] { flex: 2 1 300px; }
+  .toolbar select { flex: 1 1 150px; }
+  /* Grafik batang: lebih tinggi, batang lebih lebar, hover memperterang batang. */
+  .bar-chart { height: 220px; gap: var(--sp-4); }
+  .bar-col .bar { max-width: 72px; transition: filter .15s ease; }
+  .bar-col:hover .bar { filter: brightness(1.12); }
+  .bar-col .val { font-size: var(--fs-label); }
+  /* Tile menu Beranda: hover menandai batas biru, tanpa mengubah isi. */
+  .menu-tile { transition: border-color .15s ease, box-shadow .15s ease; }
+  .menu-tile:hover { border-color: var(--blue2); }
+}
+
+/* ---- Mode paksa: body.mode-desktop (sakelar di Pengaturan) ---- */
+body.mode-desktop .sidebar {
+  width: 272px; flex-basis: 272px;
+  background: linear-gradient(180deg, var(--sb-top), var(--sb-bottom));
+  color: rgba(255, 255, 255, .8);
+  box-shadow: 6px 0 24px rgba(21, 34, 43, .12);
+  padding: var(--sp-5) var(--sp-4);
+}
+body.mode-desktop .content { max-width: 944px; }
+body.mode-desktop .topbar { margin-bottom: var(--sp-5); }
+body.mode-desktop .brand { padding: var(--sp-1) var(--sp-2) var(--sp-4); border-bottom: 1px solid rgba(255, 255, 255, .12); margin-bottom: var(--sp-2); }
+body.mode-desktop .brand img { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .15); }
+body.mode-desktop .brand b { color: #fff; font-size: 19px; }
+body.mode-desktop .brand span { color: rgba(255, 255, 255, .64); opacity: 1; }
+body.mode-desktop .nav-group { color: rgba(255, 255, 255, .62); font-weight: 700; opacity: 1; padding: var(--sp-4) var(--sp-3) var(--sp-2); }
+body.mode-desktop .nav-item { position: relative; color: rgba(255, 255, 255, .8); font-weight: 600; border-radius: var(--r-sm); }
+body.mode-desktop .nav-item:hover { background: rgba(255, 255, 255, .07); color: #fff; }
+body.mode-desktop .nav-item.active {
+  background: rgba(255, 255, 255, .11);
+  color: #fff; font-weight: 700;
+  box-shadow: none;
+}
+body.mode-desktop .nav-item.active::before { content: ""; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: var(--accent); }
+body.mode-desktop .nav-item .ico { background: transparent; color: rgba(255, 255, 255, .85); }
+body.mode-desktop .nav-item.active .ico { background: transparent; color: var(--accent); }
+body.mode-desktop #view > .card:first-child .chip-row { background: var(--surface2); border-radius: var(--r-pill); padding: var(--sp-1); }
+body.mode-desktop #view > .card:first-child .chip-filter { border-color: transparent; background: transparent; color: var(--muted); padding: var(--sp-2) var(--sp-4); }
+body.mode-desktop #view > .card:first-child .chip-filter:hover { color: var(--blue); }
+body.mode-desktop #view > .card:first-child .chip-filter.active {
+  background: var(--blue);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 4px 12px rgba(14, 94, 97, .35);
+}
+body.mode-desktop .grid-4 { gap: var(--sp-4); }
+body.mode-desktop .stat { padding: var(--sp-5); }
+body.mode-desktop .stat .num { font-size: clamp(19px, 2vw, 26px); white-space: nowrap; }
+body.mode-desktop th { padding: var(--sp-3); white-space: nowrap; }
+body.mode-desktop td { padding: var(--sp-3); }
+body.mode-desktop tbody tr { transition: background-color .15s ease; }
+body.mode-desktop tbody tr:hover td { background: rgba(14, 94, 97, .04); }
+body.mode-desktop .table-wrap .avatar { width: 40px; height: 40px; flex-basis: 40px; font-size: 15px; }
+body.mode-desktop .toolbar { gap: var(--sp-3); }
+body.mode-desktop .toolbar input[type="search"] { flex: 2 1 300px; }
+body.mode-desktop .toolbar select { flex: 1 1 150px; }
+body.mode-desktop .bar-chart { height: 220px; gap: var(--sp-4); }
+body.mode-desktop .bar-col .bar { max-width: 72px; transition: filter .15s ease; }
+body.mode-desktop .bar-col:hover .bar { filter: brightness(1.12); }
+body.mode-desktop .bar-col .val { font-size: 15px; }
+body.mode-desktop .menu-tile { transition: border-color .15s ease, box-shadow .15s ease; }
+body.mode-desktop .menu-tile:hover { border-color: var(--blue2); }
+
+/* ---- Statistik 4 kolom tidak muat di bawah 1100px (rupiah 11 karakter meluber),
+   jadi 2 kolom dulu. Berlaku untuk mode otomatis dan mode desktop paksa. ---- */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+}
+@media (max-width: 1099px) {
+  body.mode-desktop .grid-4 { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+}
+
+/* ================= Ronde Kirana R3: struktur dashboard mobile mockup v3 ================= */
+/* Aturan dasar (berlaku di semua lebar; visibilitas diatur .only-mobile /
+   .only-desktop di media query <=520px dan mode-mobile di atas). Palet dan
+   radius mengikuti DESIGN.md: gradien #0e5e61 ke #0d4245, kartu radius 24px,
+   bayangan token --shadow. Alasan anti-slop: gradien hanya pada kartu profil
+   (satu elemen penanda identitas, R-01) dan blur hanya pada tab bar (R-10,
+   sudah ada sebelumnya); tidak ada dekorasi baru. */
+/* Utilitas tampil: mobile saja sembunyi di desktop, desktop saja tampil biasa. */
+.only-mobile { display: none !important; }
+/* Sapaan Beranda mobile: baris kecil abu + nama lembaga tebal (mockup layar 2). */
+.dash-greet { font-size: var(--fs-caption); color: var(--muted); font-weight: 500; margin: var(--sp-1) 0; }
+.dash-inst { font-size: var(--fs-h1); font-weight: 800; letter-spacing: -.3px; line-height: 1.2; margin: 0 0 var(--sp-4); }
+/* Kartu profil santri: gradien, badge putih kanan atas berisi kelas, NIS,
+   nama, kelas + hafalan. Tombol utuh, ketuk membuka Hasil Belajar santri itu. */
+.profile-card-santri {
+  display: block; width: 100%; text-align: left; border: 0; cursor: pointer; font-family: inherit;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--blue), var(--blue2) 55%, var(--purple));
+  color: #fff; border-radius: var(--r-card); padding: var(--sp-5); margin-bottom: var(--sp-4); box-shadow: var(--shadow);
+}
+.profile-card-santri .pc-nis { display: block; font-size: var(--fs-micro); font-weight: 500; color: rgba(255, 255, 255, .78); letter-spacing: .5px; }
+.profile-card-santri .pc-name { display: block; font-size: var(--fs-h2); font-weight: 700; margin-top: var(--sp-1); }
+.profile-card-santri .pc-meta { display: block; font-size: var(--fs-caption); font-weight: 500; color: rgba(255, 255, 255, .92); margin-top: var(--sp-2); line-height: 1.6; }
+.profile-card-santri .pc-badge {
+  position: absolute; top: 16px; right: 16px;
+  background: #fff; color: var(--blue); font-size: var(--fs-micro); font-weight: 700;
+  padding: var(--sp-2) var(--sp-3); border-radius: var(--r-pill); box-shadow: 0 6px 14px rgba(21, 34, 43, .25);
+}
+.profile-card-santri .contoh-chip {
+  display: inline-block; margin-top: var(--sp-3); background: rgba(255, 255, 255, .22); color: #fff;
+  font-size: var(--fs-micro); font-weight: 600; padding: var(--sp-1) var(--sp-2); border-radius: var(--r-pill);
+}
+/* Judul bagian Beranda mobile + baris judul Notifikasi dengan Lihat semua. */
+.dash-sec { font-size: var(--fs-h3); font-weight: 700; margin: var(--sp-5) 0 var(--sp-3); }
+.dash-sec-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin: var(--sp-5) 0 var(--sp-3); }
+.dash-sec-row h2 { margin: 0; font-size: var(--fs-h3); font-weight: 700; }
+.link-btn { border: 0; background: none; color: var(--blue); font-size: var(--fs-caption); font-weight: 700; padding: var(--sp-1) 0; min-height: 44px; }
+/* Tab bar bawah: ikon SVG garis + label kata utuh. Aturan ini ditaruh di akhir
+   file supaya menang atas aturan monogram (.nav-item .ico, .bottomnav button
+   .ico) di atas: ikon tidak lagi kotak berisi dua huruf, label 10px nowrap
+   supaya Beranda, Santri, Tabungan, Keuangan, Kelas muat utuh di 390px
+   (6 tombol x 65px; label terpanjang Keuangan sekitar 48px pada 10px). */
+.bottomnav button { min-height: 54px; padding: var(--sp-1) var(--sp-1); gap: var(--sp-1); }
+.bottomnav button .ico { background: none; width: 24px; height: 24px; flex-basis: 24px; border-radius: 0; }
+.bottomnav button .ico svg { width: 22px; height: 22px; display: block; }
+.bottomnav button.active .ico { background: none; color: var(--blue); }
+.bottomnav button .bn-label { font-size: 10px; line-height: 1.3; white-space: nowrap; }
+
+/* ================= v2: markup sidebar desktop baru (mockup desktop) =================
+   renderShell v2 memakai .brand-logo (kotak gradien + SVG buku), .brand-name,
+   .brand-sub, .brand-badge "Data contoh", .nav-count, dan ikon SVG di dalam
+   .nav-item .ico (bukan monogram teks). Aturan ini hanya berlaku di desktop
+   (lebar >= 900px atau body.mode-desktop), jadi mobile tidak berubah.
+   Nilai dari mockup desktop: brand-logo 48px, nav-item 13.5px, svg 20px. */
+@media (min-width: 900px) {
+  .brand { padding: var(--sp-6) var(--sp-6) var(--sp-4); }
+  .brand-logo {
+    width: 48px; height: 48px; flex: 0 0 48px;
+    border-radius: var(--r-md);
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .35);
+  }
+  .brand-logo svg { width: 27px; height: 27px; }
+  /* N5: logo lembaga di sidebar tidak meluber dari kotak 48px. */
+  .brand-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: var(--r-md); }
+  .brand-name { font-size: 16.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; color: #fff; }
+  .brand-sub { font-size: var(--fs-micro); font-weight: 500; color: rgba(255, 255, 255, .64); margin-top: var(--sp-1); }
+  .brand-badge {
+    margin: 0 var(--sp-6) var(--sp-4);
+    background: rgba(255, 255, 255, .05); color: rgba(255, 255, 255, .85);
+    border: 1px solid rgba(255, 255, 255, .09);
+    font-size: 11.5px; font-weight: 700;
+    padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm);
+    display: flex; align-items: center; gap: var(--sp-2);
+  }
+  .brand-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 8px; }
+  .nav-item { font-size: 13.5px; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-field); }
+  .nav-item .ico { background: transparent; }
+  .nav-item .ico svg { width: 20px; height: 20px; flex: 0 0 20px; color: rgba(255, 255, 255, .85); }
+  .nav-item.active .ico svg { color: var(--accent); }
+  .nav-item .nav-count {
+    margin-left: auto; font-size: var(--fs-micro); font-weight: 700;
+    background: rgba(255, 255, 255, .14); color: #fff;
+    padding: var(--sp-1) var(--sp-2); border-radius: var(--r-tile);
+  }
+  .nav-item.active .nav-count { background: rgba(255, 255, 255, .22); color: #fff; }
+}
+body.mode-desktop .brand { padding: var(--sp-6) var(--sp-6) var(--sp-4); }
+body.mode-desktop .brand-logo {
+  width: 48px; height: 48px; flex: 0 0 48px;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .35);
+}
+body.mode-desktop .brand-logo svg { width: 27px; height: 27px; }
+body.mode-desktop .brand-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: var(--r-md); }
+body.mode-desktop .brand-name { font-size: 16.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; color: #fff; }
+body.mode-desktop .brand-sub { font-size: var(--fs-micro); font-weight: 500; color: rgba(255, 255, 255, .64); margin-top: var(--sp-1); }
+body.mode-desktop .brand-badge {
+  margin: 0 var(--sp-6) var(--sp-4);
+  background: rgba(255, 255, 255, .05); color: rgba(255, 255, 255, .85);
+  border: 1px solid rgba(255, 255, 255, .09);
+  font-size: 11.5px; font-weight: 700;
+  padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm);
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+body.mode-desktop .brand-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 8px; }
+body.mode-desktop .nav-item { font-size: 13.5px; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-field); }
+body.mode-desktop .nav-item .ico { background: transparent; }
+body.mode-desktop .nav-item .ico svg { width: 20px; height: 20px; flex: 0 0 20px; color: rgba(255, 255, 255, .85); }
+body.mode-desktop .nav-item.active .ico svg { color: var(--accent); }
+body.mode-desktop .nav-item .nav-count {
+  margin-left: auto; font-size: var(--fs-micro); font-weight: 700;
+  background: rgba(255, 255, 255, .14); color: #fff;
+  padding: var(--sp-1) var(--sp-2); border-radius: var(--r-tile);
+}
+body.mode-desktop .nav-item.active .nav-count { background: rgba(255, 255, 255, .22); color: #fff; }
+
+/* Ikon SVG di dalam kotak pastel tile menu desktop dan sheet Lainnya:
+   SVG harus terpusat dan berukuran tetap (monogram teks tidak lagi dipakai). */
+.menu-tile .ico { display: flex; align-items: center; justify-content: center; }
+.menu-tile .ico svg { width: 24px; height: 24px; }
+.sheet .panel button.item .ico { display: flex; align-items: center; justify-content: center; }
+.sheet .panel button.item .ico svg { width: 22px; height: 22px; }
+
+/* Banner install PWA: kartu putih di atas tab bar (mobile) / pojok kanan bawah (desktop).
+   Muncul saat browser menawarkan install; bisa dibuka manual dari Pengaturan. */
+.install-banner { position: fixed; left: var(--sp-4); right: var(--sp-4); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 60; max-width: 440px; margin: 0 auto; display: flex; align-items: center; gap: var(--sp-3); background: #fff; border: 1px solid var(--line); border-radius: var(--r-tile); padding: var(--sp-3); box-shadow: 0 12px 32px rgba(21, 34, 43, .18); }
+.install-banner[hidden] { display: none; }
+.ib-icon { width: 44px; height: 44px; border-radius: var(--r-sm); flex: none; }
+.ib-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.ib-text b { font-size: 14.5px; color: var(--ink); }
+.ib-text span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.ib-actions { display: flex; flex-direction: column; gap: var(--sp-2); flex: none; }
+.ib-install { border: 0; border-radius: var(--r-pill); padding: var(--sp-2) var(--sp-4); font-family: inherit; font-size: 13.5px; font-weight: 700; color: #fff; background: var(--blue); cursor: pointer; }
+.ib-later { border: 0; background: none; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; padding: var(--sp-1); }
+@media (min-width: 900px) { .install-banner { left: auto; right: var(--sp-6); bottom: var(--sp-6); width: 400px; } }
+
+/* ============ Perbaikan 15 Nov: dashboard mobile kosong di HP ============
+   Cacat: aturan dasar ".only-mobile { display: none !important; }" (di bagian
+   Ronde Kirana R3 di atas) posisinya LEBIH AKHIR di file daripada media query
+   <=520px yang menampilkannya, jadi di mode Otomatis seluruh bagian atas
+   dashboard mobile (sapaan, kartu profil, Menu Informasi, Notifikasi) TIDAK
+   PERNAH tampil di HP — yang terlihat hanya kartu Tunggakan + Status sinkron.
+   Selftest tidak menangkapnya karena ia memakai setMode('mobile'), yang
+   menaikkan spesifisitas lewat body.mode-mobile. Blok ini diletakkan di akhir
+   file supaya menang, dan ambangnya disamakan dengan isDesktopMode() (900px).
+   Aturan mode-desktop paksa di bawah menjaga tampilan desktop tetap tampil
+   walau layarnya sempit. */
+@media (max-width: 899px) {
+  .only-mobile { display: block !important; }
+  .only-mobile.dash-sec-row { display: flex !important; }
+  .only-desktop { display: none !important; }
+}
+@media (min-width: 900px) {
+  .only-mobile { display: none !important; }
+}
+body.mode-desktop .only-desktop { display: block !important; }
+body.mode-desktop .only-mobile { display: none !important; }
+
+/* ================= Ronde Kirana siap produksi: login, peran, kerapian =================
+   Skala tunggal (lihat :root): jarak 4/8/12/16/20/24/32/48, tipe
+   12/13/14/15/16/17/20/24, radius 12/14/16/20/24/pill, sentuh 44/48/52.
+   Gradien login memakai gradien onboarding mockup v3 (168deg), kartu putih
+   radius 24 seperti kartu aplikasi. Error form memakai pola ui-ux-pro-max
+   prioritas 8: ringkasan error di atas form (role=alert) + pesan di bawah
+   field, nilai isian dipertahankan saat gagal. */
+
+/* --- Keadaan belum masuk: tidak ada konten aplikasi yang tampil --- */
+body.logged-out .app,
+body.logged-out .bottomnav,
+body.logged-out .home-indicator,
+body.logged-out .install-banner { display: none !important; }
+body.logged-out { background: linear-gradient(168deg, #0e5e61 0%, #0d4245 42%, #0a2f32 78%, #0a2f32 100%); }
+
+/* --- Layar login + ganti sandi --- */
+.auth-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) var(--sp-4) calc(var(--sp-6) + env(safe-area-inset-bottom));
+  background: linear-gradient(168deg, #0e5e61 0%, #0d4245 42%, #0a2f32 78%, #0a2f32 100%);
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: var(--r-card);
+  box-shadow: 0 18px 34px rgba(21, 34, 43, .28);
+  padding: var(--sp-6) var(--sp-5);
+}
+.auth-logo { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+.auth-logo img { width: 64px; height: 64px; border-radius: var(--r-md); object-fit: contain; background: #fff; }
+.auth-card h1 { font-size: var(--fs-h2); margin: 0; text-align: center; }
+.auth-sub { color: var(--muted); font-size: var(--fs-small); text-align: center; margin: 0 0 var(--sp-4); }
+.auth-error {
+  background: #fbe5e2; border: 1px solid #e8a49d; color: #b1261d;
+  border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4); font-size: var(--fs-label); font-weight: 600;
+}
+.auth-error[hidden] { display: none; }
+.form-error[hidden] { display: none; }
+/* Pesan error di bawah field (S5): merah yang sama dengan .auth-error,
+   ukuran kecil, tampil di dalam form supaya tidak hilang seperti toast. */
+.field-error { color: #b1261d; font-size: 12px; font-weight: 600; margin: 4px 0 8px; }
+.auth-field { position: relative; margin-bottom: var(--sp-3); }
+.auth-field label { margin: 0 0 var(--sp-1); }
+.auth-field input { padding-right: var(--sp-8); }
+.auth-eye {
+  position: absolute; right: var(--sp-1); bottom: 0;
+  width: var(--touch); height: var(--touch); min-height: var(--touch);
+  border: 0; background: none; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--fs-small); font-weight: 700; padding: 0;
+}
+.auth-eye svg { width: 22px; height: 22px; }
+.auth-submit { margin-top: var(--sp-2); min-height: var(--touch-lg); }
+.auth-links { text-align: center; margin-top: var(--sp-4); }
+.auth-links button { border: 0; background: none; color: var(--blue); font-weight: 700; font-size: var(--fs-small); padding: var(--sp-2); min-height: var(--touch); }
+.auth-note {
+  background: #e2f0ef; border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-small); color: var(--ink); margin-top: var(--sp-3); line-height: 1.55;
+}
+.auth-note[hidden] { display: none; }
+.auth-foot { text-align: center; color: var(--muted); font-size: var(--fs-caption); margin-top: var(--sp-4); }
+
+/* --- Chip pengguna + tombol keluar (sidebar desktop) --- */
+.sidebar-user {
+  margin-top: auto;
+  padding: var(--sp-4) var(--sp-2) 0;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+.sidebar-user .su-chip {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2); min-width: 0;
+}
+.sidebar-user .su-chip .grow { flex: 1; min-width: 0; }
+.sidebar-user .su-chip .avatar { width: 40px; height: 40px; flex-basis: 40px; font-size: var(--fs-small); }
+.sidebar-user .su-name { font-weight: 700; font-size: var(--fs-small); color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-user .su-role { font-size: var(--fs-caption); color: rgba(255, 255, 255, .64); }
+.sidebar-user .btn { margin-top: var(--sp-2); }
+/* Sidebar desktop memakai flex kolom supaya blok pengguna menempel di bawah. */
+@media (min-width: 900px) {
+  .sidebar { display: flex; flex-direction: column; }
+  .sidebar-user { margin-top: auto; }
+}
+body.mode-desktop .sidebar { display: flex; flex-direction: column; }
+body.mode-desktop .sidebar-user { margin-top: auto; }
+
+/* --- Daftar pengguna (Pengaturan, hanya Pimpinan) --- */
+.user-row {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) 0; border-bottom: 1px solid var(--line);
+}
+.user-row:last-child { border-bottom: 0; }
+.user-row .grow { min-width: 0; }
+.user-row .u-meta { font-size: var(--fs-caption); color: var(--muted); overflow-wrap: anywhere; }
+.user-row .btn-row { margin: 0; flex: none; }
+
+/* --- Topbar mobile: logo + nama tidak berdesakan (ellipsis rapi) --- */
+.topbar .logo-m > div { min-width: 0; }
+.topbar .logo-m b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .logo-m .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge-contoh { flex: none; }
+.sync-status { flex: none; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- Anti-luber mobile 360px (audit ronde ini) --- */
+.menu-tile { min-width: 0; }
+.menu-tile b { overflow-wrap: anywhere; }
+.toolbar input, .toolbar select { min-width: 0; }
+.stat .num { overflow-wrap: anywhere; }
+.btn-row .btn { min-width: 0; overflow-wrap: anywhere; }
+td { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  /* Nilai grafik rupiah 11 karakter harus muat di kolom sempit 360px. */
+  .bar-col .val { font-size: var(--fs-micro); }
+  /* Angka statistik rupiah tidak boleh membungkus di tengah angka. */
+  .stat .num { white-space: nowrap; }
+  /* Topbar: badge contoh mengecil supaya logo + nama tetap muat. */
+  .badge-contoh { padding: var(--sp-1) var(--sp-2); }
+  .topbar .logo-m b { font-size: var(--fs-small); }
+}
+
+/* ---- Wizard setup, Panduan, Identitas, Profil aktif (Kirana) ----
+   Token Registrar saja, tanpa warna atau font baru. */
+.wizard-card { border-left: 6px solid var(--rg-primary); }
+.wizard-steps { list-style: none; margin: var(--sp-3) 0; padding: 0; }
+.wizard-step { display: flex; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--line); }
+.wizard-step:last-child { border-bottom: 0; }
+.wz-ico { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: var(--neutral-soft); color: var(--ink2); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.wizard-step.done .wz-ico { background: var(--good-fill); color: #fff; }
+.wz-aksi { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+.wizard-progress { margin: var(--sp-3) 0; }
+.wizard-done { background: var(--good-soft); border-color: var(--good-fill); }
+.empty-actions { justify-content: center; }
+.profil-switch { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-3) 0; }
+.profil-login { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin: var(--sp-4) 0; }
+.profil-card { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding: var(--sp-4) var(--sp-3); background: #fff; border: 2px solid var(--line); border-radius: var(--r-card); cursor: pointer; min-height: 44px; font-family: inherit; }
+.profil-card.active { border-color: var(--rg-primary); background: var(--rg-primary-soft); }
+.profil-logo { width: 64px; height: 64px; object-fit: contain; border-radius: var(--r-md); background: var(--neutral-soft); }
+.profil-logo.idn-logo-fallback { display: flex; align-items: center; justify-content: center; background: var(--rg-primary); color: #fff; font-weight: 800; font-size: 20px; }
+.profil-nama { font-weight: 800; text-align: center; line-height: 1.3; }
+.profil-motto { font-size: 13px; color: var(--muted); text-align: center; }
+.hero-identitas .hero-logo { width: 64px; height: 64px; object-fit: contain; border-radius: var(--r-md); background: #fff; margin-bottom: var(--sp-2); }
+.hero-identitas .hero-logo.idn-logo-fallback { display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.2); color: #fff; font-weight: 800; font-size: 22px; }
+.hero-identitas .profil-switch { margin-bottom: 0; }
+.hero-identitas .profil-switch .chip-filter { border-color: rgba(255,255,255,.5); color: #fff; background: transparent; }
+.hero-identitas .profil-switch .chip-filter.active { background: #fff; color: var(--blue); border-color: #fff; }
+.hero-motto { font-style: italic; }
+.panduan { max-width: 760px; }
+.panduan h2 { margin-top: var(--sp-2); }
+.panduan ol li, .panduan ul li { margin-bottom: var(--sp-2); }
+.pd-toc button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: var(--sp-3) var(--sp-2); font-weight: 600; color: var(--blue); min-height: 44px; cursor: pointer; font-family: inherit; font-size: var(--fs-small); }
+.pd-toc button:last-child { border-bottom: 0; }
+.pd-callout { background: var(--rg-primary-soft); border-color: var(--rg-primary); }
+
+/* ---- v22 (Kirana, ronde perbaikan audit v20): wizard 6 langkah, identitas,
+   kredensial, badge non-warna. Token Registrar saja, tanpa warna/font baru. */
+/* N2: kotak kredensial di layar login. Teks teal di atas soft teal 6,43:1. */
+.auth-kredensial { background: var(--rg-primary-soft); border: 1px solid var(--rg-primary); color: var(--rg-primary); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4); font-size: var(--fs-label); font-weight: 600; line-height: 1.5; }
+/* N6: badge teks penanda terpilih/aktif (bukan hanya warna). */
+.badge-dipilih, .badge-aktif { display: inline-flex; align-items: center; gap: 4px; background: var(--good-soft); color: var(--green); border-radius: var(--r-tile); padding: var(--sp-1) var(--sp-2); font-size: var(--fs-micro); font-weight: 800; white-space: nowrap; }
+/* N7: dua kartu identitas berdampingan di desktop, satu kolom di HP. */
+.identitas-grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-4); }
+@media (min-width: 900px) { .identitas-grid { grid-template-columns: 1fr 1fr; } }
+body.mode-desktop .identitas-grid { grid-template-columns: 1fr 1fr; }
+body.mode-mobile .identitas-grid { grid-template-columns: 1fr; }
+/* N4: hero identitas juga di mobile; nama/motto panjang membungkus, tidak meluber. */
+.hero-identitas h1, .hero-identitas .hero-motto { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  .hero-identitas { padding: var(--sp-4); }
+  .hero-identitas h1 { font-size: 20px; }
+  .hero-identitas .hero-logo { width: 48px; height: 48px; }
+}
+/* N11/N12: pratinjau logo 64x64 sama seperti hero; monogram bila belum ada logo. */
+.logo-preview-img { width: 64px; height: 64px; object-fit: contain; background: #fff; border-radius: var(--r-md); border: 1px solid var(--line); }
+.logo-preview-img.idn-logo-fallback { display: inline-flex; align-items: center; justify-content: center; background: var(--rg-primary); color: #fff; font-weight: 800; font-size: 20px; border: 0; }
+#logo-preview-id-tpq img, #logo-preview-id-mi img { width: 64px; height: 64px; object-fit: contain; background: #fff; border-radius: var(--r-md); border: 1px solid var(--line); }
+/* Wizard 6 langkah: indikator langkah, pesan selesai, daftar ringkas. */
+.wz-indikator { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-3) 0; padding: 0; }
+.wz-ind { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-md); font-size: var(--fs-micro); font-weight: 700; }
+.wz-ind.aktif { border-color: var(--rg-primary); background: var(--rg-primary-soft); }
+.wz-ind.done { border-color: var(--good-fill); }
+.wz-ind-ico { flex: 0 0 22px; width: 22px; height: 22px; border-radius: 50%; background: var(--neutral-soft); color: var(--ink2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+.wz-ind.done .wz-ind-ico { background: var(--good-fill); color: #fff; }
+.wz-ind.aktif .wz-ind-ico { background: var(--rg-primary); color: #fff; }
+.wz-ind-teks { line-height: 1.3; }
+.wz-ok { background: var(--good-soft); color: var(--green); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); font-weight: 700; }
+.wz-nav { margin-top: var(--sp-4); }
+.wz-daftar { padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.wz-ringkasan { padding: var(--sp-3) 0; border-bottom: 1px solid var(--line); }
+/* N-K4: jarak 8px antar opsi dropdown semester (mode desktop, di luar .mk;
+   tinggi opsi tidak diubah). */
+.sem-list button + button { margin-top: 8px; }

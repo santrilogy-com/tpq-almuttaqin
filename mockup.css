@@ -1,0 +1,400 @@
+/* R4 — gaya layar mobile diambil VERBATIM dari mockup v3 (mockup-aplikasi-tpq-madin).
+   Hanya showcase (.topbar/.stage/.phone) dan .screen yang dibuang; selektor
+   dilingkupi .mk supaya desktop tidak berubah. Jangan edit manual —
+   regenerasi dari mockup-style.css bila mockup berubah. */
+.mk {
+        --lav:#f2f5f6;
+        --ink:#15222b;
+        --ink2:#3a4853;
+        --muted:#5c6a75;
+        --faint:#a3adb5;
+        --blue:#0e5e61;
+        --blue-dark:#0a4b4e;
+        --purple:#0d4245;
+        --grad:linear-gradient(135deg, #0e5e61 0%, #0a4b4e 55%, #0d4245 100%);
+        --card-shadow:0 16px 34px rgba(21, 34, 43, .14), 0 3px 8px rgba(21, 34, 43, .06);
+        --card-shadow-sm:0 10px 22px rgba(21, 34, 43, .12), 0 2px 6px rgba(21, 34, 43, .05);
+        --red:#b1261d;
+        --red-tint:#fbe5e2;
+        --green:#17703f;
+      }
+.mk * { box-sizing:border-box; }
+.mk h1, .mk h2, .mk h3, .mk h4, .mk p { margin:0; }
+.mk button { font-family:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.mk svg { display:block; }
+.mk .num { font-variant-numeric:tabular-nums; }
+.mk .topbar h1 { font-size:21px; font-weight:700; letter-spacing:-.2px; }
+.mk .topbar h1 span { color:var(--blue); }
+.mk .topbar p { font-size:13px; color:var(--muted); font-weight:500; max-width:520px; line-height:1.55; }
+.mk.p-onboard { background:linear-gradient(168deg, #0e5e61 0%, #0d4245 42%, #0a2f32 78%, #0a2f32 100%); color:#fff; }
+.mk.p-onboard .waves { position:absolute; top:0; left:0; right:0; opacity:.16; pointer-events:none; }
+.mk .ob-illus { margin-top:56px; position:relative; z-index:1; padding:0 6px; }
+.mk .ob-illus img {
+        width:100%; height:auto; display:block;
+        -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 9%, #000 88%, transparent 100%);
+        mask-image:linear-gradient(180deg, transparent 0, #000 9%, #000 88%, transparent 100%);
+      }
+.mk .ob-dots { display:flex; justify-content:center; gap:7px; margin-top:2px; position:relative; z-index:2; }
+/* S14: titik tetap 8px, tapi area ketuk 44x44px (titik digambar ::after di
+   tengah tombol transparan) — tampilannya tetap sama. */
+.mk .ob-dots button {
+        width:44px; height:44px; min-height:44px; border-radius:50%;
+        border:none; background:transparent; padding:0;
+        transition:all .25s ease;
+        display:flex; align-items:center; justify-content:center;
+      }
+.mk .ob-dots button::after {
+        content:""; width:8px; height:8px; border-radius:50%;
+        background:rgba(255,255,255,.35); transition:all .25s ease;
+      }
+.mk .ob-dots button.active::after { width:22px; border-radius:5px; background:#fff; }
+.mk .ob-panel {
+        margin:auto 16px 16px;
+        background:rgba(255,255,255,.15);
+        -webkit-backdrop-filter:blur(16px) saturate(150%);
+        backdrop-filter:blur(16px) saturate(150%);
+        border-radius:28px;
+        padding:24px 22px 20px;
+        text-align:center;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 18px 34px rgba(10, 47, 50, .28);
+        position:relative; z-index:2;
+      }
+.mk .ob-panel h2 { font-size:19.5px; font-weight:700; line-height:1.42; letter-spacing:-.1px; }
+.mk .ob-panel .ob-sub { font-size:12px; line-height:1.6; color:rgba(226,228,255,.85); margin-top:9px; font-weight:400; }
+.mk .ob-btn {
+        margin-top:18px; width:100%;
+        background:#fff; color:var(--blue-dark);
+        border:none; border-radius:999px;
+        font-size:15px; font-weight:700;
+        padding:14px 20px; min-height:52px;
+        box-shadow:0 12px 24px rgba(10, 47, 50, .30);
+      }
+.mk .ob-btn:active { transform:scale(.985); }
+.mk .ob-btn.done { background:#e3edf9; color:var(--blue-dark); }
+.mk .ob-note { font-size:10.5px; color:rgba(226,228,255,.85); margin-top:11px; font-weight:500; letter-spacing:.3px; }
+.mk .screens { flex:1; position:relative; overflow:hidden; }
+.mk .screen::-webkit-scrollbar { display:none; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fadeIn { from{ opacity:0; } to{ opacity:1; } }
+}
+.mk .greet { font-size:12px; color:var(--muted); font-weight:500; }
+.mk .inst-name { font-size:22px; font-weight:800; letter-spacing:-.3px; line-height:1.2; margin-top:2px; }
+.mk .head-row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.mk .widget-btn {
+        width:38px; height:38px; flex:none; border:none; border-radius:12px;
+        background:#e2f0ef; color:var(--blue);
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:var(--card-shadow-sm);
+      }
+.mk .widget-btn:active { transform:scale(.94); }
+/* K2: tombol grid Beranda kini berlabel "Rapor" yang terlihat. */
+.mk .widget-btn.has-label { width:auto; padding:0 12px; gap:6px; font-size:12px; font-weight:700; }
+.mk .pg-title { font-size:21px; font-weight:800; letter-spacing:-.3px; line-height:1.2; }
+.mk .pg-sub { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.55; font-weight:400; }
+.mk .sec-title { font-size:15.5px; font-weight:700; letter-spacing:-.1px; }
+.mk .sec-row { display:flex; align-items:center; justify-content:space-between; margin:22px 0 12px; }
+.mk .sec-row .sec-title { margin:0; }
+.mk .link-btn { border:none; background:none; color:var(--blue); font-size:12px; font-weight:600; padding:4px 0; min-height:44px; }
+.mk .contoh-chip {
+        display:inline-flex; align-items:center; gap:5px;
+        font-size:10px; font-weight:600; letter-spacing:.4px;
+        padding:4px 9px; border-radius:999px; white-space:nowrap;
+      }
+.mk .contoh-chip.on-dark { background:rgba(255,255,255,.22); color:#fff; }
+.mk .contoh-chip.on-light { background:#e2f0ef; color:var(--blue-dark); }
+.mk .contoh-chip i { width:6px; height:6px; border-radius:50%; background:#FFC531; flex:none; }
+.mk .profile-card {
+        margin-top:16px; border-radius:24px; padding:18px;
+        background:var(--grad); color:#fff; position:relative; overflow:hidden;
+        box-shadow:0 18px 34px rgba(10, 47, 50, .38);
+        border:none; text-align:left; width:100%; font-family:inherit;
+      }
+.mk .profile-card .pc-nis { font-size:11px; font-weight:500; color:rgba(255,255,255,.75); letter-spacing:.6px; }
+.mk .profile-card .pc-name { font-size:18.5px; font-weight:700; margin-top:3px; letter-spacing:-.1px; }
+.mk .profile-card .pc-meta { font-size:12px; font-weight:500; color:rgba(255,255,255,.92); margin-top:9px; line-height:1.65; }
+.mk .pc-badge {
+        position:absolute; top:16px; right:16px;
+        background:#fff; color:var(--blue-dark);
+        font-size:11px; font-weight:700;
+        padding:6px 12px; border-radius:999px;
+        box-shadow:0 6px 14px rgba(10, 47, 50, .25);
+      }
+.mk .pc-art { position:absolute; right:12px; bottom:10px; opacity:.95; pointer-events:none; }
+.mk .profile-card .contoh-chip { margin-top:12px; }
+.mk .menu-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:11px; }
+.mk .menu-item {
+        border:none; background:#fff; border-radius:20px;
+        box-shadow:var(--card-shadow-sm);
+        padding:12px 2px 10px;
+        display:flex; flex-direction:column; align-items:center; gap:7px;
+        min-height:82px;
+      }
+.mk .menu-item:active { transform:scale(.95); }
+.mk .menu-item .mi-box {
+        width:40px; height:40px; border-radius:13px;
+        display:flex; align-items:center; justify-content:center;
+      }
+.mk .menu-item span { font-size:10.5px; font-weight:600; color:var(--ink2); }
+/* A9: sub-teks tile "Lainnya" (nama modul tersembunyi). */
+.mk .menu-item .mi-sub { font-size:9px; font-weight:500; color:var(--muted); line-height:1.3; }
+.mk .extra-panel {
+        display:none; margin-top:12px; background:#f6f8f9; border-radius:20px; padding:13px 14px;
+      }
+.mk .extra-panel.show { display:block; }
+.mk .extra-panel p { font-size:11.5px; color:var(--muted); line-height:1.55; }
+.mk .extra-actions { display:flex; gap:8px; margin-top:10px; }
+.mk .chip-btn {
+        flex:1; border:none; border-radius:999px; min-height:44px;
+        font-size:12px; font-weight:600; padding:8px 10px;
+        background:#fff; color:var(--blue-dark); box-shadow:var(--card-shadow-sm);
+      }
+.mk .chip-btn.solid { background:var(--blue); color:#fff; }
+.mk .notif-card {
+        background:#fff; border-radius:24px; box-shadow:var(--card-shadow);
+        padding:15px 16px; display:flex; gap:12px; position:relative; overflow:hidden;
+      }
+.mk .notif-card::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:4px; border-radius:3px; background:#22804b; }
+.mk .notif-card .n-body { flex:1; min-width:0; padding-left:4px; }
+.mk .notif-card .n-title { font-size:13px; font-weight:700; line-height:1.4; }
+.mk .notif-card .n-text { font-size:11px; color:var(--muted); line-height:1.55; margin-top:3px; }
+.mk .notif-x {
+        width:32px; height:32px; min-height:32px; flex:none; border:none; border-radius:50%;
+        background:#f6f8f9; color:var(--muted);
+        display:flex; align-items:center; justify-content:center; padding:0;
+      }
+.mk .notif-more { display:none; }
+.mk .notif-list.show-all .notif-more { display:flex; }
+.mk .notif-list { display:flex; flex-direction:column; gap:11px; }
+.mk .empty-note {
+        display:none; text-align:center; background:#f6f8f9; border-radius:20px;
+        padding:16px 14px; font-size:12px; color:var(--muted); line-height:1.6;
+      }
+.mk .empty-note.show { display:block; }
+.mk .empty-note button { margin-top:9px; }
+.bottomnav.mk {
+        /* iOS mengambang (arahan Mas 15 Nov 15:03 WIB — syarat mutlak):
+           pil terlepas 12px dari tepi + safe-area, radius 26px, kaca buram
+           0.85 + blur 20px + saturate 180% (K2: 0,60 -> 0,85 supaya label
+           terbaca di atas konten berwarna; 0.70 tampak putih solid di
+           screenshot live — konten di bawahnya tidak terlihat samar).
+           Sama dengan .bottomnav dasar di styles.css supaya kedua varian
+           tampil identik di mode Auto maupun mode-mobile paksa.
+           Catatan 15 Nov: display:block (bukan flex warisan .bottomnav)
+           supaya .tab-row dan .home-ind bertumpuk seperti mockup, dan
+           position:fixed supaya tab bar menempel di bawah layar, bukan
+           di ujung dokumen. */
+        display:block; flex:none; position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:90;
+        background:rgba(255,255,255,.85);
+        -webkit-backdrop-filter:blur(20px) saturate(180%);
+        backdrop-filter:blur(20px) saturate(180%);
+        border:1px solid rgba(21,34,43,.08);
+        border-radius:26px;
+        box-shadow:0 8px 24px rgba(21,34,43,.12), 0 2px 6px rgba(21,34,43,.06);
+        padding:8px 6px;
+      }
+body.mode-mobile .bottomnav.mk { display:block; }
+.bottomnav.mk .tab-row { display:grid; grid-template-columns:repeat(5,1fr); }
+.bottomnav.mk .tab-btn {
+        border:none; background:none; min-height:50px; min-width:0; border-radius:14px; padding:5px 0 3px;
+        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+        font-size:9.5px; font-weight:600; color:var(--ink2);
+        position:relative;
+      }
+.bottomnav.mk .tab-btn.active { color:var(--blue); }
+.bottomnav.mk .tab-btn.active::after {
+        content:""; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+        width:18px; height:3px; border-radius:2px; background:var(--blue);
+      }
+/* Home indicator di DALAM pil disembunyikan (tetap ada di DOM — selftest
+   memeriksa #bottomnav .home-ind): dengan nav mengambang, indikatornya
+   adalah .home-indicator terpisah di bawah pil (styles.css), seperti iOS. */
+.bottomnav.mk .home-ind { display:none; }
+.mk .card { background:#fff; border-radius:26px; box-shadow:var(--card-shadow); padding:17px; }
+.mk .card + .card { margin-top:13px; }
+.mk .btn-blue {
+        border:none; border-radius:16px; width:100%;
+        background:var(--blue); color:#fff;
+        font-size:14.5px; font-weight:700;
+        padding:14px 18px; min-height:52px;
+        box-shadow:0 14px 26px rgba(14, 94, 97, .35);
+      }
+.mk .btn-blue:active { transform:scale(.985); }
+.mk .btn-blue.done { background:#22804b; box-shadow:0 14px 26px rgba(34, 128, 75, .30); }
+.mk .btn-soft {
+        border:none; border-radius:16px;
+        background:#e2f0ef; color:var(--blue-dark);
+        font-size:13.5px; font-weight:700;
+        padding:12px 16px; min-height:48px;
+      }
+.mk .search-field {
+        display:flex; align-items:center; gap:8px;
+        background:#fff; border-radius:16px; padding:0 14px;
+        box-shadow:var(--card-shadow-sm);
+      }
+.mk .search-field svg { color:var(--faint); flex:none; }
+.mk .search-field input {
+        border:none; outline:none; flex:1; font-family:inherit; font-size:13.5px; font-weight:500;
+        padding:11px 0; background:transparent; color:var(--ink); min-height:44px; min-width:0;
+      }
+.mk .search-field input::placeholder { color:var(--faint); }
+.mk .seg { display:flex; gap:7px; flex-wrap:wrap; }
+.mk .seg button {
+        border:none; border-radius:999px; min-height:36px;
+        font-size:11.5px; font-weight:600; padding:8px 13px;
+        background:#fff; color:var(--ink2); box-shadow:var(--card-shadow-sm);
+      }
+.mk .seg button.active { background:var(--blue); color:#fff; box-shadow:0 10px 20px rgba(14, 94, 97, .32); }
+.mk .avatar {
+        width:44px; height:44px; flex:none; border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:13.5px;
+      }
+.mk .tag {
+        display:inline-flex; align-items:center; flex:none;
+        font-size:10px; font-weight:700; padding:4px 9px; border-radius:999px; white-space:nowrap;
+      }
+.mk .tag-blue { background:#e2f0ef; color:var(--blue-dark); }
+.mk .tag-red { background:var(--red-tint); color:var(--red); }
+.mk .tag-gray { background:#edf0f2; color:var(--ink2); }
+.mk .progress { height:7px; border-radius:4px; background:#e2f0ef; overflow:hidden; }
+.mk .progress > i { display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, #0e5e61, #0d4245); }
+.mk .saved-note { font-size:12px; color:#17703f; font-weight:600; text-align:center; margin-top:10px; display:none; }
+.mk .saved-note.show { display:block; }
+.mk .s-card {
+        background:#fff; border-radius:24px; box-shadow:var(--card-shadow-sm);
+        padding:13px 15px; display:flex; align-items:center; gap:12px;
+      }
+.mk .s-card + .s-card { margin-top:10px; }
+.mk .s-card .grow { flex:1; min-width:0; }
+.mk .s-name { font-size:13.5px; font-weight:700; line-height:1.3; }
+.mk .s-meta { font-size:11px; color:var(--muted); margin-top:2px; line-height:1.5; }
+.mk .s-meta .warn { color:var(--red); font-weight:600; }
+.mk .wallet {
+        border-radius:26px; padding:19px; color:#fff;
+        background:var(--grad);
+        box-shadow:0 18px 34px rgba(10, 47, 50, .38);
+      }
+.mk .wallet .w-label { font-size:11.5px; font-weight:500; color:rgba(255,255,255,.78); }
+.mk .wallet .w-total { font-size:27px; font-weight:800; letter-spacing:-.4px; margin-top:4px; }
+.mk .wallet .w-sub { font-size:11px; color:rgba(255,255,255,.75); margin-top:4px; }
+.mk .w-toggle {
+        display:flex; background:rgba(255,255,255,.18); border-radius:999px; padding:4px; gap:4px; margin-top:16px;
+        -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+      }
+.mk .w-toggle button {
+        flex:1; border:none; background:transparent; border-radius:999px;
+        font-size:13px; font-weight:700; color:#fff; padding:9px 4px; min-height:40px;
+      }
+.mk .w-toggle button.active { background:#fff; color:var(--blue-dark); box-shadow:0 6px 14px rgba(10, 47, 50, .22); }
+.mk .amt-chips { display:flex; gap:8px; margin-top:11px; }
+.mk .amt-chips button {
+        flex:1; border:none; background:#f6f8f9; color:var(--ink2);
+        border-radius:12px; font-size:12.5px; font-weight:700; min-height:42px; padding:9px 2px;
+      }
+.mk .amt-chips button.active { background:var(--blue); color:#fff; }
+.mk .row-line { display:flex; align-items:center; gap:12px; padding:11px 0; }
+.mk .row-line + .row-line { border-top:1px solid #edf0f2; }
+.mk .row-line .grow { flex:1; min-width:0; }
+.mk .amt { font-size:13px; font-weight:700; white-space:nowrap; }
+.mk .amt-in { color:#17703f; }
+.mk .kas-total { font-size:26px; font-weight:800; letter-spacing:-.4px; margin-top:3px; }
+.mk .kas-io { display:flex; gap:22px; margin-top:13px; border-top:1px solid #edf0f2; padding-top:12px; }
+.mk .kas-io p { font-size:10.5px; color:var(--muted); font-weight:500; }
+.mk .kas-io b { font-size:14.5px; font-weight:700; display:block; margin-top:2px; }
+.mk .kas-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:13px; }
+.mk .ledger-row { display:grid; grid-template-columns:40px 1fr auto; gap:9px; align-items:baseline; padding:10px 0; border-bottom:1px solid #edf0f2; }
+.mk .ledger-row:last-child { border-bottom:none; }
+.mk .ledger-row .l-date { font-size:10.5px; color:var(--faint); font-weight:600; }
+.mk .ledger-row .l-desc { font-size:12.5px; font-weight:600; line-height:1.4; }
+.mk .ledger-row .l-desc small { display:block; font-size:10.5px; color:var(--muted); font-weight:400; margin-top:1px; }
+.mk .ledger-row .l-amt { font-size:12.5px; font-weight:700; white-space:nowrap; }
+.mk .btn-ingat {
+        border:none; border-radius:999px; min-height:34px; flex:none;
+        font-size:11px; font-weight:700; padding:7px 13px;
+        background:var(--red-tint); color:var(--red);
+      }
+.mk .btn-ingat.done { background:#edf0f2; color:var(--muted); }
+.mk .kelas-pick {
+        width:100%; text-align:left; border:none; background:#fff; border-radius:24px;
+        box-shadow:var(--card-shadow-sm); padding:14px 16px;
+        display:flex; align-items:center; gap:10px;
+      }
+.mk .kelas-pick + .kelas-pick { margin-top:10px; }
+.mk .kelas-pick.active { box-shadow:0 0 0 2.5px var(--blue), var(--card-shadow-sm); }
+.mk .kelas-pick .grow { flex:1; min-width:0; }
+.mk .rekap-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.mk .rekap-cell { background:#fff; border-radius:20px; box-shadow:var(--card-shadow-sm); text-align:center; padding:12px 2px 10px; }
+.mk .rekap-cell b { display:block; font-size:19px; font-weight:800; }
+.mk .rekap-cell span { font-size:10px; color:var(--muted); font-weight:600; }
+.mk .rekap-cell.red b { color:var(--red); }
+.mk .materi-note { background:#e2f0ef; border-radius:18px; padding:12px 14px; font-size:12px; line-height:1.6; color:var(--ink2); }
+.mk .materi-note b { display:block; font-size:10px; letter-spacing:.5px; color:var(--blue-dark); margin-bottom:3px; }
+.mk .absen-item { background:#fff; border-radius:24px; box-shadow:var(--card-shadow-sm); padding:14px 15px; }
+.mk .absen-item + .absen-item { margin-top:11px; }
+.mk .absen-btns { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:11px; }
+.mk .absen-btn {
+        border:none; background:#f6f8f9; border-radius:12px;
+        font-size:12px; font-weight:700; color:var(--ink2);
+        min-height:50px; padding:10px 2px;
+      }
+.mk .absen-btn.sel-hadir { background:var(--blue); color:#fff; box-shadow:0 8px 16px rgba(14, 94, 97, .3); }
+.mk .absen-btn.sel-izin { background:#e3a52b; color:#fff; }
+.mk .absen-btn.sel-sakit { background:#8aa2c0; color:#fff; }
+.mk .absen-btn.sel-alpa { background:var(--red); color:#fff; }
+.mk .p-hasil .screen { display:block; position:relative; }
+.mk .sem-wrap { position:relative; margin-top:16px; }
+.mk .sem-btn {
+        width:100%; border:none; background:#fff; border-radius:16px;
+        box-shadow:var(--card-shadow-sm);
+        display:flex; align-items:center; justify-content:space-between; gap:10px;
+        padding:13px 16px; min-height:50px;
+        font-size:12.5px; font-weight:600; color:var(--ink2); text-align:left;
+      }
+.mk .sem-btn svg { color:var(--faint); flex:none; transition:transform .2s ease; }
+.mk .sem-wrap.open .sem-btn svg { transform:rotate(180deg); }
+.mk .sem-list {
+        display:none; position:absolute; top:calc(100% + 8px); left:0; right:0; z-index:20;
+        background:#fff; border-radius:18px; box-shadow:0 22px 44px rgba(21, 34, 43, .28);
+        padding:6px; overflow:hidden;
+      }
+.mk .sem-wrap.open .sem-list { display:block; }
+.mk .sem-list button {
+        width:100%; border:none; background:none; border-radius:12px; text-align:left;
+        font-size:12.5px; font-weight:600; color:var(--ink2);
+        padding:11px 12px; min-height:44px;
+        display:flex; align-items:center; justify-content:space-between; gap:8px;
+      }
+.mk .sem-list button.active { background:#e2f0ef; color:var(--blue-dark); }
+/* N-K4: jarak 8px antar opsi dropdown semester (tinggi opsi tidak diubah). */
+.mk .sem-list button + button { margin-top:8px; }
+.mk .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+.mk .stat-card { background:#fff; border-radius:24px; box-shadow:var(--card-shadow); padding:15px 16px 14px; position:relative; }
+.mk .stat-card .st-top { display:flex; align-items:flex-start; justify-content:space-between; }
+.mk .stat-card .st-ic { color:var(--blue); }
+.mk .stat-dots {
+        width:32px; height:32px; min-height:32px; border:none; border-radius:50%; padding:0;
+        background:none; color:var(--muted); font-size:18px;
+        display:flex; align-items:center; justify-content:center;
+      }
+.mk .stat-num { font-size:27px; font-weight:800; letter-spacing:-.4px; margin-top:9px; line-height:1.1; }
+.mk .stat-label { font-size:11px; color:var(--muted); font-weight:500; margin-top:3px; }
+.mk .stat-detail { display:none; font-size:10.5px; color:var(--blue-dark); font-weight:600; margin-top:8px; background:#e2f0ef; border-radius:10px; padding:7px 9px; line-height:1.5; }
+.mk .stat-card.open .stat-detail { display:block; }
+.mk .report-sec { margin-top:24px; }
+.mk .report-sec p { font-size:12px; color:var(--muted); line-height:1.65; margin-top:7px; }
+.mk .report-sec .btn-blue { margin-top:15px; }
+
+/* R4 — adaptasi ke shell PWA (bukan dari mockup) */
+#view.mk{margin-left:-22px; margin-right:-22px; margin-bottom:-120px; padding:22px 20px 120px; background:#fff; min-height:60vh;}
+body.mode-mobile #view.mk{margin-left:-14px; margin-right:-14px;}
+#view.mk .screen{display:block; position:relative;}
+/* .home-indicator terpisah (styles.css) TAMPIL di bawah pil mengambang —
+   dulu disembunyikan karena tab bar masih full-width menempel bawah. */
+.mk .ob-illus img{width:100%; height:auto; display:block;}
+body.mode-mobile #sync-status{display:none;}
+@media (max-width:899px){ body:not(.mode-desktop) #sync-status{display:none;} }
+/* Baris chip jenjang ringkas di atas dashboard mobile (satu-satunya tambahan
+   di luar mockup — syarat fungsi dari klien; tanpa kartu hero besar). */
+.mk .jenjang-slim{display:flex; gap:8px; margin:0 0 18px;}
+.mk .jenjang-slim button{flex:1; border:1.5px solid #e2e7eb; background:#fff; color:var(--ink2); border-radius:999px; min-height:44px; font-size:13px; font-weight:700;}
+.mk .jenjang-slim button.active{background:var(--blue); border-color:var(--blue); color:#fff;}
