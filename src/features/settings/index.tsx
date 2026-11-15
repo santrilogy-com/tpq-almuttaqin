@@ -1,5 +1,5 @@
-import { Outlet } from '@tanstack/react-router'
-import { Monitor, Bell, Palette, Wrench, UserCog } from 'lucide-react'
+﻿import { Outlet } from '@tanstack/react-router'
+import { Monitor, Palette } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -11,27 +11,12 @@ import { SidebarNav } from './components/sidebar-nav'
 
 const sidebarNavItems = [
   {
-    title: 'Profile',
-    href: '/settings',
-    icon: <UserCog size={18} />,
-  },
-  {
-    title: 'Account',
-    href: '/settings/account',
-    icon: <Wrench size={18} />,
-  },
-  {
-    title: 'Appearance',
+    title: 'Tampilan',
     href: '/settings/appearance',
     icon: <Palette size={18} />,
   },
   {
-    title: 'Notifications',
-    href: '/settings/notifications',
-    icon: <Bell size={18} />,
-  },
-  {
-    title: 'Display',
+    title: 'Preferensi layar',
     href: '/settings/display',
     icon: <Monitor size={18} />,
   },
@@ -40,7 +25,6 @@ const sidebarNavItems = [
 export function Settings() {
   return (
     <>
-      {/* ===== Top Heading ===== */}
       <Header>
         <Search className='me-auto' />
         <ThemeSwitch />
@@ -51,10 +35,10 @@ export function Settings() {
       <Main fixed>
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-            Settings
+            Pengaturan
           </h1>
           <p className='text-muted-foreground'>
-            Manage your account settings and set e-mail preferences.
+            Atur tampilan aplikasi di perangkat ini.
           </p>
         </div>
         <Separator className='my-4 lg:my-6' />

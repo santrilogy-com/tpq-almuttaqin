@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+﻿import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { AxiosError } from 'axios'
 import {
@@ -42,7 +42,7 @@ const queryClient = new QueryClient({
 
         if (error instanceof AxiosError) {
           if (error.response?.status === 304) {
-            toast.error('Content not modified!')
+            toast.error('Konten tidak berubah')
           }
         }
       },
@@ -52,13 +52,13 @@ const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
-          toast.error('Session expired!')
+          toast.error('Sesi berakhir, silakan masuk lagi')
           useAuthStore.getState().auth.reset()
           const redirect = `${router.history.location.href}`
           router.navigate({ to: '/sign-in', search: { redirect } })
         }
         if (error.response?.status === 500) {
-          toast.error('Internal Server Error!')
+          toast.error('Terjadi kesalahan di server')
           // Only navigate to error page in production to avoid disrupting HMR in development
           if (import.meta.env.PROD) {
             router.navigate({ to: '/500' })
@@ -105,3 +105,4 @@ if (!rootElement.innerHTML) {
     </StrictMode>
   )
 }
+

@@ -1,5 +1,5 @@
 {
-  "name": "shadcn-admin",
+  "name": "tpq-al-muttaqin",
   "private": false,
   "version": "2.2.1",
   "type": "module",
@@ -16,10 +16,14 @@
     "test:ui": "vitest --ui --browser.headless",
     "test:browser": "vitest",
     "test:coverage": "vitest run --coverage --browser.headless",
-    "test:browser:install": "playwright install chromium --with-deps"
+    "test:browser:install": "playwright install chromium --with-deps",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "pnpm build && wrangler deploy",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@clerk/react": "^6.4.3",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -48,6 +52,8 @@
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
     "date-fns": "^4.1.0",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.18",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
@@ -64,6 +70,8 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.69.1",
+    "@cloudflare/workers-types": "^5.20261114.1",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.4.0",
     "@tanstack/eslint-plugin-query": "^5.99.0",
@@ -78,6 +86,7 @@
     "@vitest/browser-playwright": "^4.1.4",
     "@vitest/coverage-v8": "^4.1.4",
     "@vitest/ui": "^4.1.4",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -90,6 +99,7 @@
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.8",
     "vitest": "^4.1.4",
-    "vitest-browser-react": "^2.2.0"
+    "vitest-browser-react": "^2.2.0",
+    "wrangler": "^4.162.0"
   }
 }

@@ -1,5 +1,7 @@
-import { useNavigate, useLocation } from '@tanstack/react-router'
+﻿import { useNavigate, useLocation } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { api, pesanGalat } from '@/lib/api'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface SignOutDialogProps {
@@ -12,13 +14,17 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
   const location = useLocation()
   const { auth } = useAuthStore()
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch (err) {
+      toast.error(pesanGalat(err, 'Gagal keluar'))
+      return
+    }
     auth.reset()
-    // Preserve current location for redirect after sign-in
-    const currentPath = location.href
     navigate({
       to: '/sign-in',
-      search: { redirect: currentPath },
+      search: { redirect: location.href },
       replace: true,
     })
   }
@@ -27,9 +33,9 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
     <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
-      title='Sign out'
-      desc='Are you sure you want to sign out? You will need to sign in again to access your account.'
-      confirmText='Sign out'
+      title='Keluar'
+      desc='Yakin ingin keluar? Anda perlu masuk lagi untuk memakai aplikasi.'
+      confirmText='Keluar'
       destructive
       handleConfirm={handleSignOut}
       className='sm:max-w-sm'

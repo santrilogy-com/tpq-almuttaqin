@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios'
+﻿import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 export function handleServerError(error: unknown) {
@@ -7,7 +7,7 @@ export function handleServerError(error: unknown) {
     console.log(error)
   }
 
-  let errMsg = 'Something went wrong!'
+  let errMsg = 'Terjadi kesalahan'
 
   if (
     error &&
@@ -15,11 +15,11 @@ export function handleServerError(error: unknown) {
     'status' in error &&
     Number(error.status) === 204
   ) {
-    errMsg = 'No content.'
+    errMsg = 'Tidak ada konten'
   }
 
   if (error instanceof AxiosError) {
-    const title = error.response?.data?.title
+    const title = error.response?.data?.error
     if (typeof title === 'string' && title.length > 0) {
       errMsg = title
     }
@@ -27,3 +27,4 @@ export function handleServerError(error: unknown) {
 
   toast.error(errMsg)
 }
+
