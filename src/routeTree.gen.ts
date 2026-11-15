@@ -19,11 +19,14 @@ import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authGantiSandiRouteImport } from './routes/(auth)/ganti-sandi'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedTabunganIndexRouteImport } from './routes/_authenticated/tabungan/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSantriIndexRouteImport } from './routes/_authenticated/santri/index'
 import { Route as AuthenticatedPenggunaIndexRouteImport } from './routes/_authenticated/pengguna/index'
 import { Route as AuthenticatedNilaiIndexRouteImport } from './routes/_authenticated/nilai/index'
+import { Route as AuthenticatedKeuanganIndexRouteImport } from './routes/_authenticated/keuangan/index'
 import { Route as AuthenticatedKelasIndexRouteImport } from './routes/_authenticated/kelas/index'
+import { Route as AuthenticatedIdentitasIndexRouteImport } from './routes/_authenticated/identitas/index'
 import { Route as AuthenticatedGuruIndexRouteImport } from './routes/_authenticated/guru/index'
 import { Route as AuthenticatedAbsensiIndexRouteImport } from './routes/_authenticated/absensi/index'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
@@ -79,6 +82,12 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTabunganIndexRoute =
+  AuthenticatedTabunganIndexRouteImport.update({
+    id: '/tabungan/',
+    path: '/tabungan/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
@@ -102,11 +111,23 @@ const AuthenticatedNilaiIndexRoute = AuthenticatedNilaiIndexRouteImport.update({
   path: '/nilai/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKeuanganIndexRoute =
+  AuthenticatedKeuanganIndexRouteImport.update({
+    id: '/keuangan/',
+    path: '/keuangan/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedKelasIndexRoute = AuthenticatedKelasIndexRouteImport.update({
   id: '/kelas/',
   path: '/kelas/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedIdentitasIndexRoute =
+  AuthenticatedIdentitasIndexRouteImport.update({
+    id: '/identitas/',
+    path: '/identitas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGuruIndexRoute = AuthenticatedGuruIndexRouteImport.update({
   id: '/guru/',
   path: '/guru/',
@@ -145,11 +166,14 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi/': typeof AuthenticatedAbsensiIndexRoute
   '/guru/': typeof AuthenticatedGuruIndexRoute
+  '/identitas/': typeof AuthenticatedIdentitasIndexRoute
   '/kelas/': typeof AuthenticatedKelasIndexRoute
+  '/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/pengguna/': typeof AuthenticatedPenggunaIndexRoute
   '/santri/': typeof AuthenticatedSantriIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/tabungan/': typeof AuthenticatedTabunganIndexRoute
 }
 export interface FileRoutesByTo {
   '/ganti-sandi': typeof authGantiSandiRoute
@@ -164,11 +188,14 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi': typeof AuthenticatedAbsensiIndexRoute
   '/guru': typeof AuthenticatedGuruIndexRoute
+  '/identitas': typeof AuthenticatedIdentitasIndexRoute
   '/kelas': typeof AuthenticatedKelasIndexRoute
+  '/keuangan': typeof AuthenticatedKeuanganIndexRoute
   '/nilai': typeof AuthenticatedNilaiIndexRoute
   '/pengguna': typeof AuthenticatedPenggunaIndexRoute
   '/santri': typeof AuthenticatedSantriIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/tabungan': typeof AuthenticatedTabunganIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,11 +213,14 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/absensi/': typeof AuthenticatedAbsensiIndexRoute
   '/_authenticated/guru/': typeof AuthenticatedGuruIndexRoute
+  '/_authenticated/identitas/': typeof AuthenticatedIdentitasIndexRoute
   '/_authenticated/kelas/': typeof AuthenticatedKelasIndexRoute
+  '/_authenticated/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/_authenticated/nilai/': typeof AuthenticatedNilaiIndexRoute
   '/_authenticated/pengguna/': typeof AuthenticatedPenggunaIndexRoute
   '/_authenticated/santri/': typeof AuthenticatedSantriIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/tabungan/': typeof AuthenticatedTabunganIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -208,11 +238,14 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/absensi/'
     | '/guru/'
+    | '/identitas/'
     | '/kelas/'
+    | '/keuangan/'
     | '/nilai/'
     | '/pengguna/'
     | '/santri/'
     | '/settings/'
+    | '/tabungan/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/ganti-sandi'
@@ -227,11 +260,14 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/absensi'
     | '/guru'
+    | '/identitas'
     | '/kelas'
+    | '/keuangan'
     | '/nilai'
     | '/pengguna'
     | '/santri'
     | '/settings'
+    | '/tabungan'
   id:
     | '__root__'
     | '/_authenticated'
@@ -248,11 +284,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/absensi/'
     | '/_authenticated/guru/'
+    | '/_authenticated/identitas/'
     | '/_authenticated/kelas/'
+    | '/_authenticated/keuangan/'
     | '/_authenticated/nilai/'
     | '/_authenticated/pengguna/'
     | '/_authenticated/santri/'
     | '/_authenticated/settings/'
+    | '/_authenticated/tabungan/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -338,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tabungan/': {
+      id: '/_authenticated/tabungan/'
+      path: '/tabungan'
+      fullPath: '/tabungan/'
+      preLoaderRoute: typeof AuthenticatedTabunganIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
@@ -366,11 +412,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNilaiIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/keuangan/': {
+      id: '/_authenticated/keuangan/'
+      path: '/keuangan'
+      fullPath: '/keuangan/'
+      preLoaderRoute: typeof AuthenticatedKeuanganIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/kelas/': {
       id: '/_authenticated/kelas/'
       path: '/kelas'
       fullPath: '/kelas/'
       preLoaderRoute: typeof AuthenticatedKelasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/identitas/': {
+      id: '/_authenticated/identitas/'
+      path: '/identitas'
+      fullPath: '/identitas/'
+      preLoaderRoute: typeof AuthenticatedIdentitasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/guru/': {
@@ -427,10 +487,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAbsensiIndexRoute: typeof AuthenticatedAbsensiIndexRoute
   AuthenticatedGuruIndexRoute: typeof AuthenticatedGuruIndexRoute
+  AuthenticatedIdentitasIndexRoute: typeof AuthenticatedIdentitasIndexRoute
   AuthenticatedKelasIndexRoute: typeof AuthenticatedKelasIndexRoute
+  AuthenticatedKeuanganIndexRoute: typeof AuthenticatedKeuanganIndexRoute
   AuthenticatedNilaiIndexRoute: typeof AuthenticatedNilaiIndexRoute
   AuthenticatedPenggunaIndexRoute: typeof AuthenticatedPenggunaIndexRoute
   AuthenticatedSantriIndexRoute: typeof AuthenticatedSantriIndexRoute
+  AuthenticatedTabunganIndexRoute: typeof AuthenticatedTabunganIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -438,10 +501,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAbsensiIndexRoute: AuthenticatedAbsensiIndexRoute,
   AuthenticatedGuruIndexRoute: AuthenticatedGuruIndexRoute,
+  AuthenticatedIdentitasIndexRoute: AuthenticatedIdentitasIndexRoute,
   AuthenticatedKelasIndexRoute: AuthenticatedKelasIndexRoute,
+  AuthenticatedKeuanganIndexRoute: AuthenticatedKeuanganIndexRoute,
   AuthenticatedNilaiIndexRoute: AuthenticatedNilaiIndexRoute,
   AuthenticatedPenggunaIndexRoute: AuthenticatedPenggunaIndexRoute,
   AuthenticatedSantriIndexRoute: AuthenticatedSantriIndexRoute,
+  AuthenticatedTabunganIndexRoute: AuthenticatedTabunganIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

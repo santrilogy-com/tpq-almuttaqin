@@ -86,3 +86,35 @@ describe('semesterDari', () => {
     expect(semesterDari('2027-06-30')).toBe('2026/2027 Genap')
   })
 })
+
+import { hariIniWib, keRupiah, periodeValid } from './domain'
+
+describe('keRupiah', () => {
+  it('menerima angka polos dan format ribuan', () => {
+    expect(keRupiah('50000')).toBe(50000)
+    expect(keRupiah('50.000')).toBe(50000)
+    expect(keRupiah('1.250.000')).toBe(1250000)
+    expect(keRupiah('Rp 50.000')).toBe(50000)
+    expect(keRupiah(' rp. 7.500 ')).toBe(7500)
+  })
+  it('menolak desimal, huruf, nol, negatif, titik salah tempat, dan terlalu besar', () => {
+    for (const x of ['50,5', '50.5', 'abc', '0', '-5000', '', '12.34', '1.2345', '5e3', '2.000.000.000'])
+      expect(keRupiah(x), x).toBeNull()
+  })
+})
+
+describe('hariIniWib', () => {
+  it('memakai WIB (UTC+7): 17:30 UTC sudah hari berikutnya di WIB', () => {
+    expect(hariIniWib(Date.UTC(2026, 10, 16, 17, 30))).toBe('2026-11-17')
+    expect(hariIniWib(Date.UTC(2026, 10, 16, 16, 59))).toBe('2026-11-16')
+  })
+})
+
+describe('periodeValid', () => {
+  it('YYYY-MM dengan bulan 01-12', () => {
+    expect(periodeValid('2026-11')).toBe(true)
+    expect(periodeValid('2026-00')).toBe(false)
+    expect(periodeValid('2026-13')).toBe(false)
+    expect(periodeValid('2026-1')).toBe(false)
+  })
+})

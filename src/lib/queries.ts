@@ -30,3 +30,10 @@ export const rupiah = (n: number) =>
 
 /** Tanggal lokal perangkat (WIB di Indonesia) sebagai YYYY-MM-DD. */
 export const hariIni = () => new Date().toLocaleDateString('sv-SE')
+
+export const useLembaga = () =>
+  useQuery({
+    queryKey: ['lembaga'],
+    queryFn: async () =>
+      (await api.get<{ lembaga: import('./types').Lembaga[] }>('/lembaga')).data.lembaga,
+  })

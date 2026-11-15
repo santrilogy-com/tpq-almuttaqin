@@ -101,3 +101,51 @@ export const LABEL_ABSEN: Record<StatusAbsen, string> = {
 
 export const JENIS_NILAI = ['Harian', 'Imda', 'Praktek'] as const
 export type JenisNilai = (typeof JENIS_NILAI)[number]
+
+// ---------- Uang ----------
+
+export const KATEGORI_MASUK = [
+  'SPP',
+  'Infaq',
+  'Donasi',
+  'Pendaftaran',
+  'Kitab/Seragam',
+  'Saldo awal',
+] as const
+export const KATEGORI_KELUAR = [
+  'Honor guru',
+  'Operasional',
+  'ATK',
+  'Listrik dan air',
+  'Kegiatan',
+] as const
+
+/** Penarikan tabungan di atas ini wajib dikonfirmasi eksplisit. */
+export const BATAS_TARIK_KONFIRMASI = 200_000
+/** Batas wajar satu transaksi; menangkap salah ketik (mis. nol kelebihan). */
+export const MAKS_JUMLAH = 1_000_000_000
+
+/**
+ * Teks rupiah -> bilangan bulat. Menerima "50000", "50.000", "Rp 50.000".
+ * Menolak desimal ("50,5"), huruf, nol, dan negatif -> null.
+ * (v22 mewajibkan "tanpa titik atau koma"; sekarang format ribuan lazim diterima.)
+ */
+export function keRupiah(teks: string): number | null {
+  const t = teks.trim().replace(/^rp\.?\s*/i, '').replace(/\s/g, '')
+  if (!/^\d{1,3}(\.\d{3})+$|^\d+$/.test(t)) return null
+  const n = Number(t.replace(/\./g, ''))
+  return n > 0 && n <= MAKS_JUMLAH ? n : null
+}
+
+/** Tanggal hari ini di WIB (UTC+7) sebagai YYYY-MM-DD, terlepas dari zona waktu server. */
+export function hariIniWib(sekarang: number = Date.now()): string {
+  return new Date(sekarang + 7 * 3600_000).toISOString().slice(0, 10)
+}
+
+export const STATUS_SPP = ['belum', 'lunas', 'telat'] as const
+export type StatusSpp = (typeof STATUS_SPP)[number]
+
+/** Periode YYYY-MM valid (bulan 01-12). */
+export function periodeValid(p: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(p)
+}

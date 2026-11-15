@@ -147,6 +147,7 @@ CREATE TABLE `transaksi` (
 );
 --> statement-breakpoint
 CREATE INDEX `transaksi_tgl_idx` ON `transaksi` (`tanggal`);--> statement-breakpoint
+CREATE UNIQUE INDEX `transaksi_spp_uq` ON `transaksi` (`tagihan_spp_id`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,

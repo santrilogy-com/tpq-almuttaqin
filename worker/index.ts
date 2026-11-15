@@ -4,9 +4,12 @@ import { loadSession, sameOrigin, type AppEnv } from './middleware'
 import { authRoutes } from './routes/auth'
 import { absensiRoutes } from './routes/absensi'
 import { guruRoutes } from './routes/guru'
+import { keuanganRoutes } from './routes/keuangan'
 import { kelasRoutes } from './routes/kelas'
+import { lembagaRoutes } from './routes/lembaga'
 import { nilaiRoutes, raporRoutes } from './routes/nilai'
 import { santriRoutes } from './routes/santri'
+import { tabunganRoutes } from './routes/tabungan'
 import { userRoutes } from './routes/users'
 
 const app = new Hono<AppEnv>()
@@ -29,6 +32,9 @@ api.route('/guru', guruRoutes)
 api.route('/absensi', absensiRoutes)
 api.route('/nilai', nilaiRoutes)
 api.route('/rapor', raporRoutes)
+api.route('/lembaga', lembagaRoutes)
+api.route('/keuangan', keuanganRoutes)
+api.route('/tabungan', tabunganRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
 api.onError((err, c) => {
   console.error(err)
@@ -38,6 +44,7 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 
 

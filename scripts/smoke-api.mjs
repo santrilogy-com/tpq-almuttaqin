@@ -266,7 +266,100 @@ check('pindah kelas: absensi kelas lama tidak dihitung', r.json.kehadiran === nu
 r = await g2.req('DELETE', `/api/nilai/${nilaiId}`)
 check('hapus nilai', r.status === 200)
 r = await g2.req('DELETE', `/api/absensi/pertemuan/tidak-ada`)
-check('hapus pertemuan tak ada -> 404', r.status === 404)
+check('guru tidak boleh hapus pertemuan (403)', r.status === 403)
+r = await a.req('DELETE', `/api/absensi/pertemuan/tidak-ada`)
+check('Pimpinan hapus pertemuan tak ada -> 404', r.status === 404)
+
+// ---------- Lembaga / Keuangan / SPP / Tabungan ----------
+r = await g2.req('GET', '/api/lembaga')
+check('guru boleh melihat identitas lembaga', r.status === 200 && r.json.lembaga.length === 2)
+r = await g2.req('PATCH', '/api/lembaga/TPQ', { tarifSpp: 1 })
+check('guru tidak boleh ubah tarif (403)', r.status === 403)
+for (const [m, p] of [['GET', '/api/keuangan'], ['GET', '/api/keuangan/spp?periode=2026-11'], ['GET', '/api/tabungan/saldo']]) {
+  r = await g2.req(m, p)
+  check(`guru ditolak ${p} (403)`, r.status === 403)
+}
+
+r = await a.req('PATCH', '/api/lembaga/TPQ', { tarifSpp: -5 })
+check('tarif negatif ditolak', r.status === 400)
+r = await a.req('POST', '/api/keuangan/spp/generate', { periode: '2026-11' })
+check('generate SPP tanpa tarif ditolak (jelas)', r.status === 400 && /Tarif/.test(r.json.error), JSON.stringify(r))
+r = await a.req('PATCH', '/api/lembaga/TPQ', { tarifSpp: 50000, tahunAjaran: '2026/2027' })
+check('Pimpinan atur tarif TPQ', r.status === 200 && r.json.lembaga.tarifSpp === 50000)
+
+// Kas manual
+r = await a.req('POST', '/api/keuangan', { jenis: 'masuk', jenjang: 'TPQ', kategori: 'Saldo awal', nama: 'Saldo awal', jumlah: 1000000, tanggal: '2026-11-01' })
+check('catat pemasukan', r.status === 201)
+r = await a.req('POST', '/api/keuangan', { jenis: 'keluar', jenjang: 'TPQ', kategori: 'SPP', nama: 'x', jumlah: 1000, tanggal: '2026-11-01' })
+check('kategori pemasukan dipakai di pengeluaran ditolak', r.status === 400)
+for (const [j, msg] of [[0, '0'], [-5, 'negatif'], [10.5, 'desimal'], ['5000', 'teks'], [2e9, 'terlalu besar']]) {
+  r = await a.req('POST', '/api/keuangan', { jenis: 'masuk', jenjang: 'TPQ', kategori: 'Infaq', nama: 'x', jumlah: j, tanggal: '2026-11-01' })
+  check(`jumlah ${msg} ditolak`, r.status === 400)
+}
+r = await a.req('POST', '/api/keuangan', { jenis: 'keluar', jenjang: 'TPQ', kategori: 'ATK', nama: 'Spidol', jumlah: 150000, tanggal: '2026-11-02' })
+const atkId = r.json.transaksi?.id
+r = await a.req('GET', '/api/keuangan')
+check('saldo kas = 1.000.000 - 150.000', r.json.ringkasan.saldo === 850000 && r.json.ringkasan.masuk === 1000000, JSON.stringify(r.json.ringkasan))
+
+// SPP -> kas otomatis
+r = await a.req('POST', '/api/keuangan/spp/generate', { periode: '2026-11' })
+const aktifTpq = (await a.req('GET', '/api/santri?jenjang=TPQ')).json.santri.filter((s) => s.status === 'aktif').length
+check('generate tagihan SPP untuk semua santri aktif', r.status === 200 && r.json.dibuat === aktifTpq && aktifTpq > 60, JSON.stringify(r.json) + ' aktif=' + aktifTpq)
+r = await a.req('POST', '/api/keuangan/spp/generate', { periode: '2026-11' })
+check('generate ulang tidak menggandakan', r.json.dibuat === 0)
+r = await a.req('GET', '/api/keuangan/spp?periode=2026-11')
+const tag = r.json.tagihan[0]
+check('tagihan berisi tarif 50.000 status belum', tag.jumlah === 50000 && tag.status === 'belum')
+const saldoSebelum = (await a.req('GET', '/api/keuangan')).json.ringkasan.saldo
+r = await a.req('PATCH', `/api/keuangan/spp/${tag.id}`, { status: 'lunas', tanggal: '2026-11-15' })
+check('SPP ditandai lunas', r.status === 200)
+r = await a.req('GET', '/api/keuangan')
+check('SPP LUNAS MENAMBAH SALDO KAS (+50.000)', r.json.ringkasan.saldo === saldoSebelum + 50000, JSON.stringify(r.json.ringkasan))
+const trxSpp = r.json.transaksi.find((t) => t.tagihanSppId === tag.id)
+check('transaksi kas SPP tercatat benar', trxSpp?.kategori === 'SPP' && trxSpp?.jenis === 'masuk' && trxSpp?.jumlah === 50000 && trxSpp?.tanggal === '2026-11-15', JSON.stringify(trxSpp))
+r = await a.req('PATCH', `/api/keuangan/spp/${tag.id}`, { status: 'lunas' })
+r = await a.req('GET', '/api/keuangan')
+check('lunas dua kali TIDAK menggandakan kas', r.json.ringkasan.saldo === saldoSebelum + 50000)
+const par = await Promise.all([1, 2, 3].map(() => a.req('PATCH', `/api/keuangan/spp/${(r.json && tag.id)}`, { status: 'lunas' })))
+r = await a.req('GET', '/api/keuangan')
+check('permintaan lunas paralel tetap tidak menggandakan kas', r.json.ringkasan.saldo === saldoSebelum + 50000, JSON.stringify(r.json.ringkasan))
+r = await a.req('DELETE', `/api/keuangan/${trxSpp.id}`)
+check('transaksi dari SPP tidak bisa dihapus manual (409)', r.status === 409)
+r = await a.req('PATCH', `/api/keuangan/spp/${tag.id}`, { status: 'belum' })
+r = await a.req('GET', '/api/keuangan')
+check('batal lunas -> kas kembali (-50.000)', r.json.ringkasan.saldo === saldoSebelum && !r.json.transaksi.some((t) => t.tagihanSppId === tag.id))
+r = await a.req('PATCH', `/api/keuangan/spp/${tag.id}`, { status: 'telat' })
+check('status telat tidak menyentuh kas', r.status === 200 && (await a.req('GET', '/api/keuangan')).json.ringkasan.saldo === saldoSebelum)
+r = await a.req('GET', '/api/keuangan/spp?periode=2026-13')
+check('periode tidak valid ditolak', r.status === 400)
+r = await a.req('DELETE', `/api/keuangan/${atkId}`)
+check('hapus transaksi manual OK', r.status === 200)
+
+// Tabungan
+const murid = (await a.req('GET', '/api/santri?jenjang=TPQ')).json.santri[0].id
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'setor', jumlah: 500000, tanggal: '2026-11-10' })
+check('setor tabungan', r.status === 201)
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 600000 })
+check('tarik melebihi saldo ditolak (saldo tidak cukup)', r.status === 409 || r.status === 400)
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 300000, konfirmasi: true })
+check('tarik 300.000 dengan konfirmasi OK (saldo 200.000)', r.status === 201)
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 250000, konfirmasi: true })
+check('tarik > saldo walau dikonfirmasi tetap ditolak (400)', r.status === 400 && /Saldo/.test(r.json.error), JSON.stringify(r))
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'setor', jumlah: 1000000 })
+const par2 = await Promise.all([1, 2, 3, 4].map(() => a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 500000, konfirmasi: true })))
+check('4 penarikan paralel: hanya yang cukup saldo lolos', par2.filter((x) => x.status === 201).length === 2, par2.map((x) => x.status).join(','))
+r = await a.req('GET', `/api/tabungan?santriId=${murid}`)
+check('saldo tidak pernah minus setelah balapan', r.json.saldo === 200000 && r.json.saldo >= 0, JSON.stringify(r.json.saldo))
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 150000 })
+check('tarik <= 200.000 tanpa konfirmasi OK', r.status === 201)
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'tarik', jumlah: 40000 })
+check('tarik 40.000 OK (saldo 10.000 sisa)', r.status === 201)
+r = await a.req('POST', '/api/tabungan', { santriId: murid, jenis: 'setor', jumlah: -1 })
+check('setor negatif ditolak', r.status === 400)
+r = await a.req('POST', '/api/tabungan', { santriId: 'tidak-ada', jenis: 'setor', jumlah: 1000 })
+check('santri tak ada -> 404', r.status === 404)
+r = await a.req('GET', '/api/tabungan/saldo')
+check('daftar saldo per santri', r.json.saldo.find((x) => x.santriId === murid)?.saldo === 10000, JSON.stringify(r.json))
 
 // Logout
 r = await a.req('POST', '/api/auth/logout')

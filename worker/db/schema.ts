@@ -213,7 +213,11 @@ export const transaksi = sqliteTable(
     // Terisi bila transaksi dibuat otomatis dari pelunasan SPP.
     tagihanSppId: text('tagihan_spp_id'),
   },
-  (t) => [index('transaksi_tgl_idx').on(t.tanggal)]
+  (t) => [
+    index('transaksi_tgl_idx').on(t.tanggal),
+    // Satu tagihan SPP paling banyak satu transaksi kas (anti dobel hitung); NULL boleh banyak.
+    uniqueIndex('transaksi_spp_uq').on(t.tagihanSppId),
+  ]
 )
 
 export const tagihanSpp = sqliteTable(
@@ -239,5 +243,6 @@ export const pengumuman = sqliteTable('pengumuman', {
   tampil: integer('tampil', { mode: 'boolean' }).notNull().default(true),
   createdAt: createdAt(),
 })
+
 
 

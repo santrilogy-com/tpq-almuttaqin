@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3d8737a7-74db-462d-a047-7df62a036ae7",
+  "id": "c883415a-8a0f-4006-974f-afc98af8d712",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "absensi": {
@@ -1013,6 +1013,13 @@
             "tanggal"
           ],
           "isUnique": false
+        },
+        "transaksi_spp_uq": {
+          "name": "transaksi_spp_uq",
+          "columns": [
+            "tagihan_spp_id"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {},

@@ -69,3 +69,49 @@ export type Rapor = {
   jumlahNilai: number
   kehadiran: { hadir: number; total: number; persen: number } | null
 }
+
+import { type StatusSpp } from '@shared/domain'
+
+export type Transaksi = {
+  id: string
+  jenis: 'masuk' | 'keluar'
+  jenjang: Jenjang
+  kategori: string
+  nama: string
+  jumlah: number
+  tanggal: string
+  tagihanSppId: string | null
+}
+
+export type Tagihan = {
+  id: string
+  santriId: string
+  nama: string
+  nis: string
+  jenjang: Jenjang
+  periode: string
+  jumlah: number
+  status: StatusSpp
+}
+
+export type TabunganRow = {
+  id: string
+  santriId: string
+  jenis: 'setor' | 'tarik'
+  jumlah: number
+  tanggal: string
+}
+
+export type Lembaga = {
+  jenjang: Jenjang
+  nama: string
+  namaSingkat: string
+  pimpinan: string
+  alamat: string
+  telepon: string
+  tahunBerdiri: number | null
+  nsmNpsn: string
+  motto: string
+  tarifSpp: number
+  tahunAjaran: string
+}
