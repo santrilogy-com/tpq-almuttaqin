@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+﻿import { sql } from 'drizzle-orm'
 import {
   index,
   integer,
@@ -14,9 +14,9 @@ const createdAt = () =>
     .notNull()
     .default(sql`(unixepoch() * 1000)`)
 
-export const JENJANG = ['TPQ', 'MI'] as const
+import { JENJANG } from '../../shared/domain'
+export { JENJANG }
 export const PERAN = ['pimpinan', 'guru'] as const
-export type Jenjang = (typeof JENJANG)[number]
 export type Peran = (typeof PERAN)[number]
 
 // ---------- Auth ----------
@@ -86,7 +86,7 @@ export const santri = sqliteTable(
     kelasId: text('kelas_id').references(() => kelas.id, {
       onDelete: 'set null',
     }),
-    jilid: text('jilid').notNull().default('Jilid 1'),
+    jilid: text('jilid').notNull().default('Iqra 1'),
     angkatan: text('angkatan').notNull().default(''),
     rombel: text('rombel').notNull().default(''),
     status: text('status', { enum: ['aktif', 'keluar', 'lulus'] })
@@ -238,3 +238,4 @@ export const pengumuman = sqliteTable('pengumuman', {
   tampil: integer('tampil', { mode: 'boolean' }).notNull().default(true),
   createdAt: createdAt(),
 })
+

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "da1e4664-aab1-4983-873e-3c8359967d78",
+  "id": "ccfe0eca-dd9d-4649-a7da-24fa262f253c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "absensi": {
@@ -581,7 +581,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'Jilid 1'"
+          "default": "'Iqra 1'"
         },
         "angkatan": {
           "name": "angkatan",

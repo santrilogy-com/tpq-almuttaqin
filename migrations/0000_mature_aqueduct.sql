@@ -82,7 +82,7 @@ CREATE TABLE `santri` (
 	`jenis_kelamin` text NOT NULL,
 	`jenjang` text NOT NULL,
 	`kelas_id` text,
-	`jilid` text DEFAULT 'Jilid 1' NOT NULL,
+	`jilid` text DEFAULT 'Iqra 1' NOT NULL,
 	`angkatan` text DEFAULT '' NOT NULL,
 	`rombel` text DEFAULT '' NOT NULL,
 	`status` text DEFAULT 'aktif' NOT NULL,

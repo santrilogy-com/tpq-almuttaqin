@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+﻿import { cn } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -54,7 +54,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         {children}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>
-            {cancelBtnText ?? 'Cancel'}
+            {cancelBtnText ?? 'Batal'}
           </AlertDialogCancel>
           <Button
             type={form ? 'submit' : 'button'}
@@ -70,3 +70,4 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     </AlertDialog>
   )
 }
+

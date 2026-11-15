@@ -21,7 +21,8 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "pnpm build && wrangler deploy",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "test:unit": "vitest run --config vitest.unit.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
