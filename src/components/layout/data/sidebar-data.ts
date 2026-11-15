@@ -1,5 +1,6 @@
 ﻿import {
   BarChart3,
+  Database,
   BookOpen,
   Building2,
   CalendarClock,
@@ -57,6 +58,7 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
         ? [
             { title: 'Identitas dan Tarif', url: '/identitas', icon: Building2 },
             { title: 'Kelola pengguna', url: '/pengguna', icon: Users },
+            { title: 'Data dan Backup', url: '/data', icon: Database },
           ]
         : []),
       { title: 'Tampilan', url: '/settings/appearance', icon: Palette },
@@ -65,5 +67,6 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
   }
   return pimpinan ? [utama, keuangan, pengaturan] : [utama, pengaturan]
 }
+
 
 

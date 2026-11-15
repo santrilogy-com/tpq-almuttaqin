@@ -4,7 +4,9 @@ import { loadSession, sameOrigin, type AppEnv } from './middleware'
 import { authRoutes } from './routes/auth'
 import { absensiRoutes } from './routes/absensi'
 import { anggaranRoutes } from './routes/anggaran'
+import { backupRoutes } from './routes/backup'
 import { guruRoutes } from './routes/guru'
+import { importRoutes } from './routes/import'
 import { kbmRoutes } from './routes/kbm'
 import { keuanganRoutes } from './routes/keuangan'
 import { kelasRoutes } from './routes/kelas'
@@ -45,6 +47,8 @@ api.route('/pengumuman', pengumumanRoutes)
 api.route('/kbm', kbmRoutes)
 api.route('/anggaran', anggaranRoutes)
 api.route('/laporan', laporanRoutes)
+api.route('/backup', backupRoutes)
+api.route('/import', importRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
 api.onError((err, c) => {
   console.error(err)
@@ -54,6 +58,7 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 
 

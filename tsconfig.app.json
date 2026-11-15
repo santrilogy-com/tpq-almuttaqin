@@ -6,6 +6,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "resolveJsonModule": true,
 
     /* Bundler mode */
     "moduleResolution": "Bundler",
@@ -30,4 +31,5 @@
   },
   "include": ["src", "shared"]
 }
+
 

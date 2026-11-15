@@ -498,6 +498,140 @@ check('guru boleh export santri', r.status === 200)
 r = await a.req('GET', '/api/laporan/export/rahasia')
 check('jenis export tak dikenal -> 404', r.status === 404)
 
+// ---------- Backup / Restore / Import ----------
+const BASE = 'http://localhost:5199'
+const ambilBackup = async () => {
+  const x = await fetch(`${BASE}/api/backup/export`, { headers: { cookie: a.cookie } })
+  const teks = await x.text()
+  return { status: x.status, disp: x.headers.get('content-disposition'), teks, json: JSON.parse(teks) }
+}
+for (const [m, p] of [['GET', '/api/backup/export'], ['POST', '/api/backup/restore'], ['POST', '/api/backup/kosongkan'], ['POST', '/api/import/santri'], ['GET', '/api/import/template/santri']]) {
+  r = await g2.req(m, p, m === 'POST' ? {} : undefined)
+  check(`guru ditolak ${m} ${p} (403)`, r.status === 403)
+}
+
+const b1 = await ambilBackup()
+check('export backup: file JSON bernama tanggal', b1.status === 200 && /filename="tpq-backup-\d{4}-\d{2}-\d{2}\.json"/.test(b1.disp) && b1.json.format === 'tpq-v2')
+check('backup TIDAK memuat sandi/akun/sesi', !/pbkdf2|passwordHash|password_hash|"sessions"|"users"|tokenHash/.test(b1.teks))
+check('backup: guru tanpa userId', b1.json.data.guru.length > 0 && b1.json.data.guru.every((g) => !('userId' in g)))
+const hitung = (j) => Object.fromEntries(Object.entries(j.data).map(([k, v]) => [k, v.length]))
+const n1 = hitung(b1.json)
+check('backup memuat 19 tabel, santri banyak', Object.keys(n1).length === 19 && n1.santri > 60 && n1.transaksi > 0 && n1.nilai > 0, JSON.stringify(n1))
+
+r = await a.req('POST', '/api/backup/restore', { backup: b1.json })
+check('restore tanpa konfirmasi ditolak', r.status === 400)
+r = await a.req('POST', '/api/backup/kosongkan', { konfirmasi: 'ya' })
+check('kosongkan tanpa konfirmasi tepat ditolak', r.status === 400)
+
+// Backup rusak harus ditolak TANPA menyentuh data
+const rusak = (mut) => { const c = JSON.parse(b1.teks); mut(c.data); return c }
+const tolak = async (nama, mut, pola) => {
+  const res = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: rusak(mut) })
+  const sama = JSON.stringify(hitung(await ambilBackup().then((x) => x.json))) === JSON.stringify(n1)
+  check(`restore rusak ditolak + data utuh: ${nama}`, res.status === 400 && pola.test(res.json.error) && sama, `${res.status} ${res.json.error}`)
+}
+await tolak('enum tidak valid', (d) => { d.santri[0].jenjang = 'XYZ' }, /santri/)
+await tolak('NIS kembar', (d) => { d.santri[1].nis = d.santri[0].nis }, /nis/)
+await tolak('rujukan hantu', (d) => { d.nilai[0].santriId = 'hantu' }, /rujukan/)
+await tolak('tanggal fiktif', (d) => { d.nilai[0].tanggal = '2026-02-31' }, /nilai|tanggal/)
+await tolak('saldo tabungan minus', (d) => { d.tabungan.push({ id: 'zz', santriId: d.santri[0].id, jenis: 'tarik', jumlah: 99999999, tanggal: '2026-01-01', catatan: '' }) }, /minus/)
+await tolak('tabel hilang', (d) => { delete d.santri }, /santri/)
+await tolak('logo bukan gambar', (d) => { d.lembaga[0].logo = 'javascript:alert(1)' }, /logo|lembaga/)
+r = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: { format: 'lain' } })
+check('format asing ditolak', r.status === 400)
+
+// Roundtrip: pulihkan backup sendiri -> ekspor ulang identik
+r = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: b1.json })
+check('restore backup valid berhasil', r.status === 200 && r.json.baris.santri === n1.santri, JSON.stringify(r.json).slice(0, 200))
+const b2 = await ambilBackup()
+const urut = (rows) => [...rows].map((x) => JSON.stringify(x)).sort()
+const beda = Object.keys(b1.json.data).filter((k) => JSON.stringify(urut(b1.json.data[k])) !== JSON.stringify(urut(b2.json.data[k])))
+check('roundtrip: semua 19 tabel identik setelah restore', beda.length === 0, 'beda: ' + beda.join(','))
+r = await a.req('GET', '/api/auth/me')
+check('akun/sesi tidak terganggu oleh restore', r.status === 200 && r.json.user.username === 'admin')
+
+// Kosongkan lalu pulihkan
+r = await a.req('POST', '/api/backup/kosongkan', { konfirmasi: 'HAPUS SEMUA' })
+check('kosongkan berhasil', r.status === 200)
+const b3 = await ambilBackup()
+const n3 = hitung(b3.json)
+check('setelah kosongkan: data kerja 0, identitas lembaga tetap', n3.santri === 0 && n3.transaksi === 0 && n3.kelas === 0 && n3.lembaga === 2, JSON.stringify(n3))
+r = await a.req('GET', '/api/auth/me')
+check('akun tetap ada setelah kosongkan', r.status === 200)
+r = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: b1.json })
+check('pulihkan dari backup setelah kosongkan', r.status === 200 && hitung((await ambilBackup()).json).santri === n1.santri)
+
+// ---- Import CSV
+await a.req('POST', '/api/backup/kosongkan', { konfirmasi: 'HAPUS SEMUA' })
+r = await a.req('POST', '/api/import/santri', { baris: [] })
+check('import: file kosong ditolak', r.status === 400)
+r = await a.req('POST', '/api/import/santri', {
+  baris: [
+    { Nama: 'Ahmad Fauzi', NIS: '9001', Kelas: 'Iqra 3', 'Jenis Kelamin': 'L', Jenjang: 'TPQ', Angkatan: '2024' },
+    { nama: 'Siti', nis: '9002', kelas: 'iqra 3', jenis_kelamin: 'Perempuan', jenjang: 'Ibtidaiyah' },
+    { Nama: 'Budi', NIS: '9001', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' },
+    { Nama: '', NIS: '9003', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' },
+    { Nama: 'Tanpa JK', NIS: '9004', Kelas: 'Iqra 1', 'Jenis Kelamin': 'X' },
+    { Nama: 'Jenjang Salah', NIS: '9005', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L', Jenjang: 'SMA' },
+    { Nama: 'Tanpa Kelas', NIS: '9006', Kelas: '', 'Jenis Kelamin': 'L' },
+    { Nama: 'Laki', NIS: '9007', Kelas: 'Iqra 1', 'Jenis Kelamin': 'Laki-laki' },
+  ],
+})
+check('import santri: 3 valid, 5 ditolak dengan alasan jelas', r.status === 200 && r.json.dibuat === 3 && r.json.ditolak.length === 5, JSON.stringify(r.json))
+check('import: kelas dibuat otomatis per (jenjang,nama): Iqra 3 TPQ, Iqra 3 MI, Iqra 1 TPQ = 3', r.json.kelasBaru === 3)
+check('import: nomor baris sesuai file (judul = baris 1) -> 4,5,6,7,8', r.json.ditolak.map((x) => x.baris).join() === '4,5,6,7,8', r.json.ditolak.map((x) => x.baris).join())
+check('import: alasan NIS kembar & jenis kelamin', r.json.ditolak.some((x) => /NIS 9001 kembar/.test(x.alasan)) && r.json.ditolak.some((x) => /Jenis kelamin/.test(x.alasan)) && r.json.ditolak.some((x) => /Jenjang/.test(x.alasan)), JSON.stringify(r.json.ditolak))
+r = await a.req('GET', '/api/santri')
+check('import: jilid dari nama kelas (Iqra 3), jenis kelamin dinormalkan', r.json.santri.find((s) => s.nis === '9001')?.jilid === 'Iqra 3' && r.json.santri.find((s) => s.nis === '9002')?.jenisKelamin === 'P' && r.json.santri.find((s) => s.nis === '9007')?.jenisKelamin === 'L', JSON.stringify(r.json.santri.map((s) => [s.nis, s.jilid, s.jenisKelamin])))
+r = await a.req('POST', '/api/import/santri', { baris: [{ Nama: 'Ahmad Lagi', NIS: '9001', Kelas: 'Iqra 3', 'Jenis Kelamin': 'L' }] })
+check('import ulang: NIS yang sudah ada ditolak, tidak digandakan', r.json.dibuat === 0 && /sudah ada/.test(r.json.ditolak[0].alasan))
+
+const banyak600 = Array.from({ length: 600 }, (_, i) => ({ Nama: `Massal ${i}`, NIS: `M${i}`, Kelas: 'Massal', 'Jenis Kelamin': i % 2 ? 'L' : 'P' }))
+r = await a.req('POST', '/api/import/santri', { baris: banyak600 })
+check('import 600 santri sekaligus (JSON insert) tersimpan semua', r.status === 200 && r.json.dibuat === 600, JSON.stringify(r.json).slice(0, 120))
+r = await a.req('POST', '/api/import/santri', { baris: Array.from({ length: 1001 }, (_, i) => ({ Nama: 'x', NIS: String(i), Kelas: 'k', 'Jenis Kelamin': 'L' })) })
+check('import > 1000 baris ditolak', r.status === 400)
+r = await a.req('POST', '/api/import/santri', { baris: [{ Nama: "O'Brien; DROP TABLE santri;--", NIS: 'SQL1', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' }] })
+r = await a.req('GET', '/api/santri')
+check('import: apostrof/SQL di nama tersimpan apa adanya (tidak ada injeksi)', r.json.santri.some((s) => s.nama === "O'Brien; DROP TABLE santri;--") && r.json.santri.length === 604)
+
+r = await a.req('POST', '/api/import/guru', { baris: [
+  { Nama: 'Ustadz Ali', Kelas: 'Iqra 1', Peran: 'wali kelas', Jenjang: 'TPQ', HP: '0812', Honor: '800.000' },
+  { Nama: 'ustadz ali', Honor: '1' },
+  { Nama: 'Ustadzah X', Peran: 'Dewa' },
+  { Nama: 'Ustadzah Y', Honor: 'banyak' },
+  { Nama: 'Ustadzah Z' },
+] })
+check('import guru: 2 valid (peran dinormalkan, honor 800.000), 3 ditolak', r.json.dibuat === 2 && r.json.ditolak.length === 3, JSON.stringify(r.json))
+r = await a.req('GET', '/api/guru')
+const ali = r.json.guru.find((g) => g.nama === 'Ustadz Ali')
+check('import guru: peran Wali Kelas, honor 800000, kelas terhubung', ali?.peranGuru === 'Wali Kelas' && ali?.honor === 800000 && ali?.kelasId !== null, JSON.stringify(ali))
+
+await a.req('POST', '/api/import/santri', { baris: [{ Nama: 'Kembar', NIS: 'K1', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' }, { Nama: 'Kembar', NIS: 'K2', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' }] })
+r = await a.req('POST', '/api/import/nilai', { baris: [
+  { Santri: '9001', Jenis: 'Harian', Mapel: 'Iqra', Nilai: '85,5', Tanggal: '2026-11-12' },
+  { Santri: 'Ahmad Fauzi', Jenis: 'imda', Nilai: '90' },
+  { Santri: 'Kembar', Jenis: 'Harian', Nilai: '80' },
+  { Santri: 'Hantu', Jenis: 'Harian', Nilai: '80' },
+  { Santri: '9001', Jenis: 'Ujian', Nilai: '80' },
+  { Santri: '9001', Jenis: 'Harian', Nilai: '101' },
+  { Santri: '9001', Jenis: 'Harian', Nilai: '80', Tanggal: '2026-02-31' },
+] })
+check('import nilai: 2 valid, 5 ditolak (kembar->pakai NIS, hantu, jenis, >100, tanggal)', r.json.dibuat === 2 && r.json.ditolak.length === 5 && r.json.ditolak.some((x) => /kembar.*NIS/.test(x.alasan)), JSON.stringify(r.json))
+const sidA = (await a.req('GET', '/api/santri')).json.santri.find((s) => s.nis === '9001').id
+r = await a.req('GET', `/api/nilai?santriId=${sidA}`)
+check('import nilai: desimal koma 85,5 -> 85.5; mapel kosong -> Umum; semester otomatis', r.json.nilai.some((n) => n.nilai === 85.5 && n.semester === '2026/2027 Ganjil') && r.json.nilai.some((n) => n.mapel === 'Umum' && n.jenis === 'Imda'), JSON.stringify(r.json.nilai))
+for (const j of ['santri', 'guru', 'nilai']) {
+  const x = await fetch(`${BASE}/api/import/template/${j}`, { headers: { cookie: a.cookie } })
+  const t = await x.text()
+  check(`template ${j}: CSV dengan contoh baris`, x.status === 200 && /text\/csv/.test(x.headers.get('content-type')) && t.split('\r\n').filter(Boolean).length === 2)
+}
+r = await a.req('GET', '/api/import/template/hantu')
+check('template tak dikenal -> 404', r.status === 404)
+
+// kembalikan data awal agar tes lain/penjelajahan manual tetap punya isi
+await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: b1.json })
+
 // Logout
 r = await a.req('POST', '/api/auth/logout')
 r = await a.req('GET', '/api/auth/me')

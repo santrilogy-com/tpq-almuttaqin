@@ -33,6 +33,7 @@ import { Route as AuthenticatedKbmIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedIdentitasIndexRouteImport } from './routes/_authenticated/identitas/index'
 import { Route as AuthenticatedHafalanIndexRouteImport } from './routes/_authenticated/hafalan/index'
 import { Route as AuthenticatedGuruIndexRouteImport } from './routes/_authenticated/guru/index'
+import { Route as AuthenticatedDataIndexRouteImport } from './routes/_authenticated/data/index'
 import { Route as AuthenticatedAbsensiIndexRouteImport } from './routes/_authenticated/absensi/index'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -166,6 +167,11 @@ const AuthenticatedGuruIndexRoute = AuthenticatedGuruIndexRouteImport.update({
   path: '/guru/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDataIndexRoute = AuthenticatedDataIndexRouteImport.update({
+  id: '/data/',
+  path: '/data/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAbsensiIndexRoute =
   AuthenticatedAbsensiIndexRouteImport.update({
     id: '/absensi/',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi/': typeof AuthenticatedAbsensiIndexRoute
+  '/data/': typeof AuthenticatedDataIndexRoute
   '/guru/': typeof AuthenticatedGuruIndexRoute
   '/hafalan/': typeof AuthenticatedHafalanIndexRoute
   '/identitas/': typeof AuthenticatedIdentitasIndexRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/absensi': typeof AuthenticatedAbsensiIndexRoute
+  '/data': typeof AuthenticatedDataIndexRoute
   '/guru': typeof AuthenticatedGuruIndexRoute
   '/hafalan': typeof AuthenticatedHafalanIndexRoute
   '/identitas': typeof AuthenticatedIdentitasIndexRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/absensi/': typeof AuthenticatedAbsensiIndexRoute
+  '/_authenticated/data/': typeof AuthenticatedDataIndexRoute
   '/_authenticated/guru/': typeof AuthenticatedGuruIndexRoute
   '/_authenticated/hafalan/': typeof AuthenticatedHafalanIndexRoute
   '/_authenticated/identitas/': typeof AuthenticatedIdentitasIndexRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/absensi/'
+    | '/data/'
     | '/guru/'
     | '/hafalan/'
     | '/identitas/'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/absensi'
+    | '/data'
     | '/guru'
     | '/hafalan'
     | '/identitas'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/absensi/'
+    | '/_authenticated/data/'
     | '/_authenticated/guru/'
     | '/_authenticated/hafalan/'
     | '/_authenticated/identitas/'
@@ -538,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGuruIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/data/': {
+      id: '/_authenticated/data/'
+      path: '/data'
+      fullPath: '/data/'
+      preLoaderRoute: typeof AuthenticatedDataIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/absensi/': {
       id: '/_authenticated/absensi/'
       path: '/absensi'
@@ -584,6 +603,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAbsensiIndexRoute: typeof AuthenticatedAbsensiIndexRoute
+  AuthenticatedDataIndexRoute: typeof AuthenticatedDataIndexRoute
   AuthenticatedGuruIndexRoute: typeof AuthenticatedGuruIndexRoute
   AuthenticatedHafalanIndexRoute: typeof AuthenticatedHafalanIndexRoute
   AuthenticatedIdentitasIndexRoute: typeof AuthenticatedIdentitasIndexRoute
@@ -603,6 +623,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAbsensiIndexRoute: AuthenticatedAbsensiIndexRoute,
+  AuthenticatedDataIndexRoute: AuthenticatedDataIndexRoute,
   AuthenticatedGuruIndexRoute: AuthenticatedGuruIndexRoute,
   AuthenticatedHafalanIndexRoute: AuthenticatedHafalanIndexRoute,
   AuthenticatedIdentitasIndexRoute: AuthenticatedIdentitasIndexRoute,
