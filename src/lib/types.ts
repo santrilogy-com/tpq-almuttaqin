@@ -35,3 +35,37 @@ export type Guru = {
   honor: number
   honorLunas: boolean
 }
+
+import { type JenisNilai, type StatusAbsen } from '@shared/domain'
+
+export type Pertemuan = {
+  id: string
+  kelasId: string
+  tanggal: string
+  materi: string
+  ringkasan: Record<StatusAbsen, number>
+}
+
+export type NilaiRow = {
+  id: string
+  santriId: string
+  jenis: JenisNilai
+  mapel: string
+  nilai: number
+  tanggal: string
+  semester: string
+}
+
+export type Rapor = {
+  santri: { id: string; nama: string; nis: string; jilid: string; kelas: string | null }
+  semester: string
+  daftarSemester: string[]
+  harian: number | null
+  imda: number | null
+  praktek: number | null
+  akhir: number | null
+  lengkap: boolean
+  predikat: string | null
+  jumlahNilai: number
+  kehadiran: { hadir: number; total: number; persen: number } | null
+}

@@ -1,4 +1,6 @@
 ﻿import {
+  ClipboardCheck,
+  FileText,
   GraduationCap,
   LayoutDashboard,
   Palette,
@@ -20,6 +22,8 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
       { title: 'Beranda', url: '/', icon: LayoutDashboard },
       { title: 'Santri', url: '/santri', icon: GraduationCap },
       { title: 'Kelas', url: '/kelas', icon: School },
+      { title: 'Absensi', url: '/absensi', icon: ClipboardCheck },
+      { title: 'Penilaian dan Rapor', url: '/nilai', icon: FileText },
       ...(peran === 'pimpinan'
         ? [{ title: 'Guru', url: '/guru', icon: UserRoundCheck }]
         : []),
@@ -37,4 +41,5 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
   }
   return [umum, pengaturan]
 }
+
 

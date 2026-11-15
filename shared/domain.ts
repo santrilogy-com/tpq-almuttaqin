@@ -69,3 +69,35 @@ export function nilaiAkhir(k: Komponen): { akhir: number | null; lengkap: boolea
   if (ada === 0) return { akhir: null, lengkap: false }
   return { akhir: bulat1(jumlah / bobot), lengkap: ada === 3 }
 }
+
+// ---------- Tanggal & semester ----------
+
+/** Valid bila berformat YYYY-MM-DD dan benar-benar ada di kalender (bukan 2026-02-31). */
+export function tglValid(t: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return false
+  const d = new Date(`${t}T00:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === t
+}
+
+/**
+ * Semester dari tanggal: Juli-Desember = Ganjil tahun ajaran y/y+1,
+ * Januari-Juni = Genap tahun ajaran y-1/y. Diturunkan otomatis dari tanggal
+ * nilai, jadi guru tidak perlu mengisinya dan tidak bisa salah ketik.
+ */
+export function semesterDari(tanggal: string): string {
+  const y = Number(tanggal.slice(0, 4))
+  const m = Number(tanggal.slice(5, 7))
+  return m >= 7 ? `${y}/${y + 1} Ganjil` : `${y - 1}/${y} Genap`
+}
+
+export const STATUS_ABSEN = ['H', 'I', 'S', 'A'] as const
+export type StatusAbsen = (typeof STATUS_ABSEN)[number]
+export const LABEL_ABSEN: Record<StatusAbsen, string> = {
+  H: 'Hadir',
+  I: 'Izin',
+  S: 'Sakit',
+  A: 'Alpa',
+}
+
+export const JENIS_NILAI = ['Harian', 'Imda', 'Praktek'] as const
+export type JenisNilai = (typeof JENIS_NILAI)[number]

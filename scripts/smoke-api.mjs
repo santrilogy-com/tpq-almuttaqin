@@ -199,6 +199,75 @@ check('santri tetap ada, kelasId jadi null', r.json.santri.length === 2 && r.jso
 r = await a.req('DELETE', `/api/santri/${sId}`)
 check('Pimpinan menghapus santri', r.status === 200)
 
+// ---------- Absensi / Nilai / Rapor ----------
+const kA = (await a.req('POST', '/api/kelas', { nama: 'Kelas A', jenjang: 'TPQ' })).json.kelas.id
+const kB = (await a.req('POST', '/api/kelas', { nama: 'Kelas B', jenjang: 'TPQ' })).json.kelas.id
+const mk = async (nis, nama, kelasId) =>
+  (await a.req('POST', '/api/santri', { nis, nama, jenisKelamin: 'P', jenjang: 'TPQ', kelasId })).json.santri.id
+const sa1 = await mk('A01', 'Aisyah', kA)
+const sa2 = await mk('A02', 'Bilqis', kA)
+const sb1 = await mk('B01', 'Citra', kB)
+
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kA, tanggal: '2026-11-10', materi: 'Makhraj', catatan: [{ santriId: sa1, status: 'H' }, { santriId: sa2, status: 'S' }] })
+check('guru menyimpan absensi', r.status === 200 && r.json.tersimpan === 2, JSON.stringify(r))
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kA, tanggal: '2026-11-11', catatan: [{ santriId: sb1, status: 'H' }] })
+check('santri kelas lain ditolak (anti lintas-kelas)', r.status === 400, JSON.stringify(r))
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kA, tanggal: '2026-02-31', catatan: [] })
+check('tanggal fiktif ditolak', r.status === 400)
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kA, tanggal: '2026-11-10', catatan: [{ santriId: sa1, status: 'Z' }] })
+check('status absen tidak valid ditolak', r.status === 400)
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kA, tanggal: '2026-11-10', materi: 'Makhraj 2', catatan: [{ santriId: sa1, status: 'H' }, { santriId: sa2, status: 'H' }] })
+check('simpan ulang tanggal sama menimpa (bukan duplikat)', r.status === 200)
+r = await g2.req('GET', `/api/absensi/pertemuan?kelasId=${kA}`)
+check('hanya 1 pertemuan, ringkasan benar', r.json.pertemuan.length === 1 && r.json.pertemuan[0].ringkasan.H === 2 && r.json.pertemuan[0].ringkasan.S === 0, JSON.stringify(r.json))
+r = await g2.req('GET', `/api/absensi/detail?kelasId=${kA}&tanggal=2026-11-10`)
+check('detail memuat materi + catatan terbaru', r.json.pertemuan?.materi === 'Makhraj 2' && r.json.catatan.length === 2)
+r = await g2.req('GET', `/api/absensi/detail?kelasId=${kA}&tanggal=2026-11-12`)
+check('detail tanggal kosong -> null', r.json.pertemuan === null)
+
+// 65 santri sekaligus (melewati batas parameter D1 jika tidak di-chunk)
+const banyak = []
+for (let i = 0; i < 65; i++) banyak.push(await mk(`M${i}`, `Murid ${i}`, kB))
+r = await g2.req('PUT', '/api/absensi/pertemuan', { kelasId: kB, tanggal: '2026-11-10', catatan: banyak.map((id) => ({ santriId: id, status: 'H' })) })
+check('absensi 65 santri sekaligus tersimpan semua', r.status === 200 && r.json.tersimpan === 65, JSON.stringify(r).slice(0, 200))
+
+// Nilai
+r = await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Harian', mapel: 'Iqra', nilai: 80, tanggal: '2026-11-10' })
+check('nilai: semester turun otomatis dari tanggal', r.status === 201 && r.json.nilai.semester === '2026/2027 Ganjil', JSON.stringify(r))
+const nilaiId = r.json.nilai?.id
+for (const [n, msg] of [[101, '>100'], [-1, '<0']]) {
+  r = await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Harian', mapel: 'Iqra', nilai: n, tanggal: '2026-11-10' })
+  check(`nilai ${msg} ditolak`, r.status === 400)
+}
+r = await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Harian', mapel: 'Iqra', nilai: '80', tanggal: '2026-11-10' })
+check('nilai berupa teks ditolak', r.status === 400)
+r = await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Ujian', mapel: 'Iqra', nilai: 80, tanggal: '2026-11-10' })
+check('jenis nilai tidak dikenal ditolak', r.status === 400)
+r = await g2.req('POST', '/api/nilai', { santriId: 'tidak-ada', jenis: 'Harian', mapel: 'Iqra', nilai: 80, tanggal: '2026-11-10' })
+check('nilai untuk santri tak ada -> 404', r.status === 404)
+r = await g2.req('GET', `/api/rapor/${sa1}`)
+check('rapor: Harian 80 saja = 80, bukan 32 (sementara)', r.json.akhir === 80 && r.json.lengkap === false, JSON.stringify(r.json))
+await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Imda', mapel: 'Iqra', nilai: 60, tanggal: '2026-11-11' })
+await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Praktek', mapel: 'Iqra', nilai: 85.5, tanggal: '2026-11-12' })
+r = await g2.req('GET', `/api/rapor/${sa1}`)
+// 80*.4 + 60*.3 + 85.5*.3 = 32 + 18 + 25.65 = 75.65 -> 75.7 (dibulatkan 1 desimal)
+check('rapor lengkap: 40/30/30 + desimal diterima', r.json.lengkap === true && r.json.akhir === 75.7 && r.json.predikat === 'C (Cukup)', JSON.stringify(r.json))
+check('rapor: kehadiran dari pertemuan kelasnya (1/1 = 100%)', r.json.kehadiran?.persen === 100 && r.json.kehadiran?.total === 1, JSON.stringify(r.json.kehadiran))
+await g2.req('POST', '/api/nilai', { santriId: sa1, jenis: 'Harian', mapel: 'Iqra', nilai: 50, tanggal: '2027-02-01' })
+r = await g2.req('GET', `/api/rapor/${sa1}`)
+check('rapor default = semester terbaru (Genap 2026/2027), hanya Harian 50', r.json.semester === '2026/2027 Genap' && r.json.akhir === 50, JSON.stringify(r.json))
+r = await g2.req('GET', `/api/rapor/${sa1}?semester=${encodeURIComponent('2026/2027 Ganjil')}`)
+check('rapor bisa pilih semester lain', r.json.akhir === 75.7)
+check('daftar semester terurut terbaru dulu', r.json.daftarSemester[0] === '2026/2027 Genap' && r.json.daftarSemester.length === 2)
+// pindah kelas -> kehadiran lama (kelas A) tidak ikut terhitung
+await a.req('PATCH', `/api/santri/${sa1}`, { kelasId: kB })
+r = await g2.req('GET', `/api/rapor/${sa1}`)
+check('pindah kelas: absensi kelas lama tidak dihitung', r.json.kehadiran === null, JSON.stringify(r.json.kehadiran))
+r = await g2.req('DELETE', `/api/nilai/${nilaiId}`)
+check('hapus nilai', r.status === 200)
+r = await g2.req('DELETE', `/api/absensi/pertemuan/tidak-ada`)
+check('hapus pertemuan tak ada -> 404', r.status === 404)
+
 // Logout
 r = await a.req('POST', '/api/auth/logout')
 r = await a.req('GET', '/api/auth/me')

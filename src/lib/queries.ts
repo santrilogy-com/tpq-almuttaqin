@@ -27,3 +27,6 @@ export const rupiah = (n: number) =>
     currency: 'IDR',
     maximumFractionDigits: 0,
   }).format(n)
+
+/** Tanggal lokal perangkat (WIB di Indonesia) sebagai YYYY-MM-DD. */
+export const hariIni = () => new Date().toLocaleDateString('sv-SE')

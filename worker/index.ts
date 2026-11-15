@@ -2,8 +2,10 @@
 import { secureHeaders } from 'hono/secure-headers'
 import { loadSession, sameOrigin, type AppEnv } from './middleware'
 import { authRoutes } from './routes/auth'
+import { absensiRoutes } from './routes/absensi'
 import { guruRoutes } from './routes/guru'
 import { kelasRoutes } from './routes/kelas'
+import { nilaiRoutes, raporRoutes } from './routes/nilai'
 import { santriRoutes } from './routes/santri'
 import { userRoutes } from './routes/users'
 
@@ -24,6 +26,9 @@ api.route('/users', userRoutes)
 api.route('/kelas', kelasRoutes)
 api.route('/santri', santriRoutes)
 api.route('/guru', guruRoutes)
+api.route('/absensi', absensiRoutes)
+api.route('/nilai', nilaiRoutes)
+api.route('/rapor', raporRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
 api.onError((err, c) => {
   console.error(err)
@@ -33,5 +38,6 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 

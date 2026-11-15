@@ -63,3 +63,26 @@ describe('nilaiAkhir', () => {
   })
 })
 
+
+import { semesterDari, tglValid } from './domain'
+
+describe('tglValid', () => {
+  it('menerima tanggal nyata, menolak yang tidak ada', () => {
+    expect(tglValid('2026-11-16')).toBe(true)
+    expect(tglValid('2028-02-29')).toBe(true) // kabisat
+    expect(tglValid('2026-02-29')).toBe(false)
+    expect(tglValid('2026-02-31')).toBe(false)
+    expect(tglValid('2026-13-01')).toBe(false)
+    expect(tglValid('16-11-2026')).toBe(false)
+    expect(tglValid('')).toBe(false)
+  })
+})
+
+describe('semesterDari', () => {
+  it('Juli-Desember = Ganjil, Januari-Juni = Genap tahun ajaran sebelumnya', () => {
+    expect(semesterDari('2026-07-01')).toBe('2026/2027 Ganjil')
+    expect(semesterDari('2026-12-31')).toBe('2026/2027 Ganjil')
+    expect(semesterDari('2027-01-01')).toBe('2026/2027 Genap')
+    expect(semesterDari('2027-06-30')).toBe('2026/2027 Genap')
+  })
+})

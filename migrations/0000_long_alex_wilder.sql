@@ -51,7 +51,7 @@ CREATE TABLE `nilai` (
 	`santri_id` text NOT NULL,
 	`jenis` text NOT NULL,
 	`mapel` text NOT NULL,
-	`nilai` integer NOT NULL,
+	`nilai` real NOT NULL,
 	`tanggal` text NOT NULL,
 	`semester` text DEFAULT '' NOT NULL,
 	FOREIGN KEY (`santri_id`) REFERENCES `santri`(`id`) ON UPDATE no action ON DELETE cascade

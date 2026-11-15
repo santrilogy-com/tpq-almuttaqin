@@ -2,6 +2,7 @@
 import {
   index,
   integer,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -160,7 +161,7 @@ export const nilai = sqliteTable(
       .references(() => santri.id, { onDelete: 'cascade' }),
     jenis: text('jenis', { enum: ['Harian', 'Imda', 'Praktek'] }).notNull(),
     mapel: text('mapel').notNull(),
-    nilai: integer('nilai').notNull(), // 0..100 (divalidasi di API)
+    nilai: real('nilai').notNull(), // 0..100, boleh desimal (divalidasi di API)
     tanggal: text('tanggal').notNull(),
     semester: text('semester').notNull().default(''),
   },
@@ -238,4 +239,5 @@ export const pengumuman = sqliteTable('pengumuman', {
   tampil: integer('tampil', { mode: 'boolean' }).notNull().default(true),
   createdAt: createdAt(),
 })
+
 

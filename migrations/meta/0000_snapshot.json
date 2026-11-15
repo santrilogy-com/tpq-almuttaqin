@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ccfe0eca-dd9d-4649-a7da-24fa262f253c",
+  "id": "3d8737a7-74db-462d-a047-7df62a036ae7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "absensi": {
@@ -372,7 +372,7 @@
         },
         "nilai": {
           "name": "nilai",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
