@@ -2,6 +2,7 @@
 import { ChevronsUpDown, KeyRound, LogOut } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type SessionUser } from '@/lib/api'
+import { inisial } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -19,14 +20,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
-
-export const inisial = (nama: string) =>
-  nama
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join('') || '?'
 
 const labelPeran = { pimpinan: 'Pimpinan', guru: 'Guru' } as const
 
@@ -98,3 +91,4 @@ export function NavUser({ user }: { user: SessionUser }) {
     </>
   )
 }
+

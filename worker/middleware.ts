@@ -1,11 +1,13 @@
-import { and, eq, gt } from 'drizzle-orm'
+﻿import { and, eq, gt } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/d1'
 import { getCookie } from 'hono/cookie'
 import { createMiddleware } from 'hono/factory'
 import { sessions, users, type Peran } from './db/schema'
 import { sha256Hex } from './lib/crypto'
 
-export type Env = { DB: D1Database }
+// SETUP_TOKEN: rahasia produksi untuk membuat Pimpinan pertama.
+// ALLOW_OPEN_SETUP=1: HANYA di .dev.vars lokal; tidak pernah diatur di produksi.
+export type Env = { DB: D1Database; SETUP_TOKEN?: string; ALLOW_OPEN_SETUP?: string }
 export type SessionUser = {
   id: string
   username: string
@@ -79,3 +81,5 @@ export const requirePeran = (...allowed: Peran[]) =>
     }
     await next()
   })
+
+

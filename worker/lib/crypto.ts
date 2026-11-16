@@ -58,3 +58,12 @@ export async function sha256Hex(input: string) {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
+
+/** Bandingkan dua string tanpa membocorkan posisi beda lewat waktu respons. */
+export function samaAman(a: string, b: string): boolean {
+  const x = enc.encode(a)
+  const y = enc.encode(b)
+  let diff = x.length ^ y.length
+  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0)
+  return diff === 0
+}

@@ -1,13 +1,12 @@
 ﻿import { Link } from '@tanstack/react-router'
 import { Check, Circle } from 'lucide-react'
-import { rupiah } from '@/lib/queries'
+import { rupiah, usePengumuman } from '@/lib/queries'
 import { useRingkasan } from '@/lib/laporan'
 import { cocokProfil, useProfil, type Profil } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageShell } from '@/components/page-shell'
 import { ProfilFilter } from '@/components/profil-filter'
-import { usePengumuman } from '@/features/pengumuman'
 import { GrafikBatang } from '@/features/laporan'
 
 const aktifProfil = (p: Profil, r: { TPQ: { aktif: number }; MI: { aktif: number } }) =>
@@ -106,4 +105,5 @@ export function Dashboard() {
     </PageShell>
   )
 }
+
 

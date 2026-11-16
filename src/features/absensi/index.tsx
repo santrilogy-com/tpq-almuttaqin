@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -120,7 +120,9 @@ export function AbsensiPage() {
             key={`${aktif.id}|${tanggal}`}
             kelasId={aktif.id}
             tanggal={tanggal}
-            dirty={dirty}
+            setDirty={(v) => {
+              dirty.current = v
+            }}
           />
           <Riwayat
             kelasId={aktif.id}
@@ -149,7 +151,7 @@ export function AbsensiPage() {
 function Pengisi(props: {
   kelasId: string
   tanggal: string
-  dirty: React.RefObject<boolean>
+  setDirty: (v: boolean) => void
 }) {
   const qc = useQueryClient()
   const { data: semua } = useSantri()
@@ -195,7 +197,7 @@ function Pengisi(props: {
 function Form(props: {
   kelasId: string
   tanggal: string
-  dirty: React.RefObject<boolean>
+  setDirty: (v: boolean) => void
   murid: Santri[]
   awal: Detail
   onSaved: () => void
@@ -209,7 +211,7 @@ function Form(props: {
   })
 
   const tandai = () => {
-    props.dirty.current = true
+    props.setDirty(true)
   }
   const m = useMutation({
     mutationFn: () =>
@@ -220,7 +222,7 @@ function Form(props: {
         catatan: props.murid.map((s) => ({ santriId: s.id, status: status[s.id] })),
       }),
     onSuccess: () => {
-      props.dirty.current = false
+      props.setDirty(false)
       toast.success(sudahAda ? 'Absensi diperbarui' : 'Absensi tersimpan')
       props.onSaved()
     },
@@ -293,7 +295,7 @@ function Form(props: {
           Simpan pertemuan
         </Button>
         <span className='text-sm text-muted-foreground'>
-          Hadir {hitung('H')} · Izin {hitung('I')} · Sakit {hitung('S')} · Alpa{' '}
+          Hadir {hitung('H')} Â· Izin {hitung('I')} Â· Sakit {hitung('S')} Â· Alpa{' '}
           {hitung('A')}
         </span>
       </div>
@@ -386,3 +388,4 @@ function Riwayat(props: { kelasId: string; onPilih: (tgl: string) => void }) {
     </div>
   )
 }
+

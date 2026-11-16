@@ -17,7 +17,7 @@ export function SignIn() {
   const { data, isLoading } = useQuery({
     queryKey: ['auth-status'],
     queryFn: async () =>
-      (await api.get<{ needsSetup: boolean }>('/auth/status')).data,
+      (await api.get<{ needsSetup: boolean; perluKode: boolean }>('/auth/status')).data,
     staleTime: 0,
   })
 
@@ -45,6 +45,7 @@ export function SignIn() {
             <UserAuthForm
               key={needsSetup ? 'setup' : 'login'}
               mode={needsSetup ? 'setup' : 'login'}
+              perluKode={data?.perluKode}
               redirectTo={redirect}
             />
           )}

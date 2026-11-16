@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from 'vitest'
-import { naikJilid, nilaiAkhir, predikat, rata } from './domain'
+import { hariIniWib, keRupiah, naikJilid, nilaiAkhir, periodeValid, predikat, rata, semesterDari, tglValid } from './domain'
 
 describe('predikat', () => {
   it('batas nilai', () => {
@@ -64,7 +64,6 @@ describe('nilaiAkhir', () => {
 })
 
 
-import { semesterDari, tglValid } from './domain'
 
 describe('tglValid', () => {
   it('menerima tanggal nyata, menolak yang tidak ada', () => {
@@ -87,7 +86,6 @@ describe('semesterDari', () => {
   })
 })
 
-import { hariIniWib, keRupiah, periodeValid } from './domain'
 
 describe('keRupiah', () => {
   it('menerima angka polos dan format ribuan', () => {

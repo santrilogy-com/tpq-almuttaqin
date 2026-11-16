@@ -47,5 +47,3 @@ export function insertJson(d1: D1Database, table: SQLiteTable, rows: Record<stri
 export const hapusSemua = (d1: D1Database, table: SQLiteTable): D1PreparedStatement =>
   d1.prepare(`DELETE FROM ${q(getTableName(table))}`)
 
-export type _Tak = any
-

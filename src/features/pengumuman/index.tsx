@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+﻿import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Eye, EyeOff, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, pesanGalat } from '@/lib/api'
+import { usePengumuman, type Pengumuman } from '@/lib/queries'
 import { useAuthStore } from '@/stores/auth-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,20 +13,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-
-export type Pengumuman = {
-  id: string
-  judul: string
-  isi: string
-  tampil: boolean
-  createdAt: number
-}
-
-export const usePengumuman = () =>
-  useQuery({
-    queryKey: ['pengumuman'],
-    queryFn: async () => (await api.get<{ pengumuman: Pengumuman[] }>('/pengumuman')).data.pengumuman,
-  })
 
 const tgl = (ms: number) => new Date(ms).toLocaleDateString('id-ID', { dateStyle: 'long' })
 
@@ -128,3 +115,4 @@ export function PengumumanPage() {
     </PageShell>
   )
 }
+

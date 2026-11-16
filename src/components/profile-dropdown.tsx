@@ -1,6 +1,7 @@
 ﻿import { Link } from '@tanstack/react-router'
 import { KeyRound } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
+import { inisial } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -13,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SignOutDialog } from '@/components/sign-out-dialog'
-import { inisial } from '@/components/layout/nav-user'
 
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
@@ -56,3 +56,4 @@ export function ProfileDropdown() {
     </>
   )
 }
+

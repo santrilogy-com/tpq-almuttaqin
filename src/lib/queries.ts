@@ -45,3 +45,17 @@ export const useGuruRef = () =>
     queryKey: ['guru-ref'],
     queryFn: async () => (await api.get<{ guru: GuruRef[] }>('/kbm/guru')).data.guru,
   })
+
+export type Pengumuman = {
+  id: string
+  judul: string
+  isi: string
+  tampil: boolean
+  createdAt: number
+}
+
+export const usePengumuman = () =>
+  useQuery({
+    queryKey: ['pengumuman'],
+    queryFn: async () => (await api.get<{ pengumuman: Pengumuman[] }>('/pengumuman')).data.pengumuman,
+  })

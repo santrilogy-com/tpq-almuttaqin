@@ -15,6 +15,9 @@ import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
+// Font dari paket lokal (tanpa Google Fonts: tanpa kebocoran IP, jalan offline, cocok dengan CSP)
+import '@fontsource-variable/inter'
+import '@fontsource-variable/manrope'
 // Styles
 import './styles/index.css'
 
@@ -87,6 +90,11 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// PWA: hanya di produksi. Service worker tidak menyimpan /api/*.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+}
+
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
@@ -105,4 +113,5 @@ if (!rootElement.innerHTML) {
     </StrictMode>
   )
 }
+
 

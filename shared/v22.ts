@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 // Konverter backup v22 (localStorage, `tpq-madin-backup-*.json`) -> format backup v2.
 // Murni (tanpa I/O). Baris tak valid DILEWATI dengan peringatan; tidak ada data yang dikarang.
 // Akun login (`pengguna`) sengaja tidak dimigrasi: hash v22 tidak kompatibel dan sandi harus
 // dibuat ulang lewat Kelola pengguna.
-import { type DataBackup, dataKosong, HARI_LIST } from './backup'
+import { type DataBackup, dataKosong, HARI_LIST, LOGO_REGEX, MAKS_LOGO } from './backup'
 import { JILID_LIST, semesterDari, tglValid, type Jenjang } from './domain'
 
 export type HasilKonversi = { data: DataBackup; peringatan: string[]; dilewati: number }
@@ -54,8 +54,8 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   const rakit = (j: Jenjang): DataBackup['lembaga'][number] => {
     const i = ident[j === 'MI' ? 'Ibtidaiyah' : 'TPQ'] ?? {}
     let logo: string | null = S(i.logo, 1_000_000) || null
-    if (logo && (!logo.startsWith('data:image/') || logo.length > 400_000)) {
-      w.push(`Logo ${j === 'MI' ? 'Ibtidaiyah' : 'TPQ'} tidak ikut dimigrasi (bukan gambar valid atau lebih dari 400 KB). Unggah ulang nanti.`)
+    if (logo && (!LOGO_REGEX.test(logo) || logo.length > MAKS_LOGO)) {
+      w.push(`Logo ${j === 'MI' ? 'Ibtidaiyah' : 'TPQ'} tidak ikut dimigrasi (bukan PNG/JPEG/WebP atau lebih dari 150 KB). Unggah ulang nanti.`)
       logo = null
     }
     const thn = Number(i.tahunBerdiri)
@@ -335,3 +335,4 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   if (arr('pengguna').length) w.push(`${arr('pengguna').length} akun login v22 TIDAK dimigrasi (sandi dari v22 tidak kompatibel). Buat ulang di Kelola pengguna.`)
   return { data: out, peringatan: w, dilewati }
 }
+

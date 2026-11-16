@@ -1,6 +1,8 @@
 ﻿import { Link } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
+import { useLembaga } from '@/lib/queries'
 import { cn } from '@/lib/utils'
+import { Logo } from '@/assets/logo'
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -11,6 +13,7 @@ import { Button } from '../ui/button'
 
 export function AppTitle() {
   const { setOpenMobile } = useSidebar()
+  const tpq = useLembaga().data?.find((l) => l.jenjang === 'TPQ')
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -23,10 +26,18 @@ export function AppTitle() {
             <Link
               to='/'
               onClick={() => setOpenMobile(false)}
-              className='grid flex-1 text-start text-sm leading-tight'
+              className='flex flex-1 items-center gap-2 text-start text-sm leading-tight'
             >
-              <span className='truncate font-bold'>TPQ Al-Muttaqin</span>
-              <span className='truncate text-xs'>Aplikasi pengelolaan TPQ</span>
+              {/* logo yang diunggah di Identitas; bila belum ada, lambang aplikasi */}
+              {tpq?.logo ? (
+                <img src={tpq.logo} alt='' className='size-8 shrink-0 rounded object-contain' />
+              ) : (
+                <Logo className='size-8 shrink-0' />
+              )}
+              <span className='grid min-w-0'>
+                <span className='truncate font-bold'>{tpq?.nama ?? 'TPQ Al-Muttaqin'}</span>
+                <span className='truncate text-xs'>Aplikasi pengelolaan TPQ</span>
+              </span>
             </Link>
             <ToggleSidebar />
           </div>

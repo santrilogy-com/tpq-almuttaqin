@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,14 +33,16 @@ const setupSchema = z.object({
     .trim()
     .regex(/^[A-Za-z0-9._-]{3,32}$/, 'ID 3-32 karakter: huruf, angka, titik, - atau _'),
   sandi: z.string().min(8, 'Kata sandi minimal 8 karakter'),
+  kodeSetup: z.string().optional(),
 })
 
 interface Props extends React.HTMLAttributes<HTMLFormElement> {
   redirectTo?: string
   mode: 'login' | 'setup'
+  perluKode?: boolean
 }
 
-export function UserAuthForm({ className, redirectTo, mode, ...props }: Props) {
+export function UserAuthForm({ className, redirectTo, mode, perluKode, ...props }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const { auth } = useAuthStore()
@@ -48,10 +50,14 @@ export function UserAuthForm({ className, redirectTo, mode, ...props }: Props) {
 
   const form = useForm<z.infer<typeof setupSchema>>({
     resolver: zodResolver(isSetup ? setupSchema : (loginSchema as never)),
-    defaultValues: { nama: '', namaTpq: 'TPQ Al-Muttaqin', username: '', sandi: '' },
+    defaultValues: { nama: '', namaTpq: 'TPQ Al-Muttaqin', username: '', sandi: '', kodeSetup: '' },
   })
 
   async function onSubmit(data: z.infer<typeof setupSchema>) {
+    if (isSetup && perluKode && !data.kodeSetup?.trim()) {
+      toast.error('Isi kode setup dari pemilik server')
+      return
+    }
     setIsLoading(true)
     try {
       const res = await api.post<{ user: SessionUser }>(
@@ -109,6 +115,21 @@ export function UserAuthForm({ className, redirectTo, mode, ...props }: Props) {
             />
           </>
         )}
+        {isSetup && perluKode && (
+          <FormField
+            control={form.control}
+            name='kodeSetup'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kode setup</FormLabel>
+                <FormControl>
+                  <PasswordInput autoComplete='off' placeholder='Dari pemilik server (SETUP_TOKEN)' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name='username'
@@ -152,3 +173,4 @@ export function UserAuthForm({ className, redirectTo, mode, ...props }: Props) {
     </Form>
   )
 }
+

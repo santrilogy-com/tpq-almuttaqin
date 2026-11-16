@@ -1,9 +1,12 @@
-// Format backup v2 + validasinya. Murni (tanpa I/O): dipakai Worker (restore) dan
+﻿// Format backup v2 + validasinya. Murni (tanpa I/O): dipakai Worker (restore) dan
 // frontend (pratinjau). Akun pengguna/sandi SENGAJA tidak termasuk dalam backup.
 import { z } from 'zod'
 import { JENJANG, JENIS_NILAI, MAKS_JUMLAH, STATUS_ABSEN, STATUS_SPP, periodeValid, tglValid } from './domain'
 
 export const FORMAT_BACKUP = 'tpq-v2'
+/** Logo: hanya raster base64 (PNG/JPEG/WebP). SVG ditolak karena dapat memuat skrip. */
+export const LOGO_REGEX = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/
+export const MAKS_LOGO = 150_000
 export const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const
 
 const id = z.string().min(1).max(64)
@@ -26,7 +29,7 @@ export const SKEMA = {
     tahunBerdiri: z.number().int().min(1800).max(2200).nullable(),
     nsmNpsn: teks(30),
     motto: teks(200),
-    logo: z.string().max(400_000).startsWith('data:image/').nullable(),
+    logo: z.string().max(MAKS_LOGO).regex(LOGO_REGEX, 'logo harus gambar PNG/JPEG/WebP').nullable(),
     tarifSpp: z.number().int().min(0).max(100_000_000),
     tahunAjaran: teks(20),
   }),
@@ -192,3 +195,4 @@ export function cekRelasi(d: DataBackup): string | null {
 export const hitungBaris = (d: DataBackup) => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, d[k].length])) as Record<KunciBackup, number>
 
 export const dataKosong = (): DataBackup => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, []])) as unknown as DataBackup
+

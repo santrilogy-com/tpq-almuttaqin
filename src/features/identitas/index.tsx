@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { keRupiah } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
+import { kecilkanLogo } from '@/lib/gambar'
 import { rupiah, useLembaga } from '@/lib/queries'
 import { type Lembaga } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,15 @@ function Kartu({ awal }: { awal: Lembaga }) {
     tarifSpp: String(awal.tarifSpp),
     tahunAjaran: awal.tahunAjaran,
   })
+  const [logo, setLogo] = useState<string | null>(awal.logo)
+  const pilihLogo = async (f: File | undefined) => {
+    if (!f) return
+    try {
+      setLogo(await kecilkanLogo(f))
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Gagal membaca gambar')
+    }
+  }
   const tarif = v.tarifSpp.trim() === '0' || v.tarifSpp.trim() === '' ? 0 : keRupiah(v.tarifSpp)
   const tahun = v.tahunBerdiri.trim() === '' ? null : Number(v.tahunBerdiri)
   const tahunOk = tahun === null || (Number.isInteger(tahun) && tahun >= 1800 && tahun <= 2200)
@@ -57,6 +67,7 @@ function Kartu({ awal }: { awal: Lembaga }) {
         ...v,
         tahunBerdiri: tahun,
         tarifSpp: tarif,
+        logo,
       }),
     onSuccess: () => {
       toast.success(`Identitas ${awal.namaSingkat} disimpan`)
@@ -95,6 +106,23 @@ function Kartu({ awal }: { awal: Lembaga }) {
           <Field label='Telepon / HP' htmlFor={`i-tel-${awal.jenjang}`}>
             <Input id={`i-tel-${awal.jenjang}`} inputMode='tel' {...teks('telepon')} />
           </Field>
+          <div className='flex items-center gap-3 sm:col-span-2'>
+            {logo ? (
+              <img src={logo} alt={`Logo ${awal.namaSingkat}`} className='size-16 rounded border object-contain' />
+            ) : (
+              <div className='flex size-16 items-center justify-center rounded border text-xs text-muted-foreground'>Belum ada</div>
+            )}
+            <div className='space-y-1'>
+              <Field label='Logo (PNG/JPEG/WebP, dikecilkan otomatis)' htmlFor={`i-logo-${awal.jenjang}`}>
+                <Input id={`i-logo-${awal.jenjang}`} type='file' accept='image/png,image/jpeg,image/webp' onChange={(e) => pilihLogo(e.target.files?.[0])} />
+              </Field>
+              {logo && (
+                <Button type='button' variant='ghost' size='sm' onClick={() => setLogo(null)}>
+                  Hapus logo
+                </Button>
+              )}
+            </div>
+          </div>
           <div className='sm:col-span-2'>
             <Field label='Alamat' htmlFor={`i-alm-${awal.jenjang}`}>
               <Input id={`i-alm-${awal.jenjang}`} {...teks('alamat')} />

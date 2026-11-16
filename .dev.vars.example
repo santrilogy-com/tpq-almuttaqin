@@ -1,0 +1,4 @@
+﻿# Salin ke .dev.vars (tidak masuk git) untuk pengembangan lokal.
+# Membuka setup tanpa kode HANYA untuk lokal. JANGAN pernah mengatur ini di produksi.
+ALLOW_OPEN_SETUP=1
+

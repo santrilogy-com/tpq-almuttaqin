@@ -51,6 +51,7 @@ api.route('/backup', backupRoutes)
 api.route('/import', importRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
 api.onError((err, c) => {
+  // eslint-disable-next-line no-console -- log galat server untuk observability Cloudflare
   console.error(err)
   return c.json({ error: 'Terjadi kesalahan di server' }, 500)
 })
@@ -58,6 +59,7 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 
 

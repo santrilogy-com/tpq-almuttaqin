@@ -1,4 +1,4 @@
-﻿import { type Jenjang } from '@shared/domain'
+﻿import { type JenisNilai, type Jenjang, type StatusAbsen, type StatusSpp } from '@shared/domain'
 
 export type Kelas = {
   id: string
@@ -36,7 +36,6 @@ export type Guru = {
   honorLunas: boolean
 }
 
-import { type JenisNilai, type StatusAbsen } from '@shared/domain'
 
 export type Pertemuan = {
   id: string
@@ -70,7 +69,6 @@ export type Rapor = {
   kehadiran: { hadir: number; total: number; persen: number } | null
 }
 
-import { type StatusSpp } from '@shared/domain'
 
 export type Transaksi = {
   id: string
@@ -114,4 +112,6 @@ export type Lembaga = {
   motto: string
   tarifSpp: number
   tahunAjaran: string
+  logo: string | null
 }
+

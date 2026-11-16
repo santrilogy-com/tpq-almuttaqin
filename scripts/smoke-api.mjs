@@ -38,6 +38,9 @@ const g = new Client() // guru
 
 let r = await a.req('GET', '/api/auth/status')
 check('status: belum disiapkan', r.json.needsSetup === true, JSON.stringify(r))
+check('di localhost setup tidak butuh kode', r.json.perluKode === false)
+
+// (Jalur setup terkunci/SETUP_TOKEN diuji terpisah: node scripts/smoke-setup-lock.mjs)
 
 r = await a.req('GET', '/api/users')
 check('tanpa login -> 401', r.status === 401)
@@ -479,14 +482,14 @@ check('ringkasan: rata kehadiran 0-100', rk.rataKehadiran >= 0 && rk.rataKehadir
 check('saldo kas ringkasan = saldo halaman Keuangan', rk.keuangan.saldoKas === (await a.req('GET', '/api/keuangan')).json.ringkasan.saldo)
 
 await a.req('POST', '/api/santri', { nis: 'INJ1', nama: '=HYPERLINK("http://evil")', jenisKelamin: 'L', jenjang: 'TPQ' })
-const csvRes = await fetch('http://localhost:5199/api/laporan/export/santri', { headers: { cookie: a.cookie } })
+const csvRes = await fetch(base + '/api/laporan/export/santri', { headers: { cookie: a.cookie } })
 const csvBuf = new Uint8Array(await csvRes.clone().arrayBuffer())
 const csv = await csvRes.text()
 check('export santri: header CSV + nama file', csvRes.status === 200 && /text\/csv/.test(csvRes.headers.get('content-type')) && /filename="tpq-santri-\d{4}-\d{2}-\d{2}\.csv"/.test(csvRes.headers.get('content-disposition')))
 check('export santri: byte BOM UTF-8 (EF BB BF) terkirim + kepala kolom', csvBuf[0] === 0xef && csvBuf[1] === 0xbb && csvBuf[2] === 0xbf && csv.startsWith('NIS,Nama,'))
 check('export santri: CSV injection dinetralkan (apostrof)', csv.includes(`"'=HYPERLINK(""http://evil"")"`) && !/,=HYPERLINK/.test(csv), csv.split('\r\n').find((l) => l.includes('INJ1')))
 for (const j of ['nilai', 'absensi', 'keuangan', 'tabungan', 'guru']) {
-  const x = await fetch(`http://localhost:5199/api/laporan/export/${j}`, { headers: { cookie: a.cookie } })
+  const x = await fetch(`${base}/api/laporan/export/${j}`, { headers: { cookie: a.cookie } })
   check(`export ${j} berhasil (Pimpinan)`, x.status === 200 && (await x.text()).split('\r\n').length > 1)
 }
 for (const j of ['guru', 'keuangan', 'tabungan']) {
@@ -499,7 +502,7 @@ r = await a.req('GET', '/api/laporan/export/rahasia')
 check('jenis export tak dikenal -> 404', r.status === 404)
 
 // ---------- Backup / Restore / Import ----------
-const BASE = 'http://localhost:5199'
+const BASE = base
 const ambilBackup = async () => {
   const x = await fetch(`${BASE}/api/backup/export`, { headers: { cookie: a.cookie } })
   const teks = await x.text()
@@ -632,6 +635,29 @@ check('template tak dikenal -> 404', r.status === 404)
 // kembalikan data awal agar tes lain/penjelajahan manual tetap punya isi
 await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: b1.json })
 
+// ---------- Logo lembaga ----------
+const PNG1 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+for (const [nama, logo] of [
+  ['SVG (bisa memuat skrip)', 'data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+'],
+  ['skema javascript:', 'javascript:alert(1)'],
+  ['URL eksternal', 'https://evil.example/pelacak.png'],
+  ['base64 dengan sisipan HTML', 'data:image/png;base64,AAAA"><script>alert(1)</script>'],
+  ['terlalu besar (>150 KB)', 'data:image/png;base64,' + 'A'.repeat(160000)],
+]) {
+  r = await a.req('PATCH', '/api/lembaga/TPQ', { logo })
+  check(`logo ditolak: ${nama}`, r.status === 400, `${r.status} ${JSON.stringify(r.json).slice(0, 100)}`)
+}
+r = await a.req('PATCH', '/api/lembaga/TPQ', { logo: PNG1 })
+check('logo PNG valid diterima', r.status === 200 && r.json.lembaga.logo === PNG1)
+r = await a.req('PATCH', '/api/lembaga/TPQ', { motto: 'Berilmu dan beradab' })
+check('PATCH motto TIDAK menghapus logo', r.json.lembaga.logo === PNG1 && r.json.lembaga.motto === 'Berilmu dan beradab', JSON.stringify(r.json).slice(0, 120))
+const bl = await ambilBackup()
+check('logo ikut backup dan lolos validasi restore', bl.json.data.lembaga.find((l) => l.jenjang === 'TPQ').logo === PNG1)
+r = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: bl.json })
+check('restore dengan logo berhasil', r.status === 200)
+r = await a.req('PATCH', '/api/lembaga/TPQ', { logo: null })
+check('logo bisa dihapus (null)', r.status === 200 && r.json.lembaga.logo === null)
+
 // Logout
 r = await a.req('POST', '/api/auth/logout')
 r = await a.req('GET', '/api/auth/me')
@@ -639,5 +665,6 @@ check('logout menghapus sesi', r.status === 401)
 
 console.log(`\n${pass} lulus, ${fail} gagal`)
 process.exit(fail ? 1 : 0)
+
 
 

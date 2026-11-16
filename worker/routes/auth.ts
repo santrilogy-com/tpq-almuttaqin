@@ -1,4 +1,4 @@
-import { and, count, eq, lt, ne } from 'drizzle-orm'
+﻿import { and, count, eq, lt, ne } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { z } from 'zod'
@@ -7,6 +7,7 @@ import {
   DUMMY_HASH,
   hashPassword,
   randomToken,
+  samaAman,
   sha256Hex,
   verifyPassword,
 } from '../lib/crypto'
@@ -62,10 +63,17 @@ export const authRoutes = new Hono<AppEnv>()
 
 // Aplikasi baru belum punya pengguna: pemilik membuat akun Pimpinan pertama sendiri.
 // Tidak ada kata sandi bawaan di mana pun.
+// Setup TERKUNCI secara bawaan (fail-closed): tanpa ini, orang pertama yang membuka URL publik yang
+// baru dideploy bisa merebut akun Pimpinan. Hanya dua cara membukanya:
+//  - produksi: rahasia SETUP_TOKEN diatur pemilik, dan kodenya dikirim di form setup;
+//  - lokal: ALLOW_OPEN_SETUP=1 di .dev.vars (tidak pernah ada di produksi).
+// Keputusan sengaja TIDAK memakai nama host/header dari permintaan karena bisa dipalsukan.
+const setupTerbuka = (env: { ALLOW_OPEN_SETUP?: string }) => env.ALLOW_OPEN_SETUP === '1'
+
 authRoutes.get('/status', async (c) => {
   const db = c.get('db')
   const [{ n }] = await db.select({ n: count() }).from(users)
-  return c.json({ needsSetup: n === 0 })
+  return c.json({ needsSetup: n === 0, perluKode: !setupTerbuka(c.env) })
 })
 
 authRoutes.post('/setup', async (c) => {
@@ -79,12 +87,21 @@ authRoutes.post('/setup', async (c) => {
       nama: z.string().trim().min(1).max(100),
       sandi,
       namaTpq: z.string().trim().min(1).max(100).default('TPQ Al-Muttaqin'),
+      kodeSetup: z.string().max(200).optional(),
     })
     .safeParse(await c.req.json().catch(() => null))
   if (!parsed.success) {
     return c.json({ error: parsed.error.issues[0].message }, 400)
   }
   const d = parsed.data
+
+  if (!setupTerbuka(c.env)) {
+    const token = c.env.SETUP_TOKEN
+    if (!token) {
+      return c.json({ error: 'Setup dikunci: pemilik harus mengatur rahasia SETUP_TOKEN di Cloudflare (lihat README).' }, 403)
+    }
+    if (!samaAman(d.kodeSetup ?? '', token)) return c.json({ error: 'Kode setup salah' }, 403)
+  }
 
   const [user] = await db
     .insert(users)
@@ -194,3 +211,4 @@ authRoutes.post('/ganti-sandi', requireAuth, async (c) => {
     .where(and(eq(sessions.userId, me.id), ne(sessions.tokenHash, keep)))
   return c.json({ ok: true })
 })
+

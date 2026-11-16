@@ -1,4 +1,5 @@
-﻿import { describe, expect, it } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, expect, it } from 'vitest'
 import { cekRelasi, FORMAT_BACKUP, SKEMA_BACKUP } from './backup'
 import seed from './fixtures/v22-seed.json'
 import { konversiV22 } from './v22'
@@ -71,3 +72,4 @@ describe('konversi data contoh v22 yang asli', () => {
     expect(HASIL.peringatan.join('\n')).toMatch(/TPQ dan Ibtidaiyah/)
   })
 })
+

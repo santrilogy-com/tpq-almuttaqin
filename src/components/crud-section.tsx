@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
@@ -65,7 +65,7 @@ export function CrudSection(props: {
   const [hapus, setHapus] = useState<any | null>(null)
 
   const q = useQuery({
-    queryKey: [props.queryKey],
+    queryKey: [props.queryKey, props.url],
     queryFn: async () => (await api.get<{ rows: any[] }>(props.url)).data.rows,
   })
   const refresh = () => {
@@ -269,3 +269,4 @@ function FormDialog(props: {
     </Dialog>
   )
 }
+
