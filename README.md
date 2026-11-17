@@ -1,7 +1,7 @@
 ﻿# TPQ Al-Muttaqin (v2)
 
 Aplikasi pengelolaan TPQ dan Madrasah Ibtidaiyah Al-Muttaqin: santri, kelas, absensi, penilaian dan rapor,
-hafalan, tabungan, keuangan dan SPP, RAPBM, KBM, pengumuman, laporan, import/export CSV, serta backup.
+hafalan Qur'ani, tabungan, keuangan dan SPP, RAPBM, KBM, pengumuman, laporan, foto santri dan ustadz, saklar lembaga (TPQ / Madrasah), navigasi bawah untuk HP, import/export CSV, serta backup.
 
 Menggantikan v22 (aplikasi statis berbasis localStorage). Panduan pengguna: [PANDUAN.md](PANDUAN.md).
 
@@ -70,7 +70,7 @@ Domain sendiri: Cloudflare dashboard > Workers & Pages > `tpq-al-muttaqin` > Set
 2. Di v2 (sebagai Pimpinan): **Data dan Backup** > pilih file itu > baca pratinjau dan peringatan > ketik `PULIHKAN`.
 
 Yang dipetakan: santri, guru, kelas, nilai, absensi, hafalan, tabungan (saldo v22 dipertahankan), kas, SPP bulan berjalan,
-RAPBM, biaya, target, KBM, pengumuman, identitas dan logo. Yang **tidak** ikut: akun login (sandi v22 tidak kompatibel,
+RAPBM, biaya, target, KBM, pengumuman, identitas dan logo, serta foto santri/guru (PNG/JPEG/WebP maks 150 KB; yang lebih besar dilewati dengan peringatan). Istilah "Iqra" diganti "Qur'ani" (nama kelas, jilid, jenis setoran, mapel). Yang **tidak** ikut: akun login (sandi v22 tidak kompatibel,
 buat ulang di Kelola pengguna) dan antrean sinkron Google Sheet. Konverter diuji dengan data contoh v22 yang asli.
 
 ## Keamanan
@@ -81,7 +81,7 @@ buat ulang di Kelola pengguna) dan antrean sinkron Google Sheet. Konverter diuji
 - Akun terkunci 60 detik setelah 5 kali gagal login. Pesan galat login sama untuk ID tak dikenal dan sandi salah.
 - Backup tidak memuat akun, sandi, atau sesi. Restore diperiksa penuh (skema + relasi + saldo) sebelum menyentuh database
   dan berjalan atomik.
-- Ekspor CSV menetralkan "CSV injection". Logo hanya PNG/JPEG/WebP (SVG ditolak).
+- Ekspor CSV menetralkan "CSV injection". Logo dan foto hanya PNG/JPEG/WebP (SVG ditolak), diperiksa tipe, ukuran, dan byte awal berkas; disajikan hanya untuk yang sudah login dengan cache privat.
 - Header: CSP ketat (tanpa skrip/font pihak ketiga), `X-Frame-Options: DENY`, `nosniff`, `Cache-Control: no-store` untuk API.
 
 Keterbatasan yang perlu diketahui:
@@ -109,3 +109,30 @@ public/    manifest, service worker, ikon, _headers (CSP)
 
 Ubah skema: edit `worker/db/schema.ts` > `pnpm db:generate` > `pnpm db:migrate:local`.
 
+
+
+## Biaya (perkiraan)
+
+Perhitungan memakai tarif resmi Cloudflare ([Workers](https://developers.cloudflare.com/workers/platform/pricing/),
+[D1](https://developers.cloudflare.com/d1/platform/pricing/), [R2](https://developers.cloudflare.com/r2/pricing/); dicek 17 Nov 2026,
+tarif bisa berubah) dan asumsi: sekitar 300 santri, 30 ustadz, 15 pengguna aktif.
+
+| Komponen | Batas gratis | Pemakaian perkiraan | Biaya |
+|---|---|---|---|
+| Workers (API) | 100.000 permintaan/hari, **10 ms CPU per permintaan** | beberapa ribu/hari | Rp 0 |
+| File statis (tampilan) | tak terbatas dan gratis | semua | Rp 0 |
+| D1 baca/tulis | 5 juta baca/hari, 100.000 tulis/hari | puluhan ribu baca/hari | Rp 0 |
+| D1 penyimpanan (termasuk foto) | 5 GB | sekitar 10 MB foto + data | Rp 0 |
+
+Jadi pada skala TPQ biasa, **biaya perkiraan Rp 0 per bulan** di paket gratis. Bila perlu paket berbayar:
+**Workers Paid US$5 per bulan** (sekitar Rp 80.000 pada kurs kasar), yang memuat 10 juta permintaan, 30 juta ms CPU, dan
+D1 25 miliar baca / 50 juta tulis / 5 GB.
+
+Hal yang perlu dipantau:
+
+- **Batas CPU 10 ms per permintaan di paket gratis.** Login memakai hash PBKDF2 yang cukup berat; pembuatan akun pertama berhasil
+  di produksi, tetapi bila kelak ada galat saat masuk, ini penyebab pertama yang perlu dicurigai, dan pindah ke paket US$5 menyelesaikannya.
+- **Foto** disimpan di D1 (tabel `foto`), bukan R2: 330 foto x sekitar 30 KB = sekitar 10 MB, jauh di bawah 5 GB. Bila kelak butuh
+  foto resolusi tinggi atau puluhan ribu berkas, pindahkan ke R2 (10 GB gratis, lalu US$0,015 per GB-bulan, tanpa biaya keluar data).
+- **Baca D1**: Beranda hanya memindai absensi 60 hari terakhir dan di-cache 2 menit di sisi klien supaya tidak menghabiskan kuota baca.
+- **Domain sendiri** (opsional) dibayar ke registrar, bukan ke Cloudflare Workers.

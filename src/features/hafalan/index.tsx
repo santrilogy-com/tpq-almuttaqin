@@ -1,10 +1,11 @@
+﻿import { METODE, type JenisSetoran } from '@shared/domain'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, pesanGalat } from '@/lib/api'
 import { hariIni, useSantri } from '@/lib/queries'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,12 +27,11 @@ import {
 } from '@/components/ui/table'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 type Setoran = {
   id: string
   santriId: string
-  jenis: 'Iqra' | 'Hafalan'
+  jenis: JenisSetoran
   materi: string
   nilai: 'Lancar' | 'Cukup' | 'Perlu Bimbingan'
   tanggal: string
@@ -41,7 +41,7 @@ const NILAI = ['Lancar', 'Cukup', 'Perlu Bimbingan'] as const
 export function HafalanPage() {
   const qc = useQueryClient()
   const pimpinan = useAuthStore((s) => s.auth.user?.peran) === 'pimpinan'
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: semua } = useSantri()
   const murid = useMemo(
     () =>
@@ -51,7 +51,7 @@ export function HafalanPage() {
     [semua, profil]
   )
   const [santriId, setSantriId] = useState('')
-  const [jenis, setJenis] = useState<'Iqra' | 'Hafalan'>('Iqra')
+  const [jenis, setJenis] = useState<JenisSetoran>(METODE)
   const [materi, setMateri] = useState('')
   const [nilai, setNilai] = useState<(typeof NILAI)[number]>('Lancar')
   const [tanggal, setTanggal] = useState(hariIni())
@@ -89,10 +89,7 @@ export function HafalanPage() {
   const pm = new Map((progres.data ?? []).map((p) => [p.santriId, p]))
 
   return (
-    <PageShell title='Hafalan dan Iqra' description='Catat setoran bacaan Iqra dan hafalan santri.'>
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
+    <PageShell title="Hafalan dan Qur'ani" description="Catat setoran bacaan Qur'ani dan hafalan santri.">
       <form
         className='mb-4 flex flex-wrap items-end gap-3'
         onSubmit={(e) => {
@@ -120,13 +117,13 @@ export function HafalanPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='Iqra'>Iqra</SelectItem>
+              <SelectItem value={METODE}>{METODE}</SelectItem>
               <SelectItem value='Hafalan'>Hafalan</SelectItem>
             </SelectContent>
           </Select>
         </Field>
         <Field label='Materi' htmlFor='h-materi'>
-          <Input id='h-materi' className='w-60' placeholder='Iqra 3 halaman 14' value={materi} onChange={(e) => setMateri(e.target.value)} />
+          <Input id='h-materi' className='w-60' placeholder="Qur'ani 3 halaman 14" value={materi} onChange={(e) => setMateri(e.target.value)} />
         </Field>
         <Field label='Nilai'>
           <Select value={nilai} onValueChange={(v) => setNilai(v as typeof nilai)}>
@@ -216,3 +213,7 @@ export function HafalanPage() {
     </PageShell>
   )
 }
+
+
+
+

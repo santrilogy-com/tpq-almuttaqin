@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Download, Upload } from 'lucide-react'
 import { toast } from 'sonner'
@@ -25,7 +25,7 @@ const LABEL: Record<string, string> = {
   lembaga: 'Identitas lembaga', kelas: 'Kelas', santri: 'Santri', guru: 'Guru', pertemuan: 'Pertemuan', absensi: 'Catatan absensi',
   nilai: 'Nilai', setoran: 'Setoran hafalan', tabungan: 'Transaksi tabungan', transaksi: 'Transaksi kas', tagihanSpp: 'Tagihan SPP',
   pengumuman: 'Pengumuman', jadwalKbm: 'Jadwal KBM', alokasiWaktu: 'Alokasi waktu', piket: 'Piket', absensiGuru: 'Absensi guru',
-  rapbm: 'Pos RAPBM', biaya: 'Biaya', targetTabungan: 'Target menabung',
+  rapbm: 'Pos RAPBM', biaya: 'Biaya', targetTabungan: 'Target menabung', foto: 'Foto santri dan guru',
 }
 
 const baca = (f: File) =>
@@ -253,7 +253,7 @@ function ImportCsv() {
           <div className='space-y-2'>
             <p className='text-sm'>
               <b>{hasil.dibuat}</b> baris berhasil
-              {hasil.kelasBaru ? ` · ${hasil.kelasBaru} kelas baru dibuat otomatis` : ''} · <b>{hasil.ditolak.length}</b> ditolak
+              {hasil.kelasBaru ? ` Â· ${hasil.kelasBaru} kelas baru dibuat otomatis` : ''} Â· <b>{hasil.ditolak.length}</b> ditolak
             </p>
             {hasil.ditolak.length > 0 && (
               <div className='max-h-56 overflow-auto rounded-md border'>
@@ -313,3 +313,4 @@ function ZonaBerbahaya() {
     </Card>
   )
 }
+

@@ -1,8 +1,8 @@
 ﻿import { and, eq, ne } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { naikJilid } from '../../shared/domain'
-import { JENJANG, santri } from '../db/schema'
+import { JILID_LIST, naikJilid, normalisasiMetode } from '../../shared/domain'
+import { JENJANG, foto, santri } from '../db/schema'
 import { parseBody } from '../lib/validate'
 import { requireAuth, requirePeran, type AppEnv } from '../middleware'
 
@@ -16,7 +16,7 @@ const body = z.object({
   jenisKelamin: z.enum(['L', 'P']),
   jenjang: z.enum(JENJANG),
   kelasId: z.string().nullable().optional(),
-  jilid: teks(30).optional(),
+  jilid: teks(30).transform(normalisasiMetode).optional(),
   angkatan: teks(20).optional(),
   rombel: teks(30).optional(),
   status: z.enum(['aktif', 'keluar', 'lulus']).optional(),
@@ -52,7 +52,7 @@ santriRoutes.post('/', async (c) => {
   if (await nisSudahAda(db, p.data.nis)) {
     return c.json({ error: 'NIS sudah dipakai santri lain' }, 409)
   }
-  const [row] = await db.insert(santri).values(p.data).returning()
+  const [row] = await db.insert(santri).values({ ...p.data, jilid: p.data.jilid || JILID_LIST[0] }).returning()
   return c.json({ santri: row }, 201)
 })
 
@@ -99,6 +99,10 @@ santriRoutes.delete('/:id', requirePeran('pimpinan'), async (c) => {
     .where(eq(santri.id, c.req.param('id')))
     .returning({ id: santri.id })
   if (res.length === 0) return c.json({ error: 'Santri tidak ditemukan' }, 404)
+  // Foto tidak punya FK: hapus bersama pemiliknya.
+  await c.get('db').delete(foto).where(and(eq(foto.jenis, 'santri'), eq(foto.ownerId, res[0].id)))
   return c.json({ ok: true })
 })
+
+
 

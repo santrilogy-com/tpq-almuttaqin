@@ -1,4 +1,4 @@
-import { type QueryClient } from '@tanstack/react-query'
+﻿import { type QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
@@ -15,7 +15,7 @@ export const Route = createRootRouteWithContext<{
       <>
         <NavigationProgress />
         <Outlet />
-        <Toaster duration={5000} />
+        <Toaster duration={5000} mobileOffset={{ bottom: 76 }} />
         {import.meta.env.MODE === 'development' && (
           <>
             <ReactQueryDevtools buttonPosition='bottom-left' />
@@ -28,3 +28,4 @@ export const Route = createRootRouteWithContext<{
   notFoundComponent: NotFoundError,
   errorComponent: GeneralError,
 })
+

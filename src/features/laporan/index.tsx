@@ -1,9 +1,9 @@
 ﻿import { Download } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { LABEL_ABSEN, type StatusAbsen } from '@shared/domain'
-import { useRingkasan } from '@/lib/laporan'
+import { LABEL_ABSEN, type StatusAbsen, labelJenjang } from '@shared/domain'
+import { keuanganUntuk, useRingkasan } from '@/lib/laporan'
 import { rupiah } from '@/lib/queries'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,9 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
-const lj = (j: string) => (j === 'MI' ? 'Ibtidaiyah' : 'TPQ')
+const lj = (j: string) => labelJenjang(j === 'MI' ? 'MI' : 'TPQ')
 
 export function GrafikBatang(props: { data: { nama: string; jumlah: number }[] }) {
   if (props.data.length === 0) return <p className='text-sm text-muted-foreground'>Belum ada data.</p>
@@ -41,8 +40,9 @@ const WARNA: Record<StatusAbsen, string> = { H: '#059669', I: '#0284c7', S: '#f5
 
 export function LaporanPage() {
   const pimpinan = useAuthStore((s) => s.auth.user?.peran) === 'pimpinan'
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: r } = useRingkasan()
+  const keu = r?.keuangan ? keuanganUntuk(r.keuangan, profil) : undefined
   const kelas = (r?.santriPerKelas ?? []).filter((k) => cocokProfil(profil, k.jenjang))
 
   // Gabungkan per angkatan lintas jenjang sesuai profil.
@@ -65,18 +65,15 @@ export function LaporanPage() {
 
   return (
     <PageShell title='Laporan' description='Rekap data dan export CSV.'>
-      <div className='mb-4'>
-        <ProfilFilter />
-      </div>
 
-      {r?.keuangan && (
+      {r?.keuangan && keu && (
         <div className='mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
           {(
             [
-              ['Saldo kas', rupiah(r.keuangan.saldoKas)],
-              [`SPP lunas ${r.keuangan.spp.periode}`, `${r.keuangan.spp.lunas}/${r.keuangan.spp.total} (${rupiah(r.keuangan.spp.nominalLunas)})`],
-              ['Total tabungan', rupiah(r.keuangan.totalTabungan)],
-              ['Honor guru belum lunas', String(r.keuangan.honorBelumLunas)],
+              ['Saldo kas', rupiah(keu.saldoKas)],
+              [`SPP lunas ${r.keuangan.periode}`, `${keu.spp.lunas}/${keu.spp.total} (${rupiah(keu.spp.nominalLunas)})`],
+              ['Total tabungan', rupiah(keu.totalTabungan)],
+              ['Honor guru belum lunas', String(keu.honorBelumLunas)],
             ] as const
           ).map(([j, v]) => (
             <Card key={j}>
@@ -189,7 +186,7 @@ export function LaporanPage() {
                 </ResponsiveContainer>
               </div>
             )}
-            <p className='mt-1 text-xs text-muted-foreground'>H = Hadir, I = Izin, S = Sakit, A = Alpa. L = Laki-laki, P = Perempuan.</p>
+            <p className='mt-1 text-xs text-muted-foreground'>H = Hadir, I = Izin, S = Sakit, A = Alpa. L = Laki-laki, P = Perempuan. Absensi: 60 hari terakhir.</p>
           </CardContent>
         </Card>
       </div>
@@ -214,3 +211,7 @@ export function LaporanPage() {
     </PageShell>
   )
 }
+
+
+
+

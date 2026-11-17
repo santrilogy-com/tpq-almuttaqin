@@ -1,7 +1,7 @@
 ﻿import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { LOGO_REGEX, MAKS_LOGO } from '../../shared/backup'
+import { MAKS_LOGO, gambarValid } from '../../shared/backup'
 import { JENJANG } from '../../shared/domain'
 import { lembaga } from '../db/schema'
 import { parseBody } from '../lib/validate'
@@ -25,7 +25,7 @@ const body = z.object({
   nsmNpsn: teks(30),
   motto: teks(200),
   tarifSpp: z.number().int().min(0).max(100_000_000),
-  logo: z.string().max(MAKS_LOGO, 'Logo terlalu besar (maks 150 KB)').regex(LOGO_REGEX, 'Logo harus gambar PNG, JPEG, atau WebP').nullable(),
+  logo: z.string().refine((v) => gambarValid(v, MAKS_LOGO), 'Logo harus gambar PNG, JPEG, atau WebP yang valid (maks 150 KB)').nullable(),
   tahunAjaran: teks(20),
 })
 
@@ -45,4 +45,5 @@ lembagaRoutes.patch('/:jenjang', requirePeran('pimpinan'), async (c) => {
   if (!row) return c.json({ error: 'Lembaga tidak ditemukan' }, 404)
   return c.json({ lembaga: row })
 })
+
 

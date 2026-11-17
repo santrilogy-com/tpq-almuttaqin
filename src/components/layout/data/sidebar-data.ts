@@ -35,7 +35,7 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
       { title: 'Kelas', url: '/kelas', icon: School },
       { title: 'Absensi', url: '/absensi', icon: ClipboardCheck },
       { title: 'Penilaian dan Rapor', url: '/nilai', icon: FileText },
-      { title: 'Hafalan dan Iqra', url: '/hafalan', icon: BookOpen },
+      { title: "Hafalan dan Qur'ani", url: '/hafalan', icon: BookOpen },
       { title: 'KBM', url: '/kbm', icon: CalendarClock },
       { title: 'Pengumuman', url: '/pengumuman', icon: Megaphone },
       { title: 'Laporan', url: '/laporan', icon: BarChart3 },
@@ -67,6 +67,7 @@ export function navGroupsFor(peran: Peran): NavGroup[] {
   }
   return pimpinan ? [utama, keuangan, pengaturan] : [utama, pengaturan]
 }
+
 
 
 

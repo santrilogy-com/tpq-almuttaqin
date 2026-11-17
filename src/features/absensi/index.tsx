@@ -7,8 +7,9 @@ import { api, pesanGalat } from '@/lib/api'
 import { hariIni, useKelas, useSantri } from '@/lib/queries'
 import { type Pertemuan, type Santri } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
+import { useGuard } from '@/stores/guard-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -28,8 +29,8 @@ import {
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Field } from '@/components/field'
+import { FotoAvatar } from '@/components/foto-avatar'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 type Detail = {
   pertemuan: { id: string; materi: string } | null
@@ -44,7 +45,7 @@ const WARNA: Record<StatusAbsen, string> = {
 }
 
 export function AbsensiPage() {
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: kelas } = useKelas()
   const [kelasId, setKelasId] = useState<string>('')
   const [tanggal, setTanggal] = useState(hariIni())
@@ -57,6 +58,9 @@ export function AbsensiPage() {
     [kelas, profil]
   )
   const aktif = daftar.find((k) => k.id === kelasId) ?? daftar[0]
+
+  // Keluar dari halaman: penanda perubahan-belum-disimpan tidak boleh tertinggal.
+  useEffect(() => () => useGuard.getState().setKotor(false), [])
 
   // Peringatan bawaan browser saat menutup/memuat ulang dengan perubahan belum disimpan.
   useEffect(() => {
@@ -78,7 +82,6 @@ export function AbsensiPage() {
       description='Semua santri otomatis Hadir; ketuk hanya yang Izin, Sakit, atau Alpa.'
     >
       <div className='mb-4 flex flex-wrap items-end gap-3'>
-        <ProfilFilter />
         <Field label='Kelas'>
           <Select
             value={aktif?.id ?? ''}
@@ -122,6 +125,7 @@ export function AbsensiPage() {
             tanggal={tanggal}
             setDirty={(v) => {
               dirty.current = v
+              useGuard.getState().setKotor(v)
             }}
           />
           <Riwayat
@@ -140,6 +144,7 @@ export function AbsensiPage() {
         destructive
         handleConfirm={() => {
           dirty.current = false
+          useGuard.getState().setKotor(false)
           tunda?.()
           setTunda(null)
         }}
@@ -261,7 +266,10 @@ function Form(props: {
               key={s.id}
               className='flex items-center justify-between gap-2 border-b px-3 py-2 last:border-b-0'
             >
-              <span className='font-medium'>{s.nama}</span>
+              <span className='flex min-w-0 items-center gap-2 font-medium'>
+                <FotoAvatar jenis='santri' id={s.id} nama={s.nama} className='size-9' />
+                <span className='truncate'>{s.nama}</span>
+              </span>
               <div className='flex gap-1'>
                 {STATUS_ABSEN.map((st) => (
                   <Button
@@ -388,4 +396,8 @@ function Riwayat(props: { kelasId: string; onPilih: (tgl: string) => void }) {
     </div>
   )
 }
+
+
+
+
 

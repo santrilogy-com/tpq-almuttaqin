@@ -5,6 +5,7 @@ import { authRoutes } from './routes/auth'
 import { absensiRoutes } from './routes/absensi'
 import { anggaranRoutes } from './routes/anggaran'
 import { backupRoutes } from './routes/backup'
+import { fotoRoutes } from './routes/foto'
 import { guruRoutes } from './routes/guru'
 import { importRoutes } from './routes/import'
 import { kbmRoutes } from './routes/kbm'
@@ -27,7 +28,8 @@ const api = new Hono<AppEnv>()
 api.use('*', async (c, next) => {
   // Respons API tidak boleh di-cache oleh browser/CDN.
   await next()
-  c.header('Cache-Control', 'no-store')
+  // Kecuali respons menentukan sendiri (mis. foto: cache privat per versi), supaya gambar tidak diminta ulang tiap tampilan.
+  if (!c.res.headers.has('Cache-Control')) c.header('Cache-Control', 'no-store')
 })
 api.use('*', sameOrigin)
 api.use('*', loadSession)
@@ -47,6 +49,7 @@ api.route('/pengumuman', pengumumanRoutes)
 api.route('/kbm', kbmRoutes)
 api.route('/anggaran', anggaranRoutes)
 api.route('/laporan', laporanRoutes)
+api.route('/foto', fotoRoutes)
 api.route('/backup', backupRoutes)
 api.route('/import', importRoutes)
 api.notFound((c) => c.json({ error: 'Endpoint tidak ditemukan' }, 404))
@@ -59,6 +62,7 @@ api.onError((err, c) => {
 app.route('/api', api)
 
 export default app
+
 
 
 

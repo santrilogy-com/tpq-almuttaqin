@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from 'vitest'
-import { hariIniWib, keRupiah, naikJilid, nilaiAkhir, periodeValid, predikat, rata, semesterDari, tglValid } from './domain'
+import { hariIniWib, keRupiah, naikJilid, nilaiAkhir, normalisasiMetode, periodeValid, predikat, rata, semesterDari, tglValid } from './domain'
 
 describe('predikat', () => {
   it('batas nilai', () => {
@@ -15,8 +15,8 @@ describe('predikat', () => {
 
 describe('naikJilid', () => {
   it('naik satu tingkat', () => {
-    expect(naikJilid('Iqra 1')).toBe('Iqra 2')
-    expect(naikJilid('Iqra 6')).toBe('Tahfidz Juz 30')
+    expect(naikJilid("Qur'ani 1")).toBe("Qur'ani 2")
+    expect(naikJilid("Qur'ani 6")).toBe('Tahfidz Juz 30')
   })
   it('jilid tertinggi atau tak dikenal tetap', () => {
     expect(naikJilid('Tahfidz Juz 28')).toBe('Tahfidz Juz 28')
@@ -116,3 +116,23 @@ describe('periodeValid', () => {
     expect(periodeValid('2026-1')).toBe(false)
   })
 })
+
+
+describe("normalisasiMetode (Iqra -> Qur'ani)", () => {
+  it('mengganti kata Iqra di mana pun, tanpa membedakan huruf besar/kecil', () => {
+    expect(normalisasiMetode('Iqra 3')).toBe("Qur'ani 3")
+    expect(normalisasiMetode('iqra')).toBe("Qur'ani")
+    expect(normalisasiMetode('IQRA 2 halaman 14')).toBe("Qur'ani 2 halaman 14")
+    expect(normalisasiMetode('Iqra 1 dan Iqra 2')).toBe("Qur'ani 1 dan Qur'ani 2")
+  })
+  it('tidak mengubah teks lain, termasuk kata yang hanya mengandung "iqra"', () => {
+    expect(normalisasiMetode('Tahfidz Juz 30')).toBe('Tahfidz Juz 30')
+    expect(normalisasiMetode('Iqrar')).toBe('Iqrar')
+    expect(normalisasiMetode("Qur'ani 3")).toBe("Qur'ani 3")
+    expect(normalisasiMetode('')).toBe('')
+  })
+  it('idempoten', () => {
+    expect(normalisasiMetode(normalisasiMetode('Iqra 4'))).toBe("Qur'ani 4")
+  })
+})
+

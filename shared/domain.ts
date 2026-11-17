@@ -4,17 +4,30 @@ export const JENJANG = ['TPQ', 'MI'] as const
 export type Jenjang = (typeof JENJANG)[number]
 
 export const JILID_LIST = [
-  'Iqra 1',
-  'Iqra 2',
-  'Iqra 3',
-  'Iqra 4',
-  'Iqra 5',
-  'Iqra 6',
+  "Qur'ani 1",
+  "Qur'ani 2",
+  "Qur'ani 3",
+  "Qur'ani 4",
+  "Qur'ani 5",
+  "Qur'ani 6",
   'Tahfidz Juz 30',
   'Tahfidz Juz 29',
   'Tahfidz Juz 28',
 ] as const
 export type Jilid = (typeof JILID_LIST)[number]
+
+/** Nama metode baca Al-Qur'an yang dipakai lembaga (sebelumnya "Iqra"). */
+export const METODE = "Qur'ani"
+
+/** Jenis setoran: bacaan per metode, atau hafalan. */
+export const JENIS_SETORAN = [METODE, 'Hafalan'] as const
+export type JenisSetoran = (typeof JENIS_SETORAN)[number]
+
+/**
+ * Data/CSV lama masih menulis "Iqra" (v22). Setiap kata "Iqra" (tanpa membedakan huruf besar/kecil)
+ * diganti "Qur'ani", mis. "Iqra 3" -> "Qur'ani 3", "iqra" -> "Qur'ani".
+ */
+export const normalisasiMetode = (teks: string): string => teks.replace(/\biqra\b/gi, METODE)
 
 /** Jilid berikutnya; di jilid tertinggi (atau jilid tak dikenal) tetap sama. */
 export function naikJilid(jilid: string): string {
@@ -149,3 +162,7 @@ export type StatusSpp = (typeof STATUS_SPP)[number]
 export function periodeValid(p: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(p)
 }
+
+/** Nama pendek jenjang untuk tampilan: TPQ atau Madrasah. */
+export const labelJenjang = (j: Jenjang): string => (j === 'MI' ? 'Madrasah' : 'TPQ')
+

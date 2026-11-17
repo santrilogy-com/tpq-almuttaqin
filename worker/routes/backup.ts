@@ -30,12 +30,13 @@ const TABEL: Record<KunciBackup, any> = {
   rapbm: S.rapbm,
   biaya: S.biaya,
   targetTabungan: S.targetTabungan,
+  foto: S.foto,
 }
 // Urutan sisip: induk dulu. Urutan hapus: kebalikannya (anak dulu) agar kunci asing tidak melanggar.
 const URUT_SISIP: KunciBackup[] = [
   'lembaga', 'kelas', 'santri', 'guru', 'pertemuan', 'absensi', 'nilai', 'setoran', 'tabungan',
   'tagihanSpp', 'transaksi', 'pengumuman', 'jadwalKbm', 'alokasiWaktu', 'piket', 'absensiGuru',
-  'rapbm', 'biaya', 'targetTabungan',
+  'rapbm', 'biaya', 'targetTabungan', 'foto',
 ]
 const URUT_HAPUS = [...URUT_SISIP].reverse()
 
@@ -82,4 +83,5 @@ backupRoutes.post('/kosongkan', async (c) => {
   await d1.batch(URUT_HAPUS.filter((k) => k !== 'lembaga').map((k) => hapusSemua(d1, TABEL[k])))
   return c.json({ ok: true })
 })
+
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -10,12 +10,13 @@ import {
   keRupiah,
   type Jenjang,
   type StatusSpp,
+  labelJenjang,
 } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
 import { hariIni, rupiah } from '@/lib/queries'
 import { type Tagihan, type Transaksi } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { useProfil } from '@/stores/profil-store'
+import { useProfilAktif, jenjangAwal } from '@/stores/profil-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -39,9 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
-const labelJenjang = (j: Jenjang) => (j === 'MI' ? 'Ibtidaiyah' : 'TPQ')
 
 export function KeuanganPage() {
   return (
@@ -49,9 +48,6 @@ export function KeuanganPage() {
       title='Keuangan'
       description='Kas lembaga dan tagihan SPP. SPP yang ditandai Lunas otomatis tercatat sebagai pemasukan kas.'
     >
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <Tabs defaultValue='kas'>
         <TabsList>
           <TabsTrigger value='kas'>Kas</TabsTrigger>
@@ -70,12 +66,12 @@ export function KeuanganPage() {
 
 function Kas() {
   const qc = useQueryClient()
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const [filter, setFilter] = useState<'semua' | 'masuk' | 'keluar'>('semua')
   const [hapus, setHapus] = useState<Transaksi | null>(null)
 
   const [jenis, setJenis] = useState<'masuk' | 'keluar'>('masuk')
-  const [jenjang, setJenjang] = useState<Jenjang>('TPQ')
+  const [jenjang, setJenjang] = useState<Jenjang>(jenjangAwal(profil))
   const [kategori, setKategori] = useState<string>(KATEGORI_MASUK[1])
   const [nama, setNama] = useState('')
   const [teksJumlah, setTeksJumlah] = useState('')
@@ -311,7 +307,7 @@ const WARNA_SPP: Record<StatusSpp, string> = {
 
 function Spp() {
   const qc = useQueryClient()
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const [periode, setPeriode] = useState(hariIni().slice(0, 7))
 
   const q = useQuery({
@@ -360,7 +356,7 @@ function Spp() {
         </Button>
         {daftar.length > 0 && (
           <span className='text-sm text-muted-foreground'>
-            Lunas {lunas.length}/{daftar.length} · {rupiah(jmlLunas)} dari {rupiah(jmlTotal)}
+            Lunas {lunas.length}/{daftar.length} Â· {rupiah(jmlLunas)} dari {rupiah(jmlTotal)}
           </span>
         )}
       </div>
@@ -420,3 +416,7 @@ function Spp() {
     </div>
   )
 }
+
+
+
+

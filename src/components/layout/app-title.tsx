@@ -1,6 +1,7 @@
 ﻿import { Link } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
 import { useLembaga } from '@/lib/queries'
+import { useProfilAktif } from '@/stores/profil-store'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/assets/logo'
 import {
@@ -13,7 +14,14 @@ import { Button } from '../ui/button'
 
 export function AppTitle() {
   const { setOpenMobile } = useSidebar()
-  const tpq = useLembaga().data?.find((l) => l.jenjang === 'TPQ')
+  const aktif = useProfilAktif()
+  const semua = useLembaga().data
+  // Judul sidebar mengikuti lembaga aktif; pada "Semua" tampil gabungan nama singkat.
+  const lembaga = aktif === 'semua' ? undefined : semua?.find((l) => l.jenjang === aktif)
+  const nama =
+    lembaga?.nama ??
+    (semua && semua.length === 2 ? semua.map((l) => l.namaSingkat).join(' & ') : 'Al-Muttaqin')
+  const logo = lembaga?.logo ?? null
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -29,13 +37,13 @@ export function AppTitle() {
               className='flex flex-1 items-center gap-2 text-start text-sm leading-tight'
             >
               {/* logo yang diunggah di Identitas; bila belum ada, lambang aplikasi */}
-              {tpq?.logo ? (
-                <img src={tpq.logo} alt='' className='size-8 shrink-0 rounded object-contain' />
+              {logo ? (
+                <img src={logo} alt='' className='size-8 shrink-0 rounded object-contain' />
               ) : (
                 <Logo className='size-8 shrink-0' />
               )}
               <span className='grid min-w-0'>
-                <span className='truncate font-bold'>{tpq?.nama ?? 'TPQ Al-Muttaqin'}</span>
+                <span className='truncate font-bold'>{nama}</span>
                 <span className='truncate text-xs'>Aplikasi pengelolaan TPQ</span>
               </span>
             </Link>
@@ -73,4 +81,5 @@ function ToggleSidebar({
     </Button>
   )
 }
+
 

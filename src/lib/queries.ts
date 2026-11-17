@@ -59,3 +59,11 @@ export const usePengumuman = () =>
     queryKey: ['pengumuman'],
     queryFn: async () => (await api.get<{ pengumuman: Pengumuman[] }>('/pengumuman')).data.pengumuman,
   })
+
+/** Siapa yang punya foto + versinya (untuk cache-busting). Ringan: tanpa data gambar. */
+export const useFotoIndex = () =>
+  useQuery({
+    queryKey: ['foto-index'],
+    queryFn: async () => (await api.get<{ foto: { jenis: 'santri' | 'guru'; ownerId: string; v: number }[] }>('/foto')).data.foto,
+    select: (rows) => new Map(rows.map((r) => [`${r.jenis}:${r.ownerId}`, r.v])),
+  })

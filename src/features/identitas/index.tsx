@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { keRupiah } from '@shared/domain'
+import { keRupiah, labelJenjang } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
 import { kecilkanLogo } from '@/lib/gambar'
 import { rupiah, useLembaga } from '@/lib/queries'
@@ -23,7 +23,7 @@ export function IdentitasPage() {
   return (
     <PageShell
       title='Identitas dan Tarif'
-      description='Nama lembaga, kepala, alamat, serta tarif SPP per bulan untuk TPQ dan Ibtidaiyah.'
+      description='Nama lembaga, kepala, alamat, serta tarif SPP per bulan untuk TPQ dan Madrasah.'
     >
       <div className='grid gap-4 lg:grid-cols-2'>
         {(data ?? []).map((l) => (
@@ -83,7 +83,7 @@ function Kartu({ awal }: { awal: Lembaga }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{awal.jenjang === 'MI' ? 'Ibtidaiyah' : 'TPQ'}</CardTitle>
+        <CardTitle>{labelJenjang(awal.jenjang)}</CardTitle>
         <CardDescription>Tarif SPP saat ini {rupiah(awal.tarifSpp)} per bulan.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -162,3 +162,5 @@ function Kartu({ awal }: { awal: Lembaga }) {
     </Card>
   )
 }
+
+

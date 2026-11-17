@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { JENIS_NILAI, semesterDari, type JenisNilai } from '@shared/domain'
+import { JENIS_NILAI, METODE, semesterDari, type JenisNilai } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
 import { hariIni, useKelas, useSantri } from '@/lib/queries'
 import { type NilaiRow, type Rapor, type Santri } from '@/lib/types'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,15 +34,15 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Field } from '@/components/field'
+import { FotoAvatar } from '@/components/foto-avatar'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 /** "85,5" atau "85.5" -> 85.5; teks kosong/tak valid -> NaN. */
 const keAngka = (t: string) => (t.trim() === '' ? NaN : Number(t.replace(',', '.')))
 const fmt = (n: number | null) => (n == null ? '-' : String(n).replace('.', ','))
 
 function useMuridAktif() {
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data } = useSantri()
   return useMemo(
     () =>
@@ -69,7 +69,7 @@ function PilihMurid(props: {
         {props.murid.map((s) => (
           <SelectItem key={s.id} value={s.id}>
             {s.nama}
-            {s.kelasId && nama.get(s.kelasId) ? ` · ${nama.get(s.kelasId)}` : ''}
+            {s.kelasId && nama.get(s.kelasId) ? ` Â· ${nama.get(s.kelasId)}` : ''}
           </SelectItem>
         ))}
       </SelectContent>
@@ -83,9 +83,6 @@ export function NilaiPage() {
       title='Penilaian dan Rapor'
       description='Nilai akhir = Harian 40% + Imda 30% + Praktek 30%. Semester dihitung otomatis dari tanggal nilai.'
     >
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <Tabs defaultValue='input'>
         <TabsList>
           <TabsTrigger value='input'>Input nilai</TabsTrigger>
@@ -107,7 +104,7 @@ function InputNilai() {
   const murid = useMuridAktif()
   const [santriId, setSantriId] = useState('')
   const [jenis, setJenis] = useState<JenisNilai>('Harian')
-  const [mapel, setMapel] = useState('Iqra')
+  const [mapel, setMapel] = useState(METODE)
   const [nilai, setNilai] = useState('')
   const [tanggal, setTanggal] = useState(hariIni())
 
@@ -261,7 +258,7 @@ function InputNilai() {
 function teksRapor(r: Rapor) {
   return [
     `Rapor ${r.santri.nama} (NIS ${r.santri.nis})`,
-    `Kelas: ${r.santri.kelas ?? '-'} · Jilid: ${r.santri.jilid}`,
+    `Kelas: ${r.santri.kelas ?? '-'} Â· Jilid: ${r.santri.jilid}`,
     `Semester: ${r.semester === 'semua' ? 'Semua' : r.semester}`,
     `Harian: ${fmt(r.harian)}`,
     `Imda: ${fmt(r.imda)}`,
@@ -338,9 +335,12 @@ function RaporMurid() {
       {r && (
         <Card className='max-w-xl'>
           <CardHeader>
-            <CardTitle>{r.santri.nama}</CardTitle>
+            <CardTitle className='flex items-center gap-3'>
+              <FotoAvatar jenis='santri' id={r.santri.id} nama={r.santri.nama} className='size-12' />
+              {r.santri.nama}
+            </CardTitle>
             <CardDescription>
-              NIS {r.santri.nis} · Kelas {r.santri.kelas ?? '-'} · {r.santri.jilid}
+              NIS {r.santri.nis} Â· Kelas {r.santri.kelas ?? '-'} Â· {r.santri.jilid}
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
@@ -392,3 +392,9 @@ function RaporMurid() {
     </div>
   )
 }
+
+
+
+
+
+

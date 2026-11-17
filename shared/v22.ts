@@ -3,8 +3,8 @@
 // Murni (tanpa I/O). Baris tak valid DILEWATI dengan peringatan; tidak ada data yang dikarang.
 // Akun login (`pengguna`) sengaja tidak dimigrasi: hash v22 tidak kompatibel dan sandi harus
 // dibuat ulang lewat Kelola pengguna.
-import { type DataBackup, dataKosong, HARI_LIST, LOGO_REGEX, MAKS_LOGO } from './backup'
-import { JILID_LIST, semesterDari, tglValid, type Jenjang } from './domain'
+import { type DataBackup, dataKosong, gambarValid, HARI_LIST, MAKS_FOTO, MAKS_LOGO } from './backup'
+import { JENIS_SETORAN, JILID_LIST, normalisasiMetode, semesterDari, tglValid, type Jenjang } from './domain'
 
 export type HasilKonversi = { data: DataBackup; peringatan: string[]; dilewati: number }
 
@@ -27,6 +27,14 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   const out = dataKosong()
   const w: string[] = []
   let dilewati = 0
+  let diganti = 0 // jumlah nilai bertuliskan "Iqra" yang diganti "Qur'ani"
+  let fotoTidakIkut = 0
+  // Foto v22 (data URL) ikut dibawa bila gambar sah dan <= 150 KB; selebihnya dilewati dengan peringatan.
+  const tambahFoto = (jenis: 'santri' | 'guru', ownerId: string, f: unknown) => {
+    if (f == null || f === '') return
+    if (typeof f === 'string' && gambarValid(f, MAKS_FOTO)) out.foto.push({ jenis, ownerId, data: f, updatedAt: sekarang })
+    else fotoTidakIkut++
+  }
   const lewati = (alasan: string) => {
     dilewati++
     contoh.set(alasan, (contoh.get(alasan) ?? 0) + 1)
@@ -54,7 +62,7 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   const rakit = (j: Jenjang): DataBackup['lembaga'][number] => {
     const i = ident[j === 'MI' ? 'Ibtidaiyah' : 'TPQ'] ?? {}
     let logo: string | null = S(i.logo, 1_000_000) || null
-    if (logo && (!LOGO_REGEX.test(logo) || logo.length > MAKS_LOGO)) {
+    if (logo && !gambarValid(logo, MAKS_LOGO)) {
       w.push(`Logo ${j === 'MI' ? 'Ibtidaiyah' : 'TPQ'} tidak ikut dimigrasi (bukan PNG/JPEG/WebP atau lebih dari 150 KB). Unggah ulang nanti.`)
       logo = null
     }
@@ -82,7 +90,9 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   const kelasSemua = new Set<string>()
   const kelasLegacyKeBaru = new Map<string, string>()
   arr('kelas').forEach((k, i) => {
-    const nama = S(k.nama, 100)
+    const namaAsli = S(k.nama, 100)
+    const nama = normalisasiMetode(namaAsli)
+    if (nama !== namaAsli) diganti++
     if (!nama) return lewati('kelas tanpa nama')
     const id = idUnik('kelas', k.id, 'kelas', i)
     const jenjang = jenjangDari(k.jenjang)
@@ -93,7 +103,7 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
     kelasLegacyKeBaru.set(S(k.id), id)
   })
   const cariKelas = (nama: unknown, jenjang?: Jenjang) => {
-    const n = S(nama).toLowerCase()
+    const n = normalisasiMetode(S(nama)).toLowerCase()
     if (!n) return null
     return (jenjang && kelasIdByNama.get(`${jenjang}|${n}`)) || kelasIdByNama.get(n) || null
   }
@@ -118,7 +128,9 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
       tanpaJk.push(nama)
       jk = 'L'
     }
-    const jilid = (JILID_LIST as readonly string[]).includes(S(s.jilid)) ? S(s.jilid) : 'Iqra 1'
+    const jilidBaru = normalisasiMetode(S(s.jilid))
+    if (jilidBaru !== S(s.jilid)) diganti++
+    const jilid = (JILID_LIST as readonly string[]).includes(jilidBaru) ? jilidBaru : JILID_LIST[0]
     const status = S(s.status).toLowerCase()
     out.santri.push({
       id,
@@ -137,6 +149,7 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
       createdAt: sekarang,
     })
     santriIdLegacy.set(S(s.id), id)
+    tambahFoto('santri', id, s.foto)
   })
   if (tanpaKelas.length) w.push(`${tanpaKelas.length} santri menyebut kelas yang tidak ada di daftar kelas; kelasnya dikosongkan (mis. ${tanpaKelas.slice(0, 3).join(', ')}).`)
   if (tanpaJk.length) w.push(`${tanpaJk.length} santri tanpa jenis kelamin L/P diisi sementara L. Periksa dan koreksi (mis. ${tanpaJk.slice(0, 3).join(', ')}).`)
@@ -166,6 +179,7 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
     })
     guruByNama.set(nama.toLowerCase(), id)
     guruLegacyKeBaru.set(S(g.id), id)
+    tambahFoto('guru', id, g.foto)
   })
   if (guruDwiJenjang) w.push(`${guruDwiJenjang} guru mengajar "TPQ dan Ibtidaiyah"; v2 menyimpan satu jenjang per guru, jadi dicatat sebagai TPQ.`)
   const guruBaru = (x: unknown) => guruLegacyKeBaru.get(S(x)) ?? null
@@ -207,17 +221,19 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
     const tanggal = S(n.tanggal)
     const jenis = (['Harian', 'Imda', 'Praktek'] as const).find((j) => j === S(n.jenis))
     if (!sid || !jenis || !Number.isFinite(nilai) || nilai < 0 || nilai > 100 || !tglValid(tanggal)) return lewati('nilai tidak valid')
-    out.nilai.push({ id: idUnik('nilai', n.id, 'nilai', i), santriId: sid, jenis, mapel: S(n.mapel, 100) || 'Umum', nilai, tanggal, semester: semesterDari(tanggal) })
+    out.nilai.push({ id: idUnik('nilai', n.id, 'nilai', i), santriId: sid, jenis, mapel: normalisasiMetode(S(n.mapel, 100)) || 'Umum', nilai, tanggal, semester: semesterDari(tanggal) })
   })
 
   // ----- setoran (hafalanLog)
   arr('hafalanLog').forEach((h, i) => {
     const sid = santriBaru(h.santriId)
-    const jenis = (['Iqra', 'Hafalan'] as const).find((j) => j === S(h.jenis))
+    const jenisBaru = normalisasiMetode(S(h.jenis))
+    if (jenisBaru !== S(h.jenis)) diganti++
+    const jenis = JENIS_SETORAN.find((j) => j === jenisBaru)
     const nilai = (['Lancar', 'Cukup', 'Perlu Bimbingan'] as const).find((j) => j === S(h.nilai))
     const tanggal = S(h.tanggal)
     if (!sid || !jenis || !nilai || !S(h.materi) || !tglValid(tanggal)) return lewati('setoran tidak valid')
-    out.setoran.push({ id: idUnik('setoran', h.id, 'setoran', i), santriId: sid, jenis, materi: S(h.materi, 200), nilai, tanggal })
+    out.setoran.push({ id: idUnik('setoran', h.id, 'setoran', i), santriId: sid, jenis, materi: normalisasiMetode(S(h.materi, 200)), nilai, tanggal })
   })
 
   // ----- tabungan: riwayat + saldo pembuka agar saldo v2 = saldo tercatat v22
@@ -287,12 +303,12 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
   arr('alokasiWaktu').forEach((a, i) => {
     const jam = rupiahBulat(a.jamPerMinggu)
     if (!S(a.mapel) || !(jam >= 1 && jam <= 60)) return lewati('alokasi waktu tidak valid')
-    out.alokasiWaktu.push({ id: idUnik('alokasiWaktu', a.id, 'alo', i), kelasId: cariKelas(a.kelas), mapel: S(a.mapel, 100), jamPerMinggu: jam, hari: S(a.hari, 60) })
+    out.alokasiWaktu.push({ id: idUnik('alokasiWaktu', a.id, 'alo', i), kelasId: cariKelas(a.kelas), mapel: normalisasiMetode(S(a.mapel, 100)), jamPerMinggu: jam, hari: S(a.hari, 60) })
   })
   arr('jadwalKbm').forEach((j, i) => {
     const hari = HARI_LIST.find((h) => h === S(j.hari))
     if (!hari || !jamOk(S(j.jamMulai)) || !jamOk(S(j.jamSelesai)) || S(j.jamSelesai) <= S(j.jamMulai) || !S(j.mapel)) return lewati('jadwal KBM tidak valid')
-    out.jadwalKbm.push({ id: idUnik('jadwalKbm', j.id, 'jdw', i), kelasId: cariKelas(j.kelas), hari, jamMulai: S(j.jamMulai), jamSelesai: S(j.jamSelesai), mapel: S(j.mapel, 100), guruId: guruByNama.get(S(j.guru).toLowerCase()) ?? null })
+    out.jadwalKbm.push({ id: idUnik('jadwalKbm', j.id, 'jdw', i), kelasId: cariKelas(j.kelas), hari, jamMulai: S(j.jamMulai), jamSelesai: S(j.jamSelesai), mapel: normalisasiMetode(S(j.mapel, 100)), guruId: guruByNama.get(S(j.guru).toLowerCase()) ?? null })
   })
   arr('jadwalPiket').forEach((p, i) => {
     const hari = HARI_LIST.find((h) => h === S(p.hari))
@@ -331,8 +347,14 @@ export function konversiV22(lama: any, sekarang: number = Date.now()): HasilKonv
     out.targetTabungan.push({ id: idUnik('targetTabungan', t.id, 'tgt', i), nama: S(t.nama, 100), target, terkumpul: kumpul >= 0 ? kumpul : 0 })
   })
 
+  if (fotoTidakIkut) w.push(`${fotoTidakIkut} foto tidak ikut dimigrasi (bukan PNG/JPEG/WebP yang valid atau lebih dari 150 KB). Unggah ulang nanti.`)
+  if (out.foto.length) w.push(`${out.foto.length} foto santri/guru ikut dimigrasi.`)
+  if (diganti) w.push(`Istilah "Iqra" diganti "Qur'ani" pada ${diganti} nama kelas, jilid santri, dan jenis setoran.`)
   for (const [alasan, n] of contoh) w.push(`Dilewati ${n}: ${alasan}.`)
   if (arr('pengguna').length) w.push(`${arr('pengguna').length} akun login v22 TIDAK dimigrasi (sandi dari v22 tidak kompatibel). Buat ulang di Kelola pengguna.`)
   return { data: out, peringatan: w, dilewati }
 }
+
+
+
 

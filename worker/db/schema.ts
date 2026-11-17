@@ -2,6 +2,7 @@
 import {
   index,
   integer,
+  primaryKey,
   real,
   sqliteTable,
   text,
@@ -15,7 +16,7 @@ const createdAt = () =>
     .notNull()
     .default(sql`(unixepoch() * 1000)`)
 
-import { JENJANG } from '../../shared/domain'
+import { JENIS_SETORAN, JENJANG } from '../../shared/domain'
 export { JENJANG }
 export const PERAN = ['pimpinan', 'guru'] as const
 export type Peran = (typeof PERAN)[number]
@@ -87,7 +88,9 @@ export const santri = sqliteTable(
     kelasId: text('kelas_id').references(() => kelas.id, {
       onDelete: 'set null',
     }),
-    jilid: text('jilid').notNull().default('Iqra 1'),
+    // Default basis data TIDAK dipakai: API/import/restore selalu mengisi jilid eksplisit (JILID_LIST[0]).
+  // Mengubah default menuntut migrasi yang membangun ulang tabel (berisiko cascade), jadi sengaja dibiarkan.
+  jilid: text('jilid').notNull().default('Iqra 1'),
     angkatan: text('angkatan').notNull().default(''),
     rombel: text('rombel').notNull().default(''),
     status: text('status', { enum: ['aktif', 'keluar', 'lulus'] })
@@ -175,7 +178,7 @@ export const setoran = sqliteTable(
     santriId: text('santri_id')
       .notNull()
       .references(() => santri.id, { onDelete: 'cascade' }),
-    jenis: text('jenis', { enum: ['Iqra', 'Hafalan'] }).notNull(),
+    jenis: text('jenis', { enum: JENIS_SETORAN }).notNull(),
     materi: text('materi').notNull(),
     nilai: text('nilai', {
       enum: ['Lancar', 'Cukup', 'Perlu Bimbingan'],
@@ -315,3 +318,20 @@ export const targetTabungan = sqliteTable('target_tabungan', {
   target: integer('target').notNull(),
   terkumpul: integer('terkumpul').notNull().default(0),
 })
+
+
+
+
+// ---------- Foto ----------
+// Terpisah dari santri/guru supaya daftar tidak ikut membawa data gambar. Tanpa FK: dihapus manual
+// bersama pemiliknya (lihat rute santri/guru). `data` = data URL PNG/JPEG/WebP (maks 150 KB).
+export const foto = sqliteTable(
+  'foto',
+  {
+    jenis: text('jenis', { enum: ['santri', 'guru'] }).notNull(),
+    ownerId: text('owner_id').notNull(),
+    data: text('data').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.jenis, t.ownerId] })]
+)

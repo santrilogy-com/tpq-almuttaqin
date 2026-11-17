@@ -1,12 +1,31 @@
 ﻿// Format backup v2 + validasinya. Murni (tanpa I/O): dipakai Worker (restore) dan
 // frontend (pratinjau). Akun pengguna/sandi SENGAJA tidak termasuk dalam backup.
 import { z } from 'zod'
-import { JENJANG, JENIS_NILAI, MAKS_JUMLAH, STATUS_ABSEN, STATUS_SPP, periodeValid, tglValid } from './domain'
+import { JENJANG, JENIS_NILAI, JENIS_SETORAN, MAKS_JUMLAH, STATUS_ABSEN, STATUS_SPP, normalisasiMetode, periodeValid, tglValid } from './domain'
 
 export const FORMAT_BACKUP = 'tpq-v2'
 /** Logo: hanya raster base64 (PNG/JPEG/WebP). SVG ditolak karena dapat memuat skrip. */
 export const LOGO_REGEX = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/
 export const MAKS_LOGO = 150_000
+export const MAKS_FOTO = 150_000
+
+/**
+ * Gambar sah: data URL PNG/JPEG/WebP base64, tidak melebihi maks karakter, DAN byte awal file cocok
+ * dengan tipe yang diklaim (mencegah berkas lain/HTML disamarkan sebagai gambar).
+ */
+export function gambarValid(url: string, maks: number): boolean {
+  if (typeof url !== 'string' || url.length > maks || !LOGO_REGEX.test(url)) return false
+  try {
+    const mime = url.slice(5, url.indexOf(';'))
+    const awal = atob(url.slice(url.indexOf(',') + 1).slice(0, 16)) // 16 karakter base64 = 12 byte
+    if (mime === 'image/png') return awal.charCodeAt(0) === 0x89 && awal.slice(1, 4) === 'PNG'
+    if (mime === 'image/jpeg') return awal.charCodeAt(0) === 0xff && awal.charCodeAt(1) === 0xd8 && awal.charCodeAt(2) === 0xff
+    if (mime === 'image/webp') return awal.slice(0, 4) === 'RIFF' && awal.slice(8, 12) === 'WEBP'
+    return false
+  } catch {
+    return false
+  }
+}
 export const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as const
 
 const id = z.string().min(1).max(64)
@@ -29,7 +48,7 @@ export const SKEMA = {
     tahunBerdiri: z.number().int().min(1800).max(2200).nullable(),
     nsmNpsn: teks(30),
     motto: teks(200),
-    logo: z.string().max(MAKS_LOGO).regex(LOGO_REGEX, 'logo harus gambar PNG/JPEG/WebP').nullable(),
+    logo: z.string().refine((v) => gambarValid(v, MAKS_LOGO), 'logo harus gambar PNG/JPEG/WebP yang valid (maks 150 KB)').nullable(),
     tarifSpp: z.number().int().min(0).max(100_000_000),
     tahunAjaran: teks(20),
   }),
@@ -74,7 +93,7 @@ export const SKEMA = {
   setoran: z.object({
     id,
     santriId: id,
-    jenis: z.enum(['Iqra', 'Hafalan']),
+    jenis: z.preprocess((v) => (typeof v === 'string' ? normalisasiMetode(v) : v), z.enum(JENIS_SETORAN)),
     materi: teks(200).min(1),
     nilai: z.enum(['Lancar', 'Cukup', 'Perlu Bimbingan']),
     tanggal: tgl,
@@ -113,6 +132,12 @@ export const SKEMA = {
   rapbm: z.object({ id, pos: teks(100).min(1), jenis: z.enum(['masuk', 'keluar']), jenjang, rencana: rp }),
   biaya: z.object({ id, nama: teks(100).min(1), jumlah: rp, keterangan: teks(200) }),
   targetTabungan: z.object({ id, nama: teks(100).min(1), target: rpPositif, terkumpul: rp }),
+  foto: z.object({
+    jenis: z.enum(['santri', 'guru']),
+    ownerId: id,
+    data: z.string().refine((v) => gambarValid(v, MAKS_FOTO), 'foto harus gambar PNG/JPEG/WebP yang valid (maks 150 KB)'),
+    updatedAt: z.number().int(),
+  }),
 } as const
 
 export type KunciBackup = keyof typeof SKEMA
@@ -161,6 +186,7 @@ export function cekRelasi(d: DataBackup): string | null {
     unik('tagihanSpp (santri+periode)', d.tagihanSpp.map((x) => `${x.santriId}|${x.periode}`)) ??
     unik('absensiGuru', d.absensiGuru.map((x) => `${x.tanggal}|${x.guruId}|${x.kelompok}`)) ??
     unik('lembaga.jenjang', d.lembaga.map((x) => x.jenjang)) ??
+    unik('foto (jenis+pemilik)', d.foto.map((x) => `${x.jenis}|${x.ownerId}`)) ??
     unik('transaksi.id', d.transaksi.map((x) => x.id)) ??
     unik('transaksi.tagihanSppId', d.transaksi.filter((x) => x.tagihanSppId).map((x) => x.tagihanSppId!))
   if (dup) return dup
@@ -182,7 +208,8 @@ export function cekRelasi(d: DataBackup): string | null {
     d.jadwalKbm.map((x) => (x.kelasId && cek('jadwalKbm.kelasId', kelas.has(x.kelasId), x.kelasId)) || (x.guruId && cek('jadwalKbm.guruId', guru.has(x.guruId), x.guruId))).find(Boolean) ??
     d.alokasiWaktu.map((x) => x.kelasId && cek('alokasiWaktu.kelasId', kelas.has(x.kelasId), x.kelasId)).find(Boolean) ??
     d.piket.map((x) => cek('piket.guruId', guru.has(x.guruId), x.guruId)).find(Boolean) ??
-    d.absensiGuru.map((x) => cek('absensiGuru.guruId', guru.has(x.guruId), x.guruId)).find(Boolean)
+    d.absensiGuru.map((x) => cek('absensiGuru.guruId', guru.has(x.guruId), x.guruId)).find(Boolean) ??
+    d.foto.map((x) => cek('foto.ownerId', (x.jenis === 'santri' ? santri : guru).has(x.ownerId), `${x.jenis}:${x.ownerId}`)).find(Boolean)
   if (salah) return salah
 
   const saldo = new Map<string, number>()
@@ -195,4 +222,6 @@ export function cekRelasi(d: DataBackup): string | null {
 export const hitungBaris = (d: DataBackup) => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, d[k].length])) as Record<KunciBackup, number>
 
 export const dataKosong = (): DataBackup => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, []])) as unknown as DataBackup
+
+
 

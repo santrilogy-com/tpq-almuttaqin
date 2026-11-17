@@ -1,10 +1,11 @@
-import { Outlet } from '@tanstack/react-router'
+﻿import { Outlet } from '@tanstack/react-router'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
+import { BottomNav } from '@/components/layout/bottom-nav'
 import { OfflineBanner } from '@/components/offline-banner'
 import { SkipToMain } from '@/components/skip-to-main'
 
@@ -20,11 +21,15 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
         <SidebarProvider defaultOpen={defaultOpen}>
           <SkipToMain />
           <OfflineBanner />
+          <BottomNav />
           <AppSidebar />
           <SidebarInset
             className={cn(
               // Set content container, so we can use container queries
               '@container/content',
+
+              // Ruang untuk navigasi bawah di layar sempit
+              'max-md:pb-[calc(3.75rem+env(safe-area-inset-bottom))]',
 
               // If layout is fixed, set the height
               // to 100svh to prevent overflow
@@ -42,3 +47,4 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     </SearchProvider>
   )
 }
+

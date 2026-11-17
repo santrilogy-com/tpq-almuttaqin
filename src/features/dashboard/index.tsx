@@ -1,12 +1,11 @@
 ﻿import { Link } from '@tanstack/react-router'
 import { Check, Circle } from 'lucide-react'
 import { rupiah, usePengumuman } from '@/lib/queries'
-import { useRingkasan } from '@/lib/laporan'
-import { cocokProfil, useProfil, type Profil } from '@/stores/profil-store'
+import { keuanganUntuk, useRingkasan } from '@/lib/laporan'
+import { cocokProfil, useProfilAktif, type Profil } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 import { GrafikBatang } from '@/features/laporan'
 
 const aktifProfil = (p: Profil, r: { TPQ: { aktif: number }; MI: { aktif: number } }) =>
@@ -28,10 +27,15 @@ function Kartu(props: { judul: string; nilai: React.ReactNode; ket?: string }) {
 
 export function Dashboard() {
   const user = useAuthStore((s) => s.auth.user)
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: r } = useRingkasan()
   const { data: pengumuman } = usePengumuman()
   const pimpinan = user?.peran === 'pimpinan'
+  const keu = r?.keuangan ? keuanganUntuk(r.keuangan, profil) : undefined
+  const deskripsi =
+    profil === 'semua'
+      ? 'Ringkasan seluruh lembaga: TPQ dan Madrasah.'
+      : `Ringkasan ${profil === 'MI' ? 'Madrasah' : 'TPQ'}.`
   const tampilPengumuman = (pengumuman ?? []).filter((p) => p.tampil)
 
   const langkah = r
@@ -45,10 +49,7 @@ export function Dashboard() {
   const kelasTampil = (r?.santriPerKelas ?? []).filter((k) => cocokProfil(profil, k.jenjang))
 
   return (
-    <PageShell title={`Assalamu'alaikum, ${user?.nama ?? ''}`} description='Ringkasan TPQ dan Ibtidaiyah Al-Muttaqin.'>
-      <div className='mb-4'>
-        <ProfilFilter />
-      </div>
+    <PageShell title={`Assalamu'alaikum, ${user?.nama ?? ''}`} description={deskripsi}>
 
       {r && belumLengkap && (
         <Card className='mb-4 border-primary/40'>
@@ -68,13 +69,13 @@ export function Dashboard() {
       )}
 
       <div className='mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
-        <Kartu judul='Santri aktif' nilai={r ? aktifProfil(profil, r.perJenjang) : '...'} ket={r ? `TPQ ${r.perJenjang.TPQ.aktif} · Ibtidaiyah ${r.perJenjang.MI.aktif}` : undefined} />
-        <Kartu judul='Rata-rata kehadiran' nilai={r ? (r.rataKehadiran == null ? '-' : `${r.rataKehadiran}%`) : '...'} ket='Dari seluruh absensi tersimpan' />
+        <Kartu judul='Santri aktif' nilai={r ? aktifProfil(profil, r.perJenjang) : '...'} ket={r ? `TPQ ${r.perJenjang.TPQ.aktif} · Madrasah ${r.perJenjang.MI.aktif}` : undefined} />
+        <Kartu judul='Rata-rata kehadiran' nilai={r ? (r.rataKehadiran == null ? '-' : `${r.rataKehadiran}%`) : '...'} ket='Dari absensi 60 hari terakhir' />
         <Kartu judul='Kelas' nilai={r ? kelasTampil.length : '...'} />
         {pimpinan ? (
-          <Kartu judul='Saldo kas' nilai={r?.keuangan ? rupiah(r.keuangan.saldoKas) : '...'} ket={r?.keuangan ? `SPP ${r.keuangan.spp.periode}: ${r.keuangan.spp.lunas}/${r.keuangan.spp.total} lunas` : undefined} />
+          <Kartu judul='Saldo kas' nilai={keu ? rupiah(keu.saldoKas) : '...'} ket={keu && r?.keuangan ? `SPP ${r.keuangan.periode}: ${keu.spp.lunas}/${keu.spp.total} lunas` : undefined} />
         ) : (
-          <Kartu judul='Guru' nilai={r ? r.guruPerPeran.reduce((a, g) => a + g.jumlah, 0) : '...'} />
+          <Kartu judul='Guru' nilai={r ? r.guruPerPeran.filter((g) => cocokProfil(profil, g.jenjang)).reduce((a, g) => a + g.jumlah, 0) : '...'} />
         )}
       </div>
 
@@ -105,5 +106,7 @@ export function Dashboard() {
     </PageShell>
   )
 }
+
+
 
 

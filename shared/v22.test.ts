@@ -86,11 +86,11 @@ describe('konversiV22', () => {
     expect(hasil.peringatan.join('\n')).toMatch(/TPQ dan Ibtidaiyah/)
   })
 
-  it('santri: NIS kembar & tanpa NIS dilewati; kelas dipetakan via nama; jilid tak dikenal -> Iqra 1', () => {
+  it('santri: NIS kembar & tanpa NIS dilewati; kelas dipetakan via nama; jilid tak dikenal -> Qur\'ani 1', () => {
     expect(d.santri.map((s) => s.nis)).toEqual(['001', '002', '004', '005'])
     expect(d.santri.find((s) => s.nis === '001')?.kelasId).toBe('k2')
     expect(d.santri.find((s) => s.nis === '004')?.kelasId).toBeNull() // kelas tak ada
-    expect(d.santri.find((s) => s.nis === '005')?.jilid).toBe('Iqra 1')
+    expect(d.santri.find((s) => s.nis === '005')?.jilid).toBe("Qur'ani 1")
     expect(d.santri.find((s) => s.nis === '005')?.status).toBe('keluar')
     expect(d.santri.find((s) => s.nis === '004')?.status).toBe('lulus')
     expect(d.santri.find((s) => s.nis === '002')?.jilid).toBe('Tahfidz Juz 30')
@@ -161,3 +161,21 @@ describe('konversiV22', () => {
     expect(konversiV22({ santri: [] }).data.santri).toEqual([])
   })
 })
+
+
+describe("konversiV22: Iqra -> Qur'ani", () => {
+  it('nama kelas, jilid santri, jenis & materi setoran, mapel diganti; peringatan menyebut jumlahnya', () => {
+    expect(d.kelas.map((k) => k.nama)).toEqual(["Qur'ani 1", "Qur'ani 3", 'Kelas 1'])
+    expect(d.santri.find((s) => s.nis === '001')?.jilid).toBe("Qur'ani 3")
+    expect(d.setoran[0]).toMatchObject({ jenis: "Qur'ani", materi: "Qur'ani 3 hal 14" })
+    expect(d.nilai[0].mapel).toBe("Qur'ani")
+    expect(d.alokasiWaktu[0].mapel).toBe("Qur'ani")
+    expect(d.jadwalKbm[0].mapel).toBe("Qur'ani")
+    expect(hasil.peringatan.join('\n')).toMatch(/"Iqra" diganti "Qur'ani"/)
+  })
+  it('santri tetap terhubung ke kelas yang sudah berganti nama (cocok lewat nama ternormalisasi)', () => {
+    expect(d.santri.find((s) => s.nis === '001')?.kelasId).toBe('k2')
+    expect(d.guru.find((g) => g.nama === 'Ustadz Ahmad')?.kelasId).toBe('k1')
+  })
+})
+

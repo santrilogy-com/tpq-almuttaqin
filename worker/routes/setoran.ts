@@ -1,7 +1,7 @@
 ﻿import { desc, eq, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { tglValid } from '../../shared/domain'
+import { JENIS_SETORAN, normalisasiMetode, tglValid } from '../../shared/domain'
 import { santri, setoran } from '../db/schema'
 import { parseBody } from '../lib/validate'
 import { requireAuth, requirePeran, type AppEnv } from '../middleware'
@@ -37,7 +37,7 @@ setoranRoutes.post('/', async (c) => {
     c,
     z.object({
       santriId: z.string(),
-      jenis: z.enum(['Iqra', 'Hafalan']),
+      jenis: z.preprocess((v) => (typeof v === 'string' ? normalisasiMetode(v) : v), z.enum(JENIS_SETORAN)),
       materi: z.string().trim().min(1, 'Materi wajib diisi').max(200),
       nilai: z.enum(['Lancar', 'Cukup', 'Perlu Bimbingan']),
       tanggal: z.string().refine(tglValid, 'Tanggal tidak valid (YYYY-MM-DD)'),
@@ -61,3 +61,4 @@ setoranRoutes.delete('/:id', requirePeran('pimpinan'), async (c) => {
   if (res.length === 0) return c.json({ error: 'Setoran tidak ditemukan' }, 404)
   return c.json({ ok: true })
 })
+

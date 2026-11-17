@@ -6,7 +6,7 @@ import { api, pesanGalat } from '@/lib/api'
 import { hariIni, rupiah, useSantri } from '@/lib/queries'
 import { type TabunganRow } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -28,11 +28,10 @@ import {
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 export function TabunganPage() {
   const qc = useQueryClient()
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: semua } = useSantri()
   const murid = useMemo(
     () =>
@@ -87,9 +86,6 @@ export function TabunganPage() {
 
   return (
     <PageShell title='Tabungan' description='Setoran dan penarikan tabungan santri.'>
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <div className='mb-4 grid gap-3 sm:grid-cols-2'>
         <Card>
           <CardHeader className='pb-1'>
@@ -222,3 +218,6 @@ export function TabunganPage() {
     </PageShell>
   )
 }
+
+
+

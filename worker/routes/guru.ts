@@ -1,7 +1,7 @@
 ﻿import { and, eq, ne } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { JENJANG, guru } from '../db/schema'
+import { JENJANG, foto, guru } from '../db/schema'
 import { parseBody } from '../lib/validate'
 import { requireAuth, requirePeran, type AppEnv } from '../middleware'
 
@@ -65,6 +65,9 @@ guruRoutes.delete('/:id', async (c) => {
     .where(eq(guru.id, c.req.param('id')))
     .returning({ id: guru.id })
   if (res.length === 0) return c.json({ error: 'Guru tidak ditemukan' }, 404)
+  // Foto tidak punya FK: hapus bersama pemiliknya.
+  await c.get('db').delete(foto).where(and(eq(foto.jenis, 'guru'), eq(foto.ownerId, res[0].id)))
   return c.json({ ok: true })
 })
+
 

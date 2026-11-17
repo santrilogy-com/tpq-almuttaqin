@@ -1,4 +1,4 @@
-# Panduan Pengguna: TPQ Al-Muttaqin (v2)
+﻿# Panduan Pengguna: TPQ Al-Muttaqin (v2)
 
 ## 1. Mulai
 
@@ -21,12 +21,16 @@ Aplikasi menyimpan data di server, jadi butuh internet. Saat offline muncul pita
 | Guru, Keuangan, SPP, Tabungan, RAPBM | ya | tidak |
 | Identitas, Pengguna, Data dan Backup, Import | ya | tidak |
 
-Pilihan TPQ / Ibtidaiyah di atas tiap halaman hanya **filter tampilan**, bukan peran.
+**Saklar lembaga** di bagian atas tiap halaman memilih **TPQ**, **Madrasah**, atau **Semua lembaga** (khusus Pimpinan). Pilihan ini mengubah daftar, ringkasan, saldo Beranda, dan nilai awal formulir di semua halaman, dan diingat per perangkat. Itu hanya **filter tampilan**, bukan peran; nama dan logo di sidebar mengikuti lembaga aktif. Guru selalu berada di satu lembaga.
+
+Di HP, menu utama ada di **navigasi bawah** (Beranda, Santri, Absensi, Keuangan atau Nilai, dan Lainnya untuk menu lengkap).
 
 ## 3. Isi data pertama kali
 
 Kartu **Mulai isi data** di Beranda memandu: tambah kelas, guru, dan santri (atau import CSV, lihat bagian 8).
 Lalu isi **Identitas dan Tarif**: nama lembaga, kepala, logo, dan tarif SPP per jenjang.
+
+**Foto**: santri dan ustadz bisa diberi foto lewat tombol Ubah (Tambah foto). Foto dikecilkan otomatis di HP sebelum diunggah (maks 150 KB), tampil di daftar, absensi, dan rapor, dan ikut dalam backup. Foto santri bisa diubah guru; foto ustadz hanya Pimpinan.
 
 ## 4. Kegiatan harian
 
@@ -39,7 +43,7 @@ Lalu isi **Identitas dan Tarif**: nama lembaga, kepala, logo, dan tarif SPP per 
   Nilai akhir = Harian 40% + Imda 30% + Praktek 30%. Jika baru ada sebagian jenis nilai, nilai akhir dihitung dari yang ada
   (bobot disesuaikan) dan ditandai **Sementara**.
 - **Rapor murid**: pilih murid dan semester, lalu *Bagikan rapor (teks)*.
-- **Hafalan dan Iqra**: catat setoran dengan nilai Lancar / Cukup / Perlu Bimbingan.
+- **Hafalan dan Qur'ani**: catat setoran (bacaan Qur'ani atau hafalan) dengan nilai Lancar / Cukup / Perlu Bimbingan. Istilah lama "Iqra" otomatis menjadi "Qur'ani" (jilid Qur'ani 1 sampai 6, lalu Tahfidz Juz 30, 29, 28).
 
 ## 5. Keuangan (Pimpinan)
 
@@ -87,3 +91,4 @@ hanya cara itu yang otomatis masuk kas tanpa risiko dobel.
 pertemuan di kelas santri saat ini.
 
 **Grafik kosong.** Tambah kelas, guru, dan santri dulu.
+

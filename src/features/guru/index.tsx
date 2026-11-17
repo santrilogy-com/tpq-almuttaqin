@@ -2,11 +2,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { JENJANG, type Jenjang } from '@shared/domain'
+import { JENJANG, type Jenjang, labelJenjang } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
+import { simpanFoto } from '@/lib/foto'
 import { rupiah, useGuru, useKelas } from '@/lib/queries'
 import { type Guru } from '@/lib/types'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif, jenjangAwal } from '@/stores/profil-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,15 +34,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { FotoAvatar } from '@/components/foto-avatar'
+import { FotoField } from '@/components/foto-field'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 const PERAN_GURU = ['Pimpinan', 'Wali Kelas', 'Guru Fan', 'Guru'] as const
 
 export function GuruPage() {
   const qc = useQueryClient()
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: guru, isLoading } = useGuru()
   const { data: kelas } = useKelas()
   const [form, setForm] = useState<Guru | 'baru' | null>(null)
@@ -69,9 +71,6 @@ export function GuruPage() {
         </Button>
       }
     >
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
@@ -102,9 +101,14 @@ export function GuruPage() {
             )}
             {tampil.map((g) => (
               <TableRow key={g.id}>
-                <TableCell className='font-medium'>{g.nama}</TableCell>
+                <TableCell className='font-medium'>
+                  <div className='flex items-center gap-2'>
+                    <FotoAvatar jenis='guru' id={g.id} nama={g.nama} />
+                    {g.nama}
+                  </div>
+                </TableCell>
                 <TableCell>{g.peranGuru}</TableCell>
-                <TableCell>{g.jenjang === 'MI' ? 'Ibtidaiyah' : 'TPQ'}</TableCell>
+                <TableCell>{labelJenjang(g.jenjang)}</TableCell>
                 <TableCell>{(g.kelasId && namaKelas.get(g.kelasId)) || '-'}</TableCell>
                 <TableCell>{g.hp || '-'}</TableCell>
                 <TableCell className='space-x-2'>
@@ -169,20 +173,31 @@ function FormGuru(props: {
   onDone: () => void
 }) {
   const { data: kelas } = useKelas()
+  const profilAktif = useProfilAktif()
   const [v, setV] = useState({
     nama: props.awal?.nama ?? '',
     peranGuru: props.awal?.peranGuru ?? ('Guru' as Guru['peranGuru']),
-    jenjang: (props.awal?.jenjang ?? 'TPQ') as Jenjang,
+    jenjang: (props.awal?.jenjang ?? jenjangAwal(profilAktif)) as Jenjang,
     kelasId: props.awal?.kelasId ?? (null as string | null),
     hp: props.awal?.hp ?? '',
     honor: String(props.awal?.honor ?? 0),
   })
+  const qc = useQueryClient()
+  // undefined = foto tidak diubah; null = hapus; string = foto baru (diunggah setelah data tersimpan)
+  const [fotoBaru, setFotoBaru] = useState<string | null | undefined>(undefined)
   const m = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const data = { ...v, honor: Number(v.honor) }
-      return props.awal
-        ? api.patch(`/guru/${props.awal.id}`, data)
-        : api.post('/guru', data)
+      const res = props.awal
+        ? await api.patch<{ guru: Guru }>(`/guru/${props.awal.id}`, data)
+        : await api.post<{ guru: Guru }>('/guru', data)
+      try {
+        await simpanFoto('guru', res.data.guru.id, fotoBaru)
+      } catch (e) {
+        toast.error(`Data tersimpan, tetapi foto gagal: ${pesanGalat(e)}`)
+      }
+      qc.invalidateQueries({ queryKey: ['foto-index'] })
+      return res
     },
     onSuccess: () => {
       toast.success('Guru disimpan')
@@ -203,6 +218,7 @@ function FormGuru(props: {
             m.mutate()
           }}
         >
+          <FotoField jenis='guru' id={props.awal?.id} nama={v.nama} nilai={fotoBaru} onChange={setFotoBaru} />
           <Field label='Nama *' htmlFor='g-nama'>
             <Input
               id='g-nama'
@@ -239,7 +255,7 @@ function FormGuru(props: {
               <SelectContent>
                 {JENJANG.map((j) => (
                   <SelectItem key={j} value={j}>
-                    {j === 'MI' ? 'Ibtidaiyah' : 'TPQ'}
+                    {labelJenjang(j)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -288,3 +304,7 @@ function FormGuru(props: {
     </Dialog>
   )
 }
+
+
+
+

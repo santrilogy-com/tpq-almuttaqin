@@ -54,9 +54,14 @@ laporanRoutes.get('/ringkasan', async (c) => {
     .select({ peran: guru.peranGuru, jenjang: guru.jenjang, jumlah: sql<number>`count(*)` })
     .from(guru)
     .groupBy(guru.peranGuru, guru.jenjang)
+  // Hanya 60 hari terakhir: memindai seluruh riwayat absensi di setiap pembukaan Beranda akan membengkak
+  // (ratusan santri x ribuan pertemuan) dan menghabiskan kuota baca D1. Angkanya juga lebih relevan.
+  const batasAbsen = new Date(Date.parse(hariIniWib()) - 60 * 86_400_000).toISOString().slice(0, 10)
   const abs = await db
     .select({ status: absensi.status, jumlah: sql<number>`count(*)` })
     .from(absensi)
+    .innerJoin(pertemuan, eq(pertemuan.id, absensi.pertemuanId))
+    .where(sql`${pertemuan.tanggal} >= ${batasAbsen}`)
     .groupBy(absensi.status)
   const absensiTotal = { H: 0, I: 0, S: 0, A: 0 }
   for (const a of abs) absensiTotal[a.status] = a.jumlah
@@ -79,36 +84,73 @@ laporanRoutes.get('/ringkasan', async (c) => {
 
   if (pimpinan) {
     const periode = hariIniWib().slice(0, 7)
-    const [kas] = await db
+    const JJ = ['TPQ', 'MI'] as const
+    const kas = await db
       .select({
+        jenjang: transaksi.jenjang,
         masuk: sql<number>`coalesce(sum(case when ${transaksi.jenis} = 'masuk' then ${transaksi.jumlah} end), 0)`,
         keluar: sql<number>`coalesce(sum(case when ${transaksi.jenis} = 'keluar' then ${transaksi.jumlah} end), 0)`,
       })
       .from(transaksi)
+      .groupBy(transaksi.jenjang)
     const spp = await db
-      .select({ status: tagihanSpp.status, jumlah: sql<number>`count(*)`, total: sql<number>`sum(${tagihanSpp.jumlah})` })
+      .select({ jenjang: santri.jenjang, status: tagihanSpp.status, jumlah: sql<number>`count(*)`, total: sql<number>`sum(${tagihanSpp.jumlah})` })
       .from(tagihanSpp)
+      .innerJoin(santri, eq(santri.id, tagihanSpp.santriId))
       .where(eq(tagihanSpp.periode, periode))
-      .groupBy(tagihanSpp.status)
-    const [tab] = await db
-      .select({ total: sql<number>`coalesce(sum(case when ${tabungan.jenis} = 'setor' then ${tabungan.jumlah} else -${tabungan.jumlah} end), 0)` })
+      .groupBy(santri.jenjang, tagihanSpp.status)
+    const tab = await db
+      .select({ jenjang: santri.jenjang, total: sql<number>`coalesce(sum(case when ${tabungan.jenis} = 'setor' then ${tabungan.jumlah} else -${tabungan.jumlah} end), 0)` })
       .from(tabungan)
-    const [hb] = await db
-      .select({ jumlah: sql<number>`count(*)` })
+      .innerJoin(santri, eq(santri.id, tabungan.santriId))
+      .groupBy(santri.jenjang)
+    const hb = await db
+      .select({ jenjang: guru.jenjang, jumlah: sql<number>`count(*)` })
       .from(guru)
       .where(and(eq(guru.honorLunas, false), sql`${guru.honor} > 0`))
+      .groupBy(guru.jenjang)
+
+    // Angka per jenjang (untuk saklar lembaga) + total gabungan.
+    const perJenjang = Object.fromEntries(
+      JJ.map((j) => {
+        const k = kas.find((x) => x.jenjang === j)
+        const masuk = n(k?.masuk)
+        const keluar = n(k?.keluar)
+        const s = spp.filter((x) => x.jenjang === j)
+        return [
+          j,
+          {
+            saldoKas: masuk - keluar,
+            masuk,
+            keluar,
+            totalTabungan: n(tab.find((x) => x.jenjang === j)?.total),
+            honorBelumLunas: hb.find((x) => x.jenjang === j)?.jumlah ?? 0,
+            spp: {
+              lunas: s.find((x) => x.status === 'lunas')?.jumlah ?? 0,
+              total: s.reduce((a, x) => a + x.jumlah, 0),
+              nominalLunas: n(s.find((x) => x.status === 'lunas')?.total),
+              nominalTotal: s.reduce((a, x) => a + n(x.total), 0),
+            },
+          },
+        ]
+      })
+    ) as Record<(typeof JJ)[number], { saldoKas: number; masuk: number; keluar: number; totalTabungan: number; honorBelumLunas: number; spp: { lunas: number; total: number; nominalLunas: number; nominalTotal: number } }>
+    const T = perJenjang.TPQ
+    const M = perJenjang.MI
     hasil.keuangan = {
-      saldoKas: n(kas.masuk) - n(kas.keluar),
-      masuk: n(kas.masuk),
-      keluar: n(kas.keluar),
-      totalTabungan: n(tab.total),
-      honorBelumLunas: hb.jumlah,
+      perJenjang,
+      periode,
+      saldoKas: T.saldoKas + M.saldoKas,
+      masuk: T.masuk + M.masuk,
+      keluar: T.keluar + M.keluar,
+      totalTabungan: T.totalTabungan + M.totalTabungan,
+      honorBelumLunas: T.honorBelumLunas + M.honorBelumLunas,
       spp: {
         periode,
-        lunas: spp.find((s) => s.status === 'lunas')?.jumlah ?? 0,
-        total: spp.reduce((a, s) => a + s.jumlah, 0),
-        nominalLunas: n(spp.find((s) => s.status === 'lunas')?.total),
-        nominalTotal: spp.reduce((a, s) => a + n(s.total), 0),
+        lunas: T.spp.lunas + M.spp.lunas,
+        total: T.spp.total + M.spp.total,
+        nominalLunas: T.spp.nominalLunas + M.spp.nominalLunas,
+        nominalTotal: T.spp.nominalTotal + M.spp.nominalTotal,
       },
     }
   }
@@ -202,5 +244,6 @@ laporanRoutes.get('/export/:jenis', async (c) => {
     },
   })
 })
+
 
 

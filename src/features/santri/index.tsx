@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpCircle, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { JENJANG, JILID_LIST, naikJilid, type Jenjang } from '@shared/domain'
+import { JENJANG, JILID_LIST, naikJilid, type Jenjang, labelJenjang } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
+import { simpanFoto } from '@/lib/foto'
 import { useKelas, useSantri } from '@/lib/queries'
 import { type Santri } from '@/lib/types'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif, jenjangAwal } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,9 +35,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { FotoAvatar } from '@/components/foto-avatar'
+import { FotoField } from '@/components/foto-field'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 const KOSONG = {
   nis: '',
@@ -44,7 +46,7 @@ const KOSONG = {
   jenisKelamin: 'L' as 'L' | 'P',
   jenjang: 'TPQ' as Jenjang,
   kelasId: null as string | null,
-  jilid: 'Iqra 1',
+  jilid: JILID_LIST[0] as string,
   angkatan: '',
   status: 'aktif' as Santri['status'],
   wali: '',
@@ -55,7 +57,7 @@ const KOSONG = {
 export function SantriPage() {
   const qc = useQueryClient()
   const pimpinan = useAuthStore((s) => s.auth.user?.peran) === 'pimpinan'
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: santri, isLoading } = useSantri()
   const { data: kelas } = useKelas()
   const [q, setQ] = useState('')
@@ -88,7 +90,7 @@ export function SantriPage() {
   return (
     <PageShell
       title='Santri'
-      description='Data santri TPQ dan Ibtidaiyah.'
+      description='Data santri TPQ dan Madrasah.'
       actions={
         <Button onClick={() => setForm('baru')}>
           <Plus /> Tambah santri
@@ -96,7 +98,6 @@ export function SantriPage() {
       }
     >
       <div className='mb-3 flex flex-wrap items-center gap-2'>
-        <ProfilFilter />
         <Input
           className='w-56'
           placeholder='Cari nama atau NIS'
@@ -153,9 +154,14 @@ export function SantriPage() {
             {tampil.map((s) => (
               <TableRow key={s.id}>
                 <TableCell>{s.nis}</TableCell>
-                <TableCell className='font-medium'>{s.nama}</TableCell>
+                <TableCell className='font-medium'>
+                  <div className='flex items-center gap-2'>
+                    <FotoAvatar jenis='santri' id={s.id} nama={s.nama} />
+                    {s.nama}
+                  </div>
+                </TableCell>
                 <TableCell>{s.jenisKelamin}</TableCell>
-                <TableCell>{s.jenjang === 'MI' ? 'Ibtidaiyah' : 'TPQ'}</TableCell>
+                <TableCell>{labelJenjang(s.jenjang)}</TableCell>
                 <TableCell>{(s.kelasId && namaKelas.get(s.kelasId)) || '-'}</TableCell>
                 <TableCell>{s.jilid}</TableCell>
                 <TableCell>
@@ -251,13 +257,24 @@ function FormSantri(props: {
   onDone: () => void
 }) {
   const { data: kelas } = useKelas()
-  const [v, setV] = useState({ ...KOSONG, ...props.awal })
+  const profilAktif = useProfilAktif()
+  const [v, setV] = useState({ ...KOSONG, jenjang: jenjangAwal(profilAktif), ...props.awal })
+  const qc = useQueryClient()
+  // undefined = foto tidak diubah; null = hapus; string = foto baru (diunggah setelah data tersimpan)
+  const [fotoBaru, setFotoBaru] = useState<string | null | undefined>(undefined)
   const m = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const { id: _id, rombel: _r, ...data } = v as Santri & typeof KOSONG
-      return props.awal
-        ? api.patch(`/santri/${props.awal.id}`, data)
-        : api.post('/santri', data)
+      const res = props.awal
+        ? await api.patch<{ santri: Santri }>(`/santri/${props.awal.id}`, data)
+        : await api.post<{ santri: Santri }>('/santri', data)
+      try {
+        await simpanFoto('santri', res.data.santri.id, fotoBaru)
+      } catch (e) {
+        toast.error(`Data tersimpan, tetapi foto gagal: ${pesanGalat(e)}`)
+      }
+      qc.invalidateQueries({ queryKey: ['foto-index'] })
+      return res
     },
     onSuccess: () => {
       toast.success(props.awal ? 'Santri diperbarui' : 'Santri ditambahkan')
@@ -284,6 +301,9 @@ function FormSantri(props: {
             m.mutate()
           }}
         >
+          <div className='sm:col-span-2'>
+            <FotoField jenis='santri' id={props.awal?.id} nama={v.nama} nilai={fotoBaru} onChange={setFotoBaru} />
+          </div>
           <Field label='Nama lengkap *' htmlFor='s-nama'>
             <Input id='s-nama' required {...teks('nama')} />
           </Field>
@@ -315,7 +335,7 @@ function FormSantri(props: {
               <SelectContent>
                 {JENJANG.map((j) => (
                   <SelectItem key={j} value={j}>
-                    {j === 'MI' ? 'Ibtidaiyah' : 'TPQ'}
+                    {labelJenjang(j)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -390,3 +410,10 @@ function FormSantri(props: {
     </Dialog>
   )
 }
+
+
+
+
+
+
+

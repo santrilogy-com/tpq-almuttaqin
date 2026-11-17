@@ -2,11 +2,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { JENJANG, type Jenjang } from '@shared/domain'
+import { JENJANG, type Jenjang, labelJenjang } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
 import { useKelas, useSantri } from '@/lib/queries'
 import { type Kelas } from '@/lib/types'
-import { cocokProfil, useProfil } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif, jenjangAwal } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,12 +35,11 @@ import {
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 export function KelasPage() {
   const qc = useQueryClient()
   const pimpinan = useAuthStore((s) => s.auth.user?.peran) === 'pimpinan'
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const { data: kelas, isLoading } = useKelas()
   const { data: santri } = useSantri()
   const [form, setForm] = useState<Kelas | 'baru' | null>(null)
@@ -62,7 +61,7 @@ export function KelasPage() {
   return (
     <PageShell
       title='Kelas'
-      description='Rombongan belajar TPQ dan Ibtidaiyah.'
+      description='Rombongan belajar TPQ dan Madrasah.'
       actions={
         pimpinan && (
           <Button onClick={() => setForm('baru')}>
@@ -71,9 +70,6 @@ export function KelasPage() {
         )
       }
     >
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
@@ -105,7 +101,7 @@ export function KelasPage() {
             {tampil.map((k) => (
               <TableRow key={k.id}>
                 <TableCell className='font-medium'>{k.nama}</TableCell>
-                <TableCell>{k.jenjang === 'MI' ? 'Ibtidaiyah' : 'TPQ'}</TableCell>
+                <TableCell>{labelJenjang(k.jenjang)}</TableCell>
                 <TableCell>{k.pengajar || '-'}</TableCell>
                 <TableCell>{k.jadwal || '-'}</TableCell>
                 <TableCell>{k.ruang || '-'}</TableCell>
@@ -158,9 +154,10 @@ function FormKelas(props: {
   onClose: () => void
   onDone: () => void
 }) {
+  const profilAktif = useProfilAktif()
   const [v, setV] = useState({
     nama: props.awal?.nama ?? '',
-    jenjang: (props.awal?.jenjang ?? 'TPQ') as Jenjang,
+    jenjang: (props.awal?.jenjang ?? jenjangAwal(profilAktif)) as Jenjang,
     pengajar: props.awal?.pengajar ?? '',
     jadwal: props.awal?.jadwal ?? '',
     ruang: props.awal?.ruang ?? '',
@@ -206,7 +203,7 @@ function FormKelas(props: {
               <SelectContent>
                 {JENJANG.map((j) => (
                   <SelectItem key={j} value={j}>
-                    {j === 'MI' ? 'Ibtidaiyah' : 'TPQ'}
+                    {labelJenjang(j)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -229,3 +226,7 @@ function FormKelas(props: {
     </Dialog>
   )
 }
+
+
+
+

@@ -1,11 +1,11 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { JENJANG } from '@shared/domain'
+import { JENJANG, labelJenjang } from '@shared/domain'
 import { api } from '@/lib/api'
 import { rupiah } from '@/lib/queries'
 import { cn } from '@/lib/utils'
-import { useProfil } from '@/stores/profil-store'
+import { useProfilAktif } from '@/stores/profil-store'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -19,7 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudSection } from '@/components/crud-section'
 import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-import { ProfilFilter } from '@/components/profil-filter'
 
 type Realita = {
   id: string
@@ -30,20 +29,17 @@ type Realita = {
   realisasi: number
   selisih: number
 }
-const lj = (j: string) => (j === 'MI' ? 'Ibtidaiyah' : 'TPQ')
+const lj = (j: string) => labelJenjang(j === 'MI' ? 'MI' : 'TPQ')
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 export function RapbmPage() {
-  const profil = useProfil((s) => s.profil)
+  const profil = useProfilAktif()
   const cocok = (r: { jenjang: string }) => profil === 'semua' || r.jenjang === profil
   return (
     <PageShell
       title='RAPBM'
       description='Rencana Anggaran Pendapatan dan Belanja Madrasah: rencana dibanding realisasi dari kas.'
     >
-      <div className='mb-3'>
-        <ProfilFilter />
-      </div>
       <Tabs defaultValue='pos'>
         <TabsList className='flex-wrap'>
           <TabsTrigger value='pos'>RAPBM</TabsTrigger>
@@ -284,3 +280,6 @@ function ArusKas() {
     </div>
   )
 }
+
+
+
