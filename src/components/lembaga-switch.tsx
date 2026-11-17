@@ -52,7 +52,7 @@ export function LembagaSwitch() {
   return (
     <>
     <Select value={aktif} onValueChange={(v) => pilih(v as Profil)}>
-      <SelectTrigger className='h-8 w-44 sm:w-56' aria-label='Pilih lembaga'>
+      <SelectTrigger className='h-8 w-36 min-w-0 sm:w-56' aria-label='Pilih lembaga'>
         <SelectValue />
       </SelectTrigger>
       <SelectContent align='end'>
@@ -82,4 +82,5 @@ export function LembagaSwitch() {
     </>
   )
 }
+
 

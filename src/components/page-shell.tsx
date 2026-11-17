@@ -22,7 +22,10 @@ export function PageShell(props: {
         <Search className='me-auto' />
         <LembagaSwitch />
         <ThemeSwitch />
-        <ConfigDrawer />
+        {/* konfigurasi tata letak hanya berguna di layar lebar; di HP membuat header meluber */}
+        <div className='max-md:hidden'>
+          <ConfigDrawer />
+        </div>
         <ProfileDropdown />
       </Header>
       <Main key={profil}>
@@ -40,5 +43,6 @@ export function PageShell(props: {
     </>
   )
 }
+
 
 

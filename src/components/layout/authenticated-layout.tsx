@@ -29,7 +29,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
               '@container/content',
 
               // Ruang untuk navigasi bawah di layar sempit
-              'max-md:pb-[calc(3.75rem+env(safe-area-inset-bottom))]',
+              'max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]',
 
               // If layout is fixed, set the height
               // to 100svh to prevent overflow
@@ -47,4 +47,5 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     </SearchProvider>
   )
 }
+
 
