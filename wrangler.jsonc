@@ -11,9 +11,12 @@
     {
       "binding": "DB",
       "database_name": "tpq-al-muttaqin",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "5b869647-9fad-4c2f-ac2a-53a78303d2ea",
       "migrations_dir": "migrations"
     }
   ],
+  "preview_urls": false,
   "observability": { "enabled": true }
 }
+
+
