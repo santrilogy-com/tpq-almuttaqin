@@ -48,7 +48,9 @@ npx wrangler d1 create tpq-al-muttaqin     # salin database_id yang tampil ke wr
 pnpm db:migrate:remote                     # buat tabel di D1 produksi
 
 # WAJIB sebelum URL dibuka pertama kali: kode rahasia untuk membuat akun Pimpinan pertama.
-npx wrangler secret put SETUP_TOKEN        # ketik kode panjang acak, simpan di tempat aman
+npx wrangler secret put SETUP_TOKEN        # ketik/tempel kode panjang acak, simpan di tempat aman
+# Jangan memasukkannya lewat pipa PowerShell (`$kode | wrangler secret put`): bisa menyelipkan baris baru.
+# Pakai kode tanpa karakter yang membingungkan (I/l/O/0). Server mengabaikan spasi di awal/akhir kode.
 
 pnpm deploy                                # build + wrangler deploy
 ```

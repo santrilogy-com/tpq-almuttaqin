@@ -31,8 +31,13 @@ if (mode === 'terkunci') {
 } else {
   r = await post({ ...akun, kodeSetup: KODE + 'x' })
   check('kode hampir benar (beda 1 karakter) ditolak', r.status === 403)
-  r = await post({ ...akun, kodeSetup: KODE })
-  check('kode benar membuat Pimpinan (201)', r.status === 201 && r.json.user.peran === 'pimpinan', JSON.stringify(r))
+  r = await post({ ...akun, kodeSetup: KODE, cekSaja: true })
+  check('cekSaja: kode benar -> 200 TANPA membuat akun', r.status === 200 && r.json.kodeBenar === true && (await (await fetch(base + '/api/auth/status')).json()).needsSetup === true, JSON.stringify(r))
+  r = await post({ ...akun, kodeSetup: KODE + 'x', cekSaja: true })
+  check('cekSaja: kode salah -> 403', r.status === 403)
+  // kode dengan spasi/baris baru tersasar (salinan dari chat/terminal) tetap diterima
+  r = await post({ ...akun, kodeSetup: `  ${KODE}\r\n` })
+  check('kode berspasi/baris-baru tersasar diterima (trim) -> 201 Pimpinan', r.status === 201 && r.json.user.peran === 'pimpinan', JSON.stringify(r))
   r = await post({ ...akun, username: 'kedua', kodeSetup: KODE })
   check('setelah setup, kode benar pun tidak bisa membuat akun lagi (409)', r.status === 409)
 }

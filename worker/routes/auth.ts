@@ -88,6 +88,7 @@ authRoutes.post('/setup', async (c) => {
       sandi,
       namaTpq: z.string().trim().min(1).max(100).default('TPQ Al-Muttaqin'),
       kodeSetup: z.string().max(200).optional(),
+      cekSaja: z.boolean().optional(),
     })
     .safeParse(await c.req.json().catch(() => null))
   if (!parsed.success) {
@@ -100,8 +101,11 @@ authRoutes.post('/setup', async (c) => {
     if (!token) {
       return c.json({ error: 'Setup dikunci: pemilik harus mengatur rahasia SETUP_TOKEN di Cloudflare (lihat README).' }, 403)
     }
-    if (!samaAman(d.kodeSetup ?? '', token)) return c.json({ error: 'Kode setup salah' }, 403)
+    // trim di kedua sisi: spasi/baris baru tersasar saat menyalin atau saat rahasia diunggah tidak boleh menggagalkan kode yang benar
+    if (!samaAman((d.kodeSetup ?? '').trim(), token.trim())) return c.json({ error: 'Kode setup salah' }, 403)
   }
+  // Hanya memeriksa kode (tidak membuat akun): untuk memastikan kode benar sebelum mengisi form.
+  if (d.cekSaja) return c.json({ kodeBenar: true })
 
   const [user] = await db
     .insert(users)
