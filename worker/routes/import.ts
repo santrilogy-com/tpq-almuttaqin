@@ -45,7 +45,7 @@ const ALIAS_CSV_GURU: Record<string, string> = {
   jeniskelamin: 'jenisKelamin', jk: 'jenisKelamin', tempatlahir: 'tempatLahir', tanggallahir: 'tanggalLahir', tgllahir: 'tanggalLahir',
   namaibukandung: 'namaIbuKandung', namaibu: 'namaIbuKandung', jalan: 'jalan', jalandusun: 'jalan', dusun: 'jalan',
   desakecamatan: 'desaKecamatan', desa: 'desaKecamatan', kecamatan: 'desaKecamatan', kodepos: 'kodePos', rt: 'rt', rw: 'rw',
-  email: 'email', noemail: 'email', emailbasmalah: 'email', nomoremail: 'email',
+  email: 'email', noemail: 'email', emailbasmalah: 'email', noemailbasmalah: 'email', nomoremail: 'email',
 }
 
 const TANGGAL = new Set(['tanggalLahir', 'tanggalMasuk'])
@@ -273,7 +273,7 @@ const TEMPLATE: Record<string, string[][]> = {
   guru: [
     ['Nama', 'Kelas', 'Peran', 'Jenjang', 'HP', 'Honor',
       'ID Guru', 'NIK', 'Tanggal Masuk', 'Status', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Nama Ibu Kandung',
-      'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW', 'Email'],
+      'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW', 'No. Email Basmalah'],
     ['Ustadz Ahmad', "Qur'ani 1", 'Wali Kelas', 'TPQ', '081200000101', '800000',
       'G-001', '3201234567890199', '2015-07-01', 'Tetap', 'L', 'Malang', '1988-03-20', 'Siti Aisyah',
       'Jl. Melati 4', 'Gubeng / Gubeng', '60281', '2', '7', 'ahmad@contoh.id'],

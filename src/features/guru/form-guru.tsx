@@ -36,7 +36,7 @@ const K_ALAMAT: Kolom[] = [
   { k: 'rt', label: 'RT', jenis: 'angka', maks: 3 },
   { k: 'rw', label: 'RW', jenis: 'angka', maks: 3 },
 ]
-const K_EMAIL: Kolom[] = [{ k: 'email', label: 'Email', jenis: 'email', penuh: true, placeholder: 'nama@contoh.id' }]
+const K_EMAIL: Kolom[] = [{ k: 'email', label: 'No. Email Basmalah', jenis: 'email', penuh: true, placeholder: 'nama@contoh.id' }]
 const K_KEPEGAWAIAN: Kolom[] = [
   { k: 'tanggalMasuk', label: 'Tanggal masuk', jenis: 'tanggal' },
   { k: 'status', label: 'Status', saran: SARAN.statusGuru },
