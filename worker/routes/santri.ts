@@ -1,8 +1,10 @@
 ﻿import { and, eq, ne } from 'drizzle-orm'
+import { type BatchItem } from 'drizzle-orm/batch'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { JILID_LIST, naikJilid, normalisasiMetode } from '../../shared/domain'
-import { JENJANG, foto, santri } from '../db/schema'
+import { DETAIL_SANTRI, detailSantriKosong } from '../../shared/biodata'
+import { JENJANG, foto, santri, santriDetail } from '../db/schema'
 import { parseBody } from '../lib/validate'
 import { requireAuth, requirePeran, type AppEnv } from '../middleware'
 
@@ -23,6 +25,7 @@ const body = z.object({
   wali: teks(100).optional(),
   hpWali: teks(30).optional(),
   alamat: teks(300).optional(),
+  detail: DETAIL_SANTRI.partial().optional(),
 })
 
 const nisSudahAda = async (
@@ -44,29 +47,63 @@ santriRoutes.get('/', async (c) => {
   return c.json({ santri: await c.get('db').select().from(santri).where(q) })
 })
 
+// Biodata lengkap satu santri (dimuat saat formulir ubah dibuka; daftar santri sengaja tanpa kolom ini).
+const ambilDetail = async (db: AppEnv['Variables']['db'], id: string) => {
+  const row = await db.select().from(santriDetail).where(eq(santriDetail.santriId, id)).get()
+  if (!row) return detailSantriKosong()
+  const { santriId: _id, ...isi } = row
+  return isi
+}
+
+santriRoutes.get('/:id', async (c) => {
+  const db = c.get('db')
+  const id = c.req.param('id')
+  const row = await db.select().from(santri).where(eq(santri.id, id)).get()
+  if (!row) return c.json({ error: 'Santri tidak ditemukan' }, 404)
+  return c.json({ santri: row, detail: await ambilDetail(db, id) })
+})
+
 // Guru boleh menambah dan mengubah santri; hanya Pimpinan yang boleh menghapus.
 santriRoutes.post('/', async (c) => {
   const p = await parseBody(c, body)
   if (!p.ok) return p.res
+  const { detail, ...utama } = p.data
   const db = c.get('db')
-  if (await nisSudahAda(db, p.data.nis)) {
+  if (await nisSudahAda(db, utama.nis)) {
     return c.json({ error: 'NIS sudah dipakai santri lain' }, 409)
   }
-  const [row] = await db.insert(santri).values({ ...p.data, jilid: p.data.jilid || JILID_LIST[0] }).returning()
-  return c.json({ santri: row }, 201)
+  // Santri + biodata dalam satu batch (atomik): tidak ada santri setengah jadi.
+  const id = crypto.randomUUID()
+  const [dibuat] = await db.batch([
+    db.insert(santri).values({ ...utama, id, jilid: utama.jilid || JILID_LIST[0] }).returning(),
+    db.insert(santriDetail).values({ santriId: id, ...(detail ?? {}) }),
+  ])
+  return c.json({ santri: dibuat[0], detail: await ambilDetail(db, id) }, 201)
 })
 
 santriRoutes.patch('/:id', async (c) => {
   const p = await parseBody(c, body.partial())
   if (!p.ok) return p.res
+  const { detail, ...utama } = p.data
   const db = c.get('db')
   const id = c.req.param('id')
-  if (p.data.nis && (await nisSudahAda(db, p.data.nis, id))) {
+  if (!(await db.select({ id: santri.id }).from(santri).where(eq(santri.id, id)).get())) {
+    return c.json({ error: 'Santri tidak ditemukan' }, 404)
+  }
+  if (utama.nis && (await nisSudahAda(db, utama.nis, id))) {
     return c.json({ error: 'NIS sudah dipakai santri lain' }, 409)
   }
-  const [row] = await db.update(santri).set(p.data).where(eq(santri.id, id)).returning()
-  if (!row) return c.json({ error: 'Santri tidak ditemukan' }, 404)
-  return c.json({ santri: row })
+  const stmts: BatchItem<'sqlite'>[] = []
+  if (Object.keys(utama).length > 0) stmts.push(db.update(santri).set(utama).where(eq(santri.id, id)))
+  // Upsert biodata: hanya kolom yang dikirim yang berubah; kolom lain tetap.
+  if (detail && Object.keys(detail).length > 0) {
+    stmts.push(
+      db.insert(santriDetail).values({ santriId: id, ...detail }).onConflictDoUpdate({ target: santriDetail.santriId, set: detail })
+    )
+  }
+  if (stmts.length > 0) await db.batch(stmts as [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]])
+  const row = await db.select().from(santri).where(eq(santri.id, id)).get()
+  return c.json({ santri: row, detail: await ambilDetail(db, id) })
 })
 
 // Naik jilid wajib menyebut jilid asal. Bila data sudah berubah (mis. ketukan ganda
@@ -103,6 +140,7 @@ santriRoutes.delete('/:id', requirePeran('pimpinan'), async (c) => {
   await c.get('db').delete(foto).where(and(eq(foto.jenis, 'santri'), eq(foto.ownerId, res[0].id)))
   return c.json({ ok: true })
 })
+
 
 
 

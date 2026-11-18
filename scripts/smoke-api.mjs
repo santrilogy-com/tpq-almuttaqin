@@ -596,6 +596,102 @@ check('jenis export tak dikenal -> 404', r.status === 404)
   await a.req('PUT', `/api/foto/santri/${fSantri}`, { data: JPEG })
 }
 
+// ---------- Biodata santri / guru ----------
+{
+  const NIK = '3201234567890123'
+  const detail = { nik: NIK, noKk: '3201234567890100', tempatLahir: 'Surabaya', tanggalLahir: '2018-05-17', hobi: 'Menggambar', citaCita: 'Dokter', statusRumah: 'Milik sendiri', statusMukim: 'Non-mukim (pulang-pergi)', statusAnak: 'Kandung', anakKe: 2, jalan: 'Jl. Merdeka 12', desaKecamatan: 'Wonokromo / Wonokromo', kodePos: '60243', rt: '3', rw: '5', nikAyah: '3201234567890111', namaAyah: 'Slamet', pendidikanAyah: 'SMA / MA', penghasilanAyah: 'Rp1.000.000 - Rp2.000.000', kontakAyah: '081200000011', nikIbu: '3201234567890122', namaIbu: 'Aminah', pendidikanIbu: 'SMP / MTs', pekerjaanIbu: 'Ibu rumah tangga', penghasilanIbu: 'Kurang dari Rp500.000', kontakIbu: '081200000022', tanggalMasuk: '2024-07-15', statusMasuk: 'Baru', diterimaDiKelas: "Qur'ani 1", nisn: '0123456789' }
+  const dasar = { nis: 'BIO1', nama: 'Santri Biodata', jenisKelamin: 'L', jenjang: 'TPQ', wali: 'Slamet' }
+
+  r = await g2.req('POST', '/api/santri', { ...dasar, detail })
+  check('guru menambah santri LENGKAP dengan biodata (29 kolom)', r.status === 201 && r.json.detail.nik === NIK && r.json.detail.anakKe === 2 && r.json.detail.namaIbu === 'Aminah' && r.json.detail.nisn === '0123456789', JSON.stringify(r).slice(0, 200))
+  const bid = r.json.santri?.id
+  r = await g2.req('GET', `/api/santri/${bid}`)
+  check('GET biodata: semua kolom kembali persis', JSON.stringify(Object.fromEntries(Object.keys(detail).map((k) => [k, r.json.detail[k]]))) === JSON.stringify(detail), JSON.stringify(r.json.detail).slice(0, 160))
+  r = await g2.req('GET', '/api/santri?jenjang=TPQ')
+  check('daftar santri TIDAK membawa biodata (ringan di HP)', r.json.santri.every((s) => !('nik' in s) && !('noKk' in s) && !('detail' in s)))
+  r = await g2.req('GET', '/api/santri/tidak-ada')
+  check('GET biodata santri tak ada -> 404', r.status === 404)
+
+  // Validasi: ditolak 400 dan TIDAK ada santri setengah jadi
+  for (const [nama, d] of [
+    ['NIK 15 digit', { nik: '320123456789012' }], ['NIK berhuruf', { nik: '320123456789012a' }], ['No KK 17 digit', { noKk: '32012345678901234' }],
+    ['NISN 9 digit', { nisn: '012345678' }], ['kode pos 4 digit', { kodePos: '6024' }], ['RT 4 digit', { rt: '1234' }],
+    ['tanggal lahir masa depan', { tanggalLahir: '2999-01-01' }], ['tanggal lahir fiktif', { tanggalLahir: '2018-02-30' }], ['anak ke 0', { anakKe: 0 }], ['anak ke 2.5', { anakKe: 2.5 }],
+    ['kontak ayah berhuruf', { kontakAyah: '0812-abc' }], ['hobi >100 karakter', { hobi: 'x'.repeat(101) }], ['NIK ayah 10 digit', { nikAyah: '1234567890' }],
+  ]) {
+    r = await g2.req('POST', '/api/santri', { ...dasar, nis: 'BADBIO', detail: d })
+    check(`biodata ditolak: ${nama}`, r.status === 400, `${r.status} ${JSON.stringify(r.json)}`)
+  }
+  r = await g2.req('POST', '/api/santri', { ...dasar, nis: 'BADBIO', detail: { nik: '123' } })
+  check('pesan galat NIK jelas', /NIK harus 16 digit/.test(r.json.error), r.json.error)
+  r = await a.req('GET', '/api/santri')
+  check('santri dengan biodata invalid TIDAK tersimpan (atomik)', !r.json.santri.some((s) => s.nis === 'BADBIO'))
+
+  // PATCH sebagian: tidak boleh mereset kolom lain (bug klasik)
+  r = await g2.req('PATCH', `/api/santri/${bid}`, { detail: { hobi: 'Membaca' } })
+  check('PATCH hanya hobi: hobi berubah, NIK/ayah/ibu/kelas TETAP', r.status === 200 && r.json.detail.hobi === 'Membaca' && r.json.detail.nik === NIK && r.json.detail.namaAyah === 'Slamet' && r.json.detail.anakKe === 2 && r.json.santri.wali === 'Slamet', JSON.stringify(r.json.detail).slice(0, 200))
+  r = await g2.req('PATCH', `/api/santri/${bid}`, { wali: 'Pak Slamet' })
+  check('PATCH data utama saja: biodata TIDAK tersentuh', r.json.santri.wali === 'Pak Slamet' && r.json.detail.nik === NIK && r.json.detail.hobi === 'Membaca')
+  r = await g2.req('PATCH', `/api/santri/${bid}`, { detail: { anakKe: null, nisn: '' } })
+  check('anak ke & NISN bisa dikosongkan', r.json.detail.anakKe === null && r.json.detail.nisn === '' && r.json.detail.nik === NIK)
+  r = await g2.req('PATCH', `/api/santri/${bid}`, { detail: { nik: '12' } })
+  check('PATCH biodata invalid ditolak dan data lama utuh', r.status === 400 && (await g2.req('GET', `/api/santri/${bid}`)).json.detail.nik === NIK)
+  r = await g2.req('PATCH', `/api/santri/${bid}`, { detail: {} })
+  check('PATCH detail kosong tidak error', r.status === 200 && r.json.detail.nik === NIK)
+  r = await g2.req('PATCH', '/api/santri/tidak-ada', { detail: { hobi: 'x' } })
+  check('PATCH biodata santri tak ada -> 404', r.status === 404)
+  // santri lama (tanpa baris biodata) tetap terbuka dengan biodata kosong, dan bisa diisi kemudian
+  const lama = (await a.req('POST', '/api/santri', { nis: 'LAMA1', nama: 'Tanpa Biodata', jenisKelamin: 'P', jenjang: 'TPQ' })).json.santri.id
+  r = await a.req('GET', `/api/santri/${lama}`)
+  check('santri tanpa biodata: kolom kosong, anakKe null', r.json.detail.nik === '' && r.json.detail.anakKe === null && r.json.detail.nisn === '')
+  r = await a.req('PATCH', `/api/santri/${lama}`, { detail: { nik: NIK, namaIbu: 'Siti' } })
+  check('biodata bisa ditambahkan belakangan (upsert)', r.json.detail.nik === NIK && r.json.detail.namaIbu === 'Siti' && r.json.detail.hobi === '')
+
+  // Ekspor: biodata sensitif hanya Pimpinan
+  const exA = await (await fetch(`${base}/api/laporan/export/santri`, { headers: { cookie: a.cookie } })).text()
+  const exG = await (await fetch(`${base}/api/laporan/export/santri`, { headers: { cookie: g2.cookie } })).text()
+  check('ekspor santri Pimpinan memuat NIK, orang tua, NISN', /,NIK,No KK,/.test(exA) && exA.includes(NIK) && /Aminah/.test(exA) && /NISN/.test(exA))
+  check('ekspor santri untuk GURU tidak memuat NIK/penghasilan (privasi)', !/NIK/.test(exG) && !exG.includes(NIK) && !/Penghasilan/.test(exG) && /Santri Biodata/.test(exG))
+
+  // Hapus santri: biodata ikut terhapus
+  const tmpS = (await a.req('POST', '/api/santri', { nis: 'BIO-DEL', nama: 'Hapus Biodata', jenisKelamin: 'L', jenjang: 'TPQ', detail: { nik: NIK } })).json.santri.id
+  await a.req('DELETE', `/api/santri/${tmpS}`)
+  const yatim = JSON.parse(await (await fetch(`${base}/api/backup/export`, { headers: { cookie: a.cookie } })).text()).data.santriDetail.some((x) => x.santriId === tmpS)
+  check('hapus santri ikut menghapus biodatanya (tidak ada yatim)', yatim === false)
+
+  // ---- Guru
+  const dg = { idGuru: 'G-001', nik: '3201234567890199', tanggalMasuk: '2015-07-01', status: 'Tetap', jenisKelamin: 'L', tempatLahir: 'Malang', tanggalLahir: '1988-03-20', namaIbuKandung: 'Siti Aisyah', jalan: 'Jl. Melati 4', desaKecamatan: 'Gubeng / Gubeng', kodePos: '60281', rt: '2', rw: '7', email: 'ahmad@contoh.id' }
+  r = await a.req('POST', '/api/guru', { nama: 'Ustadz Biodata', jenjang: 'TPQ', hp: '081200000101', detail: dg })
+  check('Pimpinan menambah guru LENGKAP dengan biodata', r.status === 201 && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.jenisKelamin === 'L' && r.json.guru.hp === '081200000101', JSON.stringify(r).slice(0, 200))
+  const gid = r.json.guru?.id
+  r = await a.req('GET', `/api/guru/${gid}`)
+  check('GET biodata guru: semua kolom kembali persis', Object.keys(dg).every((k) => r.json.detail[k] === dg[k]))
+  r = await g2.req('GET', `/api/guru/${gid}`)
+  check('role Guru tidak boleh membuka biodata guru (403)', r.status === 403)
+  r = await a.req('POST', '/api/guru', { nama: 'Guru ID Kembar', jenjang: 'TPQ', detail: { idGuru: 'G-001' } })
+  check('ID Guru kembar ditolak (409)', r.status === 409, JSON.stringify(r.json))
+  for (const [nama, d] of [['email tanpa @', { email: 'ustadz.contoh.id' }], ['NIK 12 digit', { nik: '320123456789' }], ['jenis kelamin X', { jenisKelamin: 'X' }], ['tanggal lahir masa depan', { tanggalLahir: '2999-01-01' }], ['kode pos 3 digit', { kodePos: '602' }]]) {
+    r = await a.req('POST', '/api/guru', { nama: 'Guru Salah', jenjang: 'TPQ', detail: d })
+    check(`biodata guru ditolak: ${nama}`, r.status === 400, `${r.status} ${JSON.stringify(r.json)}`)
+  }
+  r = await a.req('GET', '/api/guru')
+  check('guru dengan biodata invalid TIDAK tersimpan', !r.json.guru.some((g) => g.nama === 'Guru Salah' || g.nama === 'Guru ID Kembar'))
+  r = await a.req('PATCH', `/api/guru/${gid}`, { detail: { status: 'Honorer' } })
+  check('PATCH guru hanya status: NIK/email/ibu kandung/ID TETAP', r.json.detail.status === 'Honorer' && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.idGuru === 'G-001' && r.json.detail.namaIbuKandung === 'Siti Aisyah')
+  r = await a.req('PATCH', `/api/guru/${gid}`, { honor: 700000 })
+  check('PATCH data utama guru: biodata TIDAK tersentuh', r.json.guru.honor === 700000 && r.json.detail.nik === dg.nik)
+  r = await a.req('PATCH', `/api/guru/${gid}`, { detail: { idGuru: 'G-001' } })
+  check('guru boleh menyimpan ID-nya sendiri berulang (bukan kembar dengan dirinya)', r.status === 200)
+  const g3 = (await a.req('POST', '/api/guru', { nama: 'Guru Lain', jenjang: 'TPQ', detail: { idGuru: 'G-002' } })).json.guru.id
+  r = await a.req('PATCH', `/api/guru/${g3}`, { detail: { idGuru: 'G-001' } })
+  check('PATCH ID Guru ke milik guru lain ditolak (409)', r.status === 409)
+  const exGuru = await (await fetch(`${base}/api/laporan/export/guru`, { headers: { cookie: a.cookie } })).text()
+  check('ekspor guru memuat ID Guru, NIK, email, ibu kandung', /ID Guru,NIK,Tanggal Masuk,Status/.test(exGuru) && exGuru.includes('G-001') && exGuru.includes('ahmad@contoh.id') && exGuru.includes('Siti Aisyah'))
+  await a.req('DELETE', `/api/guru/${g3}`)
+  const yatimG = JSON.parse(await (await fetch(`${base}/api/backup/export`, { headers: { cookie: a.cookie } })).text()).data.guruDetail.some((x) => x.guruId === g3)
+  check('hapus guru ikut menghapus biodatanya', yatimG === false)
+}
+
 // ---------- Backup / Restore / Import ----------
 const BASE = base
 const ambilBackup = async () => {
@@ -614,7 +710,7 @@ check('backup TIDAK memuat sandi/akun/sesi', !/pbkdf2|passwordHash|password_hash
 check('backup: guru tanpa userId', b1.json.data.guru.length > 0 && b1.json.data.guru.every((g) => !('userId' in g)))
 const hitung = (j) => Object.fromEntries(Object.entries(j.data).map(([k, v]) => [k, v.length]))
 const n1 = hitung(b1.json)
-check('backup memuat 20 tabel, santri banyak, 2 foto', Object.keys(n1).length === 20 && n1.santri > 60 && n1.transaksi > 0 && n1.nilai > 0 && n1.foto === 2, JSON.stringify(n1))
+check('backup memuat 22 tabel, santri banyak, 2 foto, biodata santri & guru', Object.keys(n1).length === 22 && n1.santri > 60 && n1.transaksi > 0 && n1.nilai > 0 && n1.foto === 2 && n1.santriDetail >= 3 && n1.guruDetail >= 1, JSON.stringify(n1))
 
 r = await a.req('POST', '/api/backup/restore', { backup: b1.json })
 check('restore tanpa konfirmasi ditolak', r.status === 400)
@@ -634,6 +730,10 @@ await tolak('rujukan hantu', (d) => { d.nilai[0].santriId = 'hantu' }, /rujukan/
 await tolak('tanggal fiktif', (d) => { d.nilai[0].tanggal = '2026-02-31' }, /nilai|tanggal/)
 await tolak('saldo tabungan minus', (d) => { d.tabungan.push({ id: 'zz', santriId: d.santri[0].id, jenis: 'tarik', jumlah: 99999999, tanggal: '2026-01-01', catatan: '' }) }, /minus/)
 await tolak('tabel hilang', (d) => { delete d.santri }, /santri/)
+await tolak('biodata santri tanpa pemilik', (d) => { d.santriDetail.push({ ...d.santriDetail[0], santriId: 'hantu' }) }, /santriDetail/)
+await tolak('biodata guru tanpa pemilik', (d) => { d.guruDetail.push({ ...d.guruDetail[0], guruId: 'hantu' }) }, /guruDetail/)
+await tolak('NIK di biodata bukan 16 digit', (d) => { d.santriDetail[0].nik = '123' }, /NIK|santriDetail/)
+await tolak('biodata santri ganda', (d) => { d.santriDetail.push({ ...d.santriDetail[0] }) }, /santriDetail/)
 await tolak('logo bukan gambar', (d) => { d.lembaga[0].logo = 'javascript:alert(1)' }, /logo|lembaga/)
 r = await a.req('POST', '/api/backup/restore', { konfirmasi: 'PULIHKAN', backup: { format: 'lain' } })
 check('format asing ditolak', r.status === 400)
@@ -644,7 +744,7 @@ check('restore backup valid berhasil', r.status === 200 && r.json.baris.santri =
 const b2 = await ambilBackup()
 const urut = (rows) => [...rows].map((x) => JSON.stringify(x)).sort()
 const beda = Object.keys(b1.json.data).filter((k) => JSON.stringify(urut(b1.json.data[k])) !== JSON.stringify(urut(b2.json.data[k])))
-check('roundtrip: semua 20 tabel (termasuk foto) identik setelah restore', beda.length === 0, 'beda: ' + beda.join(','))
+check('roundtrip: semua 22 tabel (termasuk foto & biodata) identik setelah restore', beda.length === 0, 'beda: ' + beda.join(','))
 r = await a.req('GET', '/api/auth/me')
 check('akun/sesi tidak terganggu oleh restore', r.status === 200 && r.json.user.username === 'admin')
 
@@ -688,14 +788,56 @@ check("import: jilid dari nama kelas (Iqra 3 -> Qur'ani 3), jenis kelamin dinorm
 r = await a.req('POST', '/api/import/santri', { baris: [{ Nama: 'Ahmad Lagi', NIS: '9001', Kelas: 'Iqra 3', 'Jenis Kelamin': 'L' }] })
 check('import ulang: NIS yang sudah ada ditolak, tidak digandakan', r.json.dibuat === 0 && /sudah ada/.test(r.json.ditolak[0].alasan))
 
+// ---- Import CSV dengan biodata
+{
+  r = await a.req('POST', '/api/import/santri', { baris: [
+    { Nama: 'Import Lengkap', 'ID Murid': 'IMP1', Kelas: 'Iqra 2', 'Jenis Kelamin': 'P', NIK: '3201234567890123', 'No KK': '3201234567890100', 'Tempat Lahir': 'Surabaya', 'Tanggal Lahir': '17/05/2018', 'Anak Ke': '2', 'Jalan/Dusun': 'Jl. Mawar 1', 'Desa/Kecamatan': 'Wonokromo', 'Kode Pos': '60243', RT: '3', RW: '5', 'NIK Ayah': '3201234567890111', 'Nama Ayah': 'Slamet', 'Kontak Ibu': '+62 812-1111-2222', 'Nama Wali': 'Pak Slamet', 'Tanggal Masuk': '15-7-2024', NISN: '0123456789', 'Status Masuk': 'Baru' },
+    { Nama: 'NIK Excel Ilmiah', NIS: 'IMP2', Kelas: 'Iqra 2', 'Jenis Kelamin': 'L', NIK: '3.20123E+15' },
+    { Nama: 'NIK Pendek', NIS: 'IMP3', Kelas: 'Iqra 2', 'Jenis Kelamin': 'L', NIK: '320123456789012' },
+    { Nama: 'Tanggal Fiktif', NIS: 'IMP4', Kelas: 'Iqra 2', 'Jenis Kelamin': 'L', 'Tanggal Lahir': '31/02/2018' },
+    { Nama: 'Anak Ke Huruf', NIS: 'IMP5', Kelas: 'Iqra 2', 'Jenis Kelamin': 'L', 'Anak Ke': 'dua' },
+    { Nama: 'Kelas Baru Ditolak', NIS: 'IMP6', Kelas: 'Kelas Hantu Baru', 'Jenis Kelamin': 'L', NISN: '123' },
+    { Nama: 'Tanpa Biodata', NIS: 'IMP7', Kelas: 'Iqra 2', 'Jenis Kelamin': 'P' },
+  ] })
+  check('import santri + biodata: 2 valid, 5 ditolak dengan alasan jelas', r.status === 200 && r.json.dibuat === 2 && r.json.ditolak.length === 5, JSON.stringify(r.json))
+  check('alasan: NIK format ilmiah Excel dijelaskan (ubah ke Teks)', r.json.ditolak.some((x) => x.baris === 3 && /angka ilmiah/.test(x.alasan) && /Teks/.test(x.alasan)), JSON.stringify(r.json.ditolak))
+  check('alasan: NIK 15 digit, tanggal fiktif, anak ke huruf, NISN 9 digit', r.json.ditolak.some((x) => /NIK harus 16 digit/.test(x.alasan)) && r.json.ditolak.some((x) => /Tanggal lahir tidak valid/.test(x.alasan)) && r.json.ditolak.some((x) => /anakKe/.test(x.alasan)) && r.json.ditolak.some((x) => /NISN harus 10 digit/.test(x.alasan)), JSON.stringify(r.json.ditolak))
+  check('baris yang ditolak karena biodata TIDAK membuat kelas baru', r.json.kelasBaru === 1 && !(await a.req('GET', '/api/kelas')).json.kelas.some((k) => k.nama === 'Kelas Hantu Baru'), JSON.stringify(r.json))
+  const imp = (await a.req('GET', '/api/santri')).json.santri.find((s) => s.nis === 'IMP1')
+  r = await a.req('GET', `/api/santri/${imp.id}`)
+  check('import: "ID Murid" jadi NIS, "Nama Wali" jadi wali, tanggal dd/mm/yyyy -> ISO', imp.wali === 'Pak Slamet' && r.json.detail.tanggalLahir === '2018-05-17' && r.json.detail.tanggalMasuk === '2024-07-15', JSON.stringify(r.json.detail))
+  check('import: kolom biodata tersimpan (NIK, KK, ayah, kontak ibu, anak ke, NISN)', r.json.detail.nik === '3201234567890123' && r.json.detail.noKk === '3201234567890100' && r.json.detail.namaAyah === 'Slamet' && r.json.detail.kontakIbu === '+62 812-1111-2222' && r.json.detail.anakKe === 2 && r.json.detail.nisn === '0123456789' && r.json.detail.jalan === 'Jl. Mawar 1' && r.json.detail.rt === '3', JSON.stringify(r.json.detail))
+  const tb = (await a.req('GET', '/api/santri')).json.santri.find((s) => s.nis === 'IMP7')
+  r = await a.req('GET', `/api/santri/${tb.id}`)
+  check('import tanpa kolom biodata: baris biodata tetap ada (kosong), bisa dibuka', r.status === 200 && r.json.detail.nik === '' && r.json.detail.anakKe === null)
+
+  await a.req('POST', '/api/guru', { nama: 'Guru Pemilik G001', jenjang: 'TPQ', detail: { idGuru: 'G-001' } })
+  r = await a.req('POST', '/api/import/guru', { baris: [
+    { Nama: 'Guru Impor Lengkap', Jenjang: 'TPQ', Telepon: '081211112222', 'ID Guru': 'GI-1', NIK: '3201234567890177', 'Jenis Kelamin': 'Perempuan', 'Tanggal Lahir': '20/03/1988', 'Tanggal Masuk': '2015-07-01', Status: 'Tetap', 'Nama Ibu Kandung': 'Siti', 'Kode Pos': '60281', 'No. Email': 'guru@contoh.id' },
+    { Nama: 'Guru ID Kembar File', Jenjang: 'TPQ', 'ID Guru': 'GI-1' },
+    { Nama: 'Guru ID Sudah Ada', Jenjang: 'TPQ', 'ID Guru': 'G-001' },
+    { Nama: 'Guru Email Salah', Jenjang: 'TPQ', Email: 'bukan-email' },
+    { Nama: 'Guru NIK Ilmiah', Jenjang: 'TPQ', NIK: '3.2012E+15' },
+  ] })
+  check('import guru + biodata: 1 valid, 4 ditolak (ID kembar di file, ID sudah ada, email, NIK ilmiah)', r.json.dibuat === 1 && r.json.ditolak.length === 4 && r.json.ditolak.some((x) => /ID Guru GI-1/.test(x.alasan)) && r.json.ditolak.some((x) => /ID Guru G-001/.test(x.alasan)) && r.json.ditolak.some((x) => /Email tidak valid/.test(x.alasan)) && r.json.ditolak.some((x) => /angka ilmiah/.test(x.alasan)), JSON.stringify(r.json))
+  const gi = (await a.req('GET', '/api/guru')).json.guru.find((g) => g.nama === 'Guru Impor Lengkap')
+  r = await a.req('GET', `/api/guru/${gi.id}`)
+  check('import guru: Telepon -> HP, jenis kelamin Perempuan -> P, tanggal ISO, email', gi.hp === '081211112222' && r.json.detail.jenisKelamin === 'P' && r.json.detail.tanggalLahir === '1988-03-20' && r.json.detail.email === 'guru@contoh.id' && r.json.detail.idGuru === 'GI-1', JSON.stringify(r.json.detail))
+  for (const j of ['santri', 'guru']) {
+    const t = await (await fetch(`${base}/api/import/template/${j}`, { headers: { cookie: a.cookie } })).text()
+    check(`template ${j}: memuat kolom biodata dan baris contoh yang lolos validasi`, j === 'santri' ? /NIK Ayah.*NISN/.test(t) && t.includes('3201234567890123') : /ID Guru.*Email/.test(t) && t.includes('G-001'))
+  }
+}
+
 const banyak600 = Array.from({ length: 600 }, (_, i) => ({ Nama: `Massal ${i}`, NIS: `M${i}`, Kelas: 'Massal', 'Jenis Kelamin': i % 2 ? 'L' : 'P' }))
 r = await a.req('POST', '/api/import/santri', { baris: banyak600 })
 check('import 600 santri sekaligus (JSON insert) tersimpan semua', r.status === 200 && r.json.dibuat === 600, JSON.stringify(r.json).slice(0, 120))
 r = await a.req('POST', '/api/import/santri', { baris: Array.from({ length: 1001 }, (_, i) => ({ Nama: 'x', NIS: String(i), Kelas: 'k', 'Jenis Kelamin': 'L' })) })
 check('import > 1000 baris ditolak', r.status === 400)
+const sebelumSql = (await a.req('GET', '/api/santri')).json.santri.length
 r = await a.req('POST', '/api/import/santri', { baris: [{ Nama: "O'Brien; DROP TABLE santri;--", NIS: 'SQL1', Kelas: 'Iqra 1', 'Jenis Kelamin': 'L' }] })
 r = await a.req('GET', '/api/santri')
-check('import: apostrof/SQL di nama tersimpan apa adanya (tidak ada injeksi)', r.json.santri.some((s) => s.nama === "O'Brien; DROP TABLE santri;--") && r.json.santri.length === 604)
+check('import: apostrof/SQL di nama tersimpan apa adanya (tidak ada injeksi; tabel utuh, +1 baris)', r.json.santri.some((s) => s.nama === "O'Brien; DROP TABLE santri;--") && r.json.santri.length === sebelumSql + 1, `${sebelumSql} -> ${r.json.santri.length}`)
 
 r = await a.req('POST', '/api/import/guru', { baris: [
   { Nama: 'Ustadz Ali', Kelas: 'Iqra 1', Peran: 'wali kelas', Jenjang: 'TPQ', HP: '0812', Honor: '800.000' },
@@ -766,6 +908,8 @@ check('logout menghapus sesi', r.status === 401)
 
 console.log(`\n${pass} lulus, ${fail} gagal`)
 process.exit(fail ? 1 : 0)
+
+
 
 
 

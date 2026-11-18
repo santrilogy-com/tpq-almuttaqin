@@ -2,22 +2,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpCircle, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { JENJANG, JILID_LIST, naikJilid, type Jenjang, labelJenjang } from '@shared/domain'
+import { naikJilid, labelJenjang } from '@shared/domain'
 import { api, pesanGalat } from '@/lib/api'
-import { simpanFoto } from '@/lib/foto'
 import { useKelas, useSantri } from '@/lib/queries'
 import { type Santri } from '@/lib/types'
-import { cocokProfil, useProfilAktif, jenjangAwal } from '@/stores/profil-store'
+import { cocokProfil, useProfilAktif } from '@/stores/profil-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -36,23 +28,8 @@ import {
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { FotoAvatar } from '@/components/foto-avatar'
-import { FotoField } from '@/components/foto-field'
-import { Field } from '@/components/field'
 import { PageShell } from '@/components/page-shell'
-
-const KOSONG = {
-  nis: '',
-  nama: '',
-  jenisKelamin: 'L' as 'L' | 'P',
-  jenjang: 'TPQ' as Jenjang,
-  kelasId: null as string | null,
-  jilid: JILID_LIST[0] as string,
-  angkatan: '',
-  status: 'aktif' as Santri['status'],
-  wali: '',
-  hpWali: '',
-  alamat: '',
-}
+import { FormSantri } from './form-santri'
 
 export function SantriPage() {
   const qc = useQueryClient()
@@ -250,170 +227,5 @@ export function SantriPage() {
     </PageShell>
   )
 }
-
-function FormSantri(props: {
-  awal: Santri | null
-  onClose: () => void
-  onDone: () => void
-}) {
-  const { data: kelas } = useKelas()
-  const profilAktif = useProfilAktif()
-  const [v, setV] = useState({ ...KOSONG, jenjang: jenjangAwal(profilAktif), ...props.awal })
-  const qc = useQueryClient()
-  // undefined = foto tidak diubah; null = hapus; string = foto baru (diunggah setelah data tersimpan)
-  const [fotoBaru, setFotoBaru] = useState<string | null | undefined>(undefined)
-  const m = useMutation({
-    mutationFn: async () => {
-      const { id: _id, rombel: _r, ...data } = v as Santri & typeof KOSONG
-      const res = props.awal
-        ? await api.patch<{ santri: Santri }>(`/santri/${props.awal.id}`, data)
-        : await api.post<{ santri: Santri }>('/santri', data)
-      try {
-        await simpanFoto('santri', res.data.santri.id, fotoBaru)
-      } catch (e) {
-        toast.error(`Data tersimpan, tetapi foto gagal: ${pesanGalat(e)}`)
-      }
-      qc.invalidateQueries({ queryKey: ['foto-index'] })
-      return res
-    },
-    onSuccess: () => {
-      toast.success(props.awal ? 'Santri diperbarui' : 'Santri ditambahkan')
-      props.onDone()
-    },
-    onError: (e) => toast.error(pesanGalat(e)),
-  })
-  const teks = (k: keyof typeof KOSONG) => ({
-    value: (v[k] as string) ?? '',
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-      setV({ ...v, [k]: e.target.value }),
-  })
-
-  return (
-    <Dialog open onOpenChange={(o) => !o && props.onClose()}>
-      <DialogContent className='max-h-[90svh] overflow-y-auto'>
-        <DialogHeader>
-          <DialogTitle>{props.awal ? 'Ubah santri' : 'Tambah santri'}</DialogTitle>
-        </DialogHeader>
-        <form
-          className='grid gap-3 sm:grid-cols-2'
-          onSubmit={(e) => {
-            e.preventDefault()
-            m.mutate()
-          }}
-        >
-          <div className='sm:col-span-2'>
-            <FotoField jenis='santri' id={props.awal?.id} nama={v.nama} nilai={fotoBaru} onChange={setFotoBaru} />
-          </div>
-          <Field label='Nama lengkap *' htmlFor='s-nama'>
-            <Input id='s-nama' required {...teks('nama')} />
-          </Field>
-          <Field label='NIS *' htmlFor='s-nis'>
-            <Input id='s-nis' required {...teks('nis')} />
-          </Field>
-          <Field label='Jenis kelamin *'>
-            <Select
-              value={v.jenisKelamin}
-              onValueChange={(x) => setV({ ...v, jenisKelamin: x as 'L' | 'P' })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='L'>Laki-laki</SelectItem>
-                <SelectItem value='P'>Perempuan</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='Jenjang *'>
-            <Select
-              value={v.jenjang}
-              onValueChange={(x) => setV({ ...v, jenjang: x as Jenjang })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {JENJANG.map((j) => (
-                  <SelectItem key={j} value={j}>
-                    {labelJenjang(j)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='Kelas'>
-            <Select
-              value={v.kelasId ?? 'none'}
-              onValueChange={(x) => setV({ ...v, kelasId: x === 'none' ? null : x })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='none'>(belum ada kelas)</SelectItem>
-                {kelas?.map((k) => (
-                  <SelectItem key={k.id} value={k.id}>
-                    {k.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='Jilid'>
-            <Select value={v.jilid} onValueChange={(x) => setV({ ...v, jilid: x })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {JILID_LIST.map((j) => (
-                  <SelectItem key={j} value={j}>
-                    {j}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='Angkatan' htmlFor='s-ang'>
-            <Input id='s-ang' {...teks('angkatan')} />
-          </Field>
-          <Field label='Status'>
-            <Select
-              value={v.status}
-              onValueChange={(x) => setV({ ...v, status: x as Santri['status'] })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='aktif'>Aktif</SelectItem>
-                <SelectItem value='keluar'>Keluar</SelectItem>
-                <SelectItem value='lulus'>Lulus</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label='Nama wali' htmlFor='s-wali'>
-            <Input id='s-wali' {...teks('wali')} />
-          </Field>
-          <Field label='HP wali' htmlFor='s-hp'>
-            <Input id='s-hp' inputMode='tel' {...teks('hpWali')} />
-          </Field>
-          <div className='sm:col-span-2'>
-            <Field label='Alamat' htmlFor='s-alamat'>
-              <Input id='s-alamat' {...teks('alamat')} />
-            </Field>
-          </div>
-          <DialogFooter className='sm:col-span-2'>
-            <Button disabled={m.isPending}>Simpan</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-
-
-
-
 
 

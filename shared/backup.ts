@@ -1,6 +1,7 @@
 ﻿// Format backup v2 + validasinya. Murni (tanpa I/O): dipakai Worker (restore) dan
 // frontend (pratinjau). Akun pengguna/sandi SENGAJA tidak termasuk dalam backup.
 import { z } from 'zod'
+import { DETAIL_GURU, DETAIL_SANTRI } from './biodata'
 import { JENJANG, JENIS_NILAI, JENIS_SETORAN, MAKS_JUMLAH, STATUS_ABSEN, STATUS_SPP, normalisasiMetode, periodeValid, tglValid } from './domain'
 
 export const FORMAT_BACKUP = 'tpq-v2'
@@ -132,6 +133,9 @@ export const SKEMA = {
   rapbm: z.object({ id, pos: teks(100).min(1), jenis: z.enum(['masuk', 'keluar']), jenjang, rencana: rp }),
   biaya: z.object({ id, nama: teks(100).min(1), jumlah: rp, keterangan: teks(200) }),
   targetTabungan: z.object({ id, nama: teks(100).min(1), target: rpPositif, terkumpul: rp }),
+  // Biodata tambahan 1:1 dengan santri/guru (kolomnya didefinisikan di shared/biodata.ts).
+  santriDetail: z.object({ santriId: id, ...DETAIL_SANTRI.shape }),
+  guruDetail: z.object({ guruId: id, ...DETAIL_GURU.shape }),
   foto: z.object({
     jenis: z.enum(['santri', 'guru']),
     ownerId: id,
@@ -187,6 +191,8 @@ export function cekRelasi(d: DataBackup): string | null {
     unik('absensiGuru', d.absensiGuru.map((x) => `${x.tanggal}|${x.guruId}|${x.kelompok}`)) ??
     unik('lembaga.jenjang', d.lembaga.map((x) => x.jenjang)) ??
     unik('foto (jenis+pemilik)', d.foto.map((x) => `${x.jenis}|${x.ownerId}`)) ??
+    unik('santriDetail.santriId', d.santriDetail.map((x) => x.santriId)) ??
+    unik('guruDetail.guruId', d.guruDetail.map((x) => x.guruId)) ??
     unik('transaksi.id', d.transaksi.map((x) => x.id)) ??
     unik('transaksi.tagihanSppId', d.transaksi.filter((x) => x.tagihanSppId).map((x) => x.tagihanSppId!))
   if (dup) return dup
@@ -209,6 +215,8 @@ export function cekRelasi(d: DataBackup): string | null {
     d.alokasiWaktu.map((x) => x.kelasId && cek('alokasiWaktu.kelasId', kelas.has(x.kelasId), x.kelasId)).find(Boolean) ??
     d.piket.map((x) => cek('piket.guruId', guru.has(x.guruId), x.guruId)).find(Boolean) ??
     d.absensiGuru.map((x) => cek('absensiGuru.guruId', guru.has(x.guruId), x.guruId)).find(Boolean) ??
+    d.santriDetail.map((x) => cek('santriDetail.santriId', santri.has(x.santriId), x.santriId)).find(Boolean) ??
+    d.guruDetail.map((x) => cek('guruDetail.guruId', guru.has(x.guruId), x.guruId)).find(Boolean) ??
     d.foto.map((x) => cek('foto.ownerId', (x.jenis === 'santri' ? santri : guru).has(x.ownerId), `${x.jenis}:${x.ownerId}`)).find(Boolean)
   if (salah) return salah
 
@@ -222,6 +230,7 @@ export function cekRelasi(d: DataBackup): string | null {
 export const hitungBaris = (d: DataBackup) => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, d[k].length])) as Record<KunciBackup, number>
 
 export const dataKosong = (): DataBackup => Object.fromEntries(KUNCI_BACKUP.map((k) => [k, []])) as unknown as DataBackup
+
 
 
 

@@ -32,6 +32,12 @@ Lalu isi **Identitas dan Tarif**: nama lembaga, kepala, logo, dan tarif SPP per 
 
 **Foto**: santri dan ustadz bisa diberi foto lewat tombol Ubah (Tambah foto). Foto dikecilkan otomatis di HP sebelum diunggah (maks 150 KB), tampil di daftar, absensi, dan rapor, dan ikut dalam backup. Foto santri bisa diubah guru; foto ustadz hanya Pimpinan.
 
+**Biodata lengkap**: formulir Tambah/Ubah santri punya 4 tab (Identitas, Sekolah, Keluarga, Orang tua) dan formulir guru 3 tab
+(Pribadi, Alamat & kontak, Kepegawaian). Hanya nama (dan NIS/jenis kelamin untuk santri) yang wajib; sisanya boleh dikosongkan
+dan dilengkapi nanti. NIK/No KK harus 16 digit, NISN 10 digit, kode pos 5 digit; kolom yang salah ditandai merah dan formulir
+berpindah ke tab yang bermasalah. *ID Murid* sama dengan NIS. Data ini sensitif (NIK, penghasilan orang tua): kolom biodata
+pada ekspor CSV santri/guru hanya dimuat untuk Pimpinan.
+
 ## 4. Kegiatan harian
 
 - **Absensi**: pilih kelas dan tanggal. Semua santri otomatis Hadir; ketuk hanya yang Izin, Sakit, atau Alpa, lalu
@@ -76,7 +82,9 @@ tidak masalah), lalu pilih file. Baris yang gagal dilewati dan alasannya ditampi
 
 - **Santri**: wajib Nama, NIS, Kelas, Jenis Kelamin (L/P/Laki-laki/Perempuan). Jenjang kosong = TPQ. Kelas yang belum ada
   dibuat otomatis. NIS harus unik.
-- **Guru**: wajib Nama (unik). Peran kosong = Guru. Honor angka (boleh `800.000`).
+  Kolom biodata (NIK, No KK, Tempat/Tanggal Lahir, Nama Ayah/Ibu, Nama Wali, NISN, dan lainnya) opsional; lihat template.
+  Tanggal boleh `YYYY-MM-DD` atau `DD/MM/YYYY`. NIK/NISN yang berubah jadi angka ilmiah oleh Excel (mis. `3.2E+15`) ditolak per baris.
+- **Guru**: wajib Nama (unik). Peran kosong = Guru. Honor angka (boleh `800.000`). Kolom biodata (ID Guru, NIK, Email, alamat, dll.) opsional.
 - **Nilai**: kolom Santri berisi NIS atau nama (nama kembar harus pakai NIS), Jenis (Harian/Imda/Praktek), Nilai 0 sampai 100.
 - Maksimal 1000 baris per import.
 

@@ -5,10 +5,12 @@ import { toCsv, type Sel } from '../../shared/csv'
 import {
   absensi,
   guru,
+  guruDetail,
   kelas,
   nilai,
   pertemuan,
   santri,
+  santriDetail,
   tabungan,
   tagihanSpp,
   transaksi,
@@ -158,30 +160,65 @@ laporanRoutes.get('/ringkasan', async (c) => {
 })
 
 // ---------- Export CSV (dari server, tanpa batas 500 baris) ----------
-type Pembuat = { pimpinan: boolean; buat: (db: AppEnv['Variables']['db']) => Promise<Sel[][]> }
+type Pembuat = { pimpinan: boolean; buat: (db: AppEnv['Variables']['db'], peran: string) => Promise<Sel[][]> }
 
 const EXPORT: Record<string, Pembuat> = {
   santri: {
     pimpinan: false,
-    buat: async (db) => {
+    buat: async (db, peran) => {
       const rows = await db
-        .select({ s: santri, kelas: kelas.nama })
+        .select({ s: santri, kelas: kelas.nama, d: santriDetail })
         .from(santri)
         .leftJoin(kelas, eq(kelas.id, santri.kelasId))
+        .leftJoin(santriDetail, eq(santriDetail.santriId, santri.id))
         .orderBy(asc(santri.nama))
+      const dasar = ['NIS', 'Nama', 'Jenis Kelamin', 'Jenjang', 'Kelas', 'Jilid', 'Angkatan', 'Rombel', 'Status', 'Wali', 'HP Wali', 'Alamat']
+      // Biodata sensitif (NIK, KK, penghasilan orang tua) hanya untuk Pimpinan; guru mendapat kolom dasar saja.
+      const lengkap = peran === 'pimpinan'
+      const tambahan = [
+        'NIK', 'No KK', 'Tempat Lahir', 'Tanggal Lahir', 'Hobi', 'Cita-cita', 'Status Rumah', 'Status Mukim', 'Status Anak', 'Anak Ke',
+        'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW',
+        'NIK Ayah', 'Nama Ayah', 'Pendidikan Ayah', 'Penghasilan Ayah', 'Kontak Ayah',
+        'NIK Ibu', 'Nama Ibu', 'Pendidikan Ibu', 'Pekerjaan Ibu', 'Penghasilan Ibu', 'Kontak Ibu',
+        'Tanggal Masuk', 'Status Masuk', 'Diterima di Kelas', 'NISN',
+      ]
       return [
-        ['NIS', 'Nama', 'Jenis Kelamin', 'Jenjang', 'Kelas', 'Jilid', 'Angkatan', 'Rombel', 'Status', 'Wali', 'HP Wali', 'Alamat'],
-        ...rows.map(({ s, kelas: k }) => [s.nis, s.nama, s.jenisKelamin, s.jenjang, k, s.jilid, s.angkatan, s.rombel, s.status, s.wali, s.hpWali, s.alamat]),
+        lengkap ? [...dasar, ...tambahan] : dasar,
+        ...rows.map(({ s, kelas: k, d }) => {
+          const utama: Sel[] = [s.nis, s.nama, s.jenisKelamin, s.jenjang, k, s.jilid, s.angkatan, s.rombel, s.status, s.wali, s.hpWali, s.alamat]
+          if (!lengkap) return utama
+          return [
+            ...utama,
+            d?.nik, d?.noKk, d?.tempatLahir, d?.tanggalLahir, d?.hobi, d?.citaCita, d?.statusRumah, d?.statusMukim, d?.statusAnak, d?.anakKe,
+            d?.jalan, d?.desaKecamatan, d?.kodePos, d?.rt, d?.rw,
+            d?.nikAyah, d?.namaAyah, d?.pendidikanAyah, d?.penghasilanAyah, d?.kontakAyah,
+            d?.nikIbu, d?.namaIbu, d?.pendidikanIbu, d?.pekerjaanIbu, d?.penghasilanIbu, d?.kontakIbu,
+            d?.tanggalMasuk, d?.statusMasuk, d?.diterimaDiKelas, d?.nisn,
+          ]
+        }),
       ]
     },
   },
   guru: {
     pimpinan: true,
     buat: async (db) => {
-      const rows = await db.select({ g: guru, kelas: kelas.nama }).from(guru).leftJoin(kelas, eq(kelas.id, guru.kelasId)).orderBy(asc(guru.nama))
+      const rows = await db
+        .select({ g: guru, kelas: kelas.nama, d: guruDetail })
+        .from(guru)
+        .leftJoin(kelas, eq(kelas.id, guru.kelasId))
+        .leftJoin(guruDetail, eq(guruDetail.guruId, guru.id))
+        .orderBy(asc(guru.nama))
       return [
-        ['Nama', 'Peran', 'Jenjang', 'Kelas', 'HP', 'Honor', 'Honor Lunas'],
-        ...rows.map(({ g, kelas: k }) => [g.nama, g.peranGuru, g.jenjang, k, g.hp, g.honor, g.honorLunas ? 'Lunas' : 'Belum']),
+        [
+          'Nama', 'Peran', 'Jenjang', 'Kelas', 'HP', 'Honor', 'Honor Lunas',
+          'ID Guru', 'NIK', 'Tanggal Masuk', 'Status', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Nama Ibu Kandung',
+          'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW', 'Email',
+        ],
+        ...rows.map(({ g, kelas: k, d }) => [
+          g.nama, g.peranGuru, g.jenjang, k, g.hp, g.honor, g.honorLunas ? 'Lunas' : 'Belum',
+          d?.idGuru, d?.nik, d?.tanggalMasuk, d?.status, d?.jenisKelamin, d?.tempatLahir, d?.tanggalLahir, d?.namaIbuKandung,
+          d?.jalan, d?.desaKecamatan, d?.kodePos, d?.rt, d?.rw, d?.email,
+        ]),
       ]
     },
   },
@@ -235,7 +272,7 @@ laporanRoutes.get('/export/:jenis', async (c) => {
   if (def.pimpinan && c.get('user')!.peran !== 'pimpinan') {
     return c.json({ error: 'Tidak ada akses' }, 403)
   }
-  const csv = toCsv(await def.buat(c.get('db')))
+  const csv = toCsv(await def.buat(c.get('db'), c.get('user')!.peran))
   return new Response(csv, {
     headers: {
       'content-type': 'text/csv; charset=utf-8',
@@ -244,6 +281,7 @@ laporanRoutes.get('/export/:jenis', async (c) => {
     },
   })
 })
+
 
 
 

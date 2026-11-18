@@ -335,3 +335,57 @@ export const foto = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.jenis, t.ownerId] })]
 )
+
+// ---------- Biodata tambahan (1:1, terpisah supaya daftar santri/guru tetap ringan) ----------
+export const santriDetail = sqliteTable('santri_detail', {
+  santriId: text('santri_id').primaryKey().references(() => santri.id, { onDelete: 'cascade' }),
+  nik: text('nik').notNull().default(''),
+  noKk: text('no_kk').notNull().default(''),
+  tempatLahir: text('tempat_lahir').notNull().default(''),
+  tanggalLahir: text('tanggal_lahir').notNull().default(''),
+  hobi: text('hobi').notNull().default(''),
+  citaCita: text('cita_cita').notNull().default(''),
+  statusRumah: text('status_rumah').notNull().default(''),
+  statusMukim: text('status_mukim').notNull().default(''),
+  statusAnak: text('status_anak').notNull().default(''),
+  jalan: text('jalan').notNull().default(''),
+  desaKecamatan: text('desa_kecamatan').notNull().default(''),
+  kodePos: text('kode_pos').notNull().default(''),
+  rt: text('rt').notNull().default(''),
+  rw: text('rw').notNull().default(''),
+  nikAyah: text('nik_ayah').notNull().default(''),
+  namaAyah: text('nama_ayah').notNull().default(''),
+  pendidikanAyah: text('pendidikan_ayah').notNull().default(''),
+  penghasilanAyah: text('penghasilan_ayah').notNull().default(''),
+  kontakAyah: text('kontak_ayah').notNull().default(''),
+  nikIbu: text('nik_ibu').notNull().default(''),
+  namaIbu: text('nama_ibu').notNull().default(''),
+  pendidikanIbu: text('pendidikan_ibu').notNull().default(''),
+  pekerjaanIbu: text('pekerjaan_ibu').notNull().default(''),
+  penghasilanIbu: text('penghasilan_ibu').notNull().default(''),
+  kontakIbu: text('kontak_ibu').notNull().default(''),
+  tanggalMasuk: text('tanggal_masuk').notNull().default(''),
+  statusMasuk: text('status_masuk').notNull().default(''),
+  diterimaDiKelas: text('diterima_di_kelas').notNull().default(''),
+  nisn: text('nisn').notNull().default(''),
+  anakKe: integer('anak_ke'),
+})
+
+export const guruDetail = sqliteTable('guru_detail', {
+  guruId: text('guru_id').primaryKey().references(() => guru.id, { onDelete: 'cascade' }),
+  idGuru: text('id_guru').notNull().default(''),
+  nik: text('nik').notNull().default(''),
+  tanggalMasuk: text('tanggal_masuk').notNull().default(''),
+  status: text('status').notNull().default(''),
+  tempatLahir: text('tempat_lahir').notNull().default(''),
+  tanggalLahir: text('tanggal_lahir').notNull().default(''),
+  namaIbuKandung: text('nama_ibu_kandung').notNull().default(''),
+  jalan: text('jalan').notNull().default(''),
+  desaKecamatan: text('desa_kecamatan').notNull().default(''),
+  kodePos: text('kode_pos').notNull().default(''),
+  rt: text('rt').notNull().default(''),
+  rw: text('rw').notNull().default(''),
+  email: text('email').notNull().default(''),
+  jenisKelamin: text('jenis_kelamin', { enum: ['', 'L', 'P'] }).notNull().default(''),
+})
+
