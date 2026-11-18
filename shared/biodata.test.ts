@@ -76,6 +76,10 @@ describe('detail guru', () => {
     expect(ok(DETAIL_GURU, { ...dasar, nik: '123' })).toBe(false)
     expect(ok(DETAIL_GURU, { ...dasar, jenisKelamin: 'X' })).toBe(false)
   })
+  it('no. rekening: kosong atau 5 sampai 20 digit angka', () => {
+    for (const benar of ['', '12345', '1234567890', '12345678901234567890']) expect(ok(DETAIL_GURU, { ...dasar, noRekening: benar }), benar).toBe(true)
+    for (const salah of ['1234', '123456789012345678901', '12-345-678', 'abc12345', '1.23E+10']) expect(ok(DETAIL_GURU, { ...dasar, noRekening: salah }), salah).toBe(false)
+  })
   it('email harus berformat email atau kosong', () => {
     expect(ok(DETAIL_GURU, { ...dasar, email: 'ustadz@basmalah.id' })).toBe(true)
     for (const salah of ['ustadz', 'ustadz@', '@basmalah.id', 'a b@c.id', 'a@b']) expect(ok(DETAIL_GURU, { ...dasar, email: salah }), salah).toBe(false)

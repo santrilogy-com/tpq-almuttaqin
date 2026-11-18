@@ -660,9 +660,9 @@ check('jenis export tak dikenal -> 404', r.status === 404)
   check('hapus santri ikut menghapus biodatanya (tidak ada yatim)', yatim === false)
 
   // ---- Guru
-  const dg = { idGuru: 'G-001', nik: '3201234567890199', tanggalMasuk: '2015-07-01', status: 'Tetap', jenisKelamin: 'L', tempatLahir: 'Malang', tanggalLahir: '1988-03-20', namaIbuKandung: 'Siti Aisyah', jalan: 'Jl. Melati 4', desaKecamatan: 'Gubeng / Gubeng', kodePos: '60281', rt: '2', rw: '7', email: 'ahmad@contoh.id' }
+  const dg = { idGuru: 'G-001', nik: '3201234567890199', tanggalMasuk: '2015-07-01', status: 'Tetap', jenisKelamin: 'L', tempatLahir: 'Malang', tanggalLahir: '1988-03-20', namaIbuKandung: 'Siti Aisyah', jalan: 'Jl. Melati 4', desaKecamatan: 'Gubeng / Gubeng', kodePos: '60281', rt: '2', rw: '7', email: 'ahmad@contoh.id', noRekening: '1234567890' }
   r = await a.req('POST', '/api/guru', { nama: 'Ustadz Biodata', jenjang: 'TPQ', hp: '081200000101', detail: dg })
-  check('Pimpinan menambah guru LENGKAP dengan biodata', r.status === 201 && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.jenisKelamin === 'L' && r.json.guru.hp === '081200000101', JSON.stringify(r).slice(0, 200))
+  check('Pimpinan menambah guru LENGKAP dengan biodata', r.status === 201 && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.noRekening === '1234567890' && r.json.detail.jenisKelamin === 'L' && r.json.guru.hp === '081200000101', JSON.stringify(r).slice(0, 200))
   const gid = r.json.guru?.id
   r = await a.req('GET', `/api/guru/${gid}`)
   check('GET biodata guru: semua kolom kembali persis', Object.keys(dg).every((k) => r.json.detail[k] === dg[k]))
@@ -670,14 +670,14 @@ check('jenis export tak dikenal -> 404', r.status === 404)
   check('role Guru tidak boleh membuka biodata guru (403)', r.status === 403)
   r = await a.req('POST', '/api/guru', { nama: 'Guru ID Kembar', jenjang: 'TPQ', detail: { idGuru: 'G-001' } })
   check('ID Guru kembar ditolak (409)', r.status === 409, JSON.stringify(r.json))
-  for (const [nama, d] of [['email tanpa @', { email: 'ustadz.contoh.id' }], ['NIK 12 digit', { nik: '320123456789' }], ['jenis kelamin X', { jenisKelamin: 'X' }], ['tanggal lahir masa depan', { tanggalLahir: '2999-01-01' }], ['kode pos 3 digit', { kodePos: '602' }]]) {
+  for (const [nama, d] of [['email tanpa @', { email: 'ustadz.contoh.id' }], ['NIK 12 digit', { nik: '320123456789' }], ['jenis kelamin X', { jenisKelamin: 'X' }], ['tanggal lahir masa depan', { tanggalLahir: '2999-01-01' }], ['kode pos 3 digit', { kodePos: '602' }], ['rekening berhuruf', { noRekening: '12ab345' }]]) {
     r = await a.req('POST', '/api/guru', { nama: 'Guru Salah', jenjang: 'TPQ', detail: d })
     check(`biodata guru ditolak: ${nama}`, r.status === 400, `${r.status} ${JSON.stringify(r.json)}`)
   }
   r = await a.req('GET', '/api/guru')
   check('guru dengan biodata invalid TIDAK tersimpan', !r.json.guru.some((g) => g.nama === 'Guru Salah' || g.nama === 'Guru ID Kembar'))
   r = await a.req('PATCH', `/api/guru/${gid}`, { detail: { status: 'Honorer' } })
-  check('PATCH guru hanya status: NIK/email/ibu kandung/ID TETAP', r.json.detail.status === 'Honorer' && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.idGuru === 'G-001' && r.json.detail.namaIbuKandung === 'Siti Aisyah')
+  check('PATCH guru hanya status: NIK/email/ibu kandung/ID TETAP', r.json.detail.status === 'Honorer' && r.json.detail.nik === dg.nik && r.json.detail.email === dg.email && r.json.detail.noRekening === '1234567890' && r.json.detail.idGuru === 'G-001' && r.json.detail.namaIbuKandung === 'Siti Aisyah')
   r = await a.req('PATCH', `/api/guru/${gid}`, { honor: 700000 })
   check('PATCH data utama guru: biodata TIDAK tersentuh', r.json.guru.honor === 700000 && r.json.detail.nik === dg.nik)
   r = await a.req('PATCH', `/api/guru/${gid}`, { detail: { idGuru: 'G-001' } })
@@ -686,7 +686,7 @@ check('jenis export tak dikenal -> 404', r.status === 404)
   r = await a.req('PATCH', `/api/guru/${g3}`, { detail: { idGuru: 'G-001' } })
   check('PATCH ID Guru ke milik guru lain ditolak (409)', r.status === 409)
   const exGuru = await (await fetch(`${base}/api/laporan/export/guru`, { headers: { cookie: a.cookie } })).text()
-  check('ekspor guru memuat ID Guru, NIK, email, ibu kandung', /ID Guru,NIK,Tanggal Masuk,Status/.test(exGuru) && exGuru.includes('G-001') && exGuru.includes('ahmad@contoh.id') && exGuru.includes('Siti Aisyah'))
+  check('ekspor guru memuat ID Guru, NIK, email, ibu kandung', /ID Guru,NIK,Tanggal Masuk,Status/.test(exGuru) && exGuru.includes('G-001') && exGuru.includes('ahmad@contoh.id') && exGuru.includes('1234567890') && exGuru.includes('Siti Aisyah'))
   await a.req('DELETE', `/api/guru/${g3}`)
   const yatimG = JSON.parse(await (await fetch(`${base}/api/backup/export`, { headers: { cookie: a.cookie } })).text()).data.guruDetail.some((x) => x.guruId === g3)
   check('hapus guru ikut menghapus biodatanya', yatimG === false)
@@ -813,7 +813,7 @@ check('import ulang: NIS yang sudah ada ditolak, tidak digandakan', r.json.dibua
 
   await a.req('POST', '/api/guru', { nama: 'Guru Pemilik G001', jenjang: 'TPQ', detail: { idGuru: 'G-001' } })
   r = await a.req('POST', '/api/import/guru', { baris: [
-    { Nama: 'Guru Impor Lengkap', Jenjang: 'TPQ', Telepon: '081211112222', 'ID Guru': 'GI-1', NIK: '3201234567890177', 'Jenis Kelamin': 'Perempuan', 'Tanggal Lahir': '20/03/1988', 'Tanggal Masuk': '2015-07-01', Status: 'Tetap', 'Nama Ibu Kandung': 'Siti', 'Kode Pos': '60281', 'No. Email': 'guru@contoh.id' },
+    { Nama: 'Guru Impor Lengkap', Jenjang: 'TPQ', Telepon: '081211112222', 'ID Guru': 'GI-1', NIK: '3201234567890177', 'Jenis Kelamin': 'Perempuan', 'Tanggal Lahir': '20/03/1988', 'Tanggal Masuk': '2015-07-01', Status: 'Tetap', 'Nama Ibu Kandung': 'Siti', 'Kode Pos': '60281', 'No. Email': 'guru@contoh.id', 'No. Email Basmalah': '9876543210' },
     { Nama: 'Guru ID Kembar File', Jenjang: 'TPQ', 'ID Guru': 'GI-1' },
     { Nama: 'Guru ID Sudah Ada', Jenjang: 'TPQ', 'ID Guru': 'G-001' },
     { Nama: 'Guru Email Salah', Jenjang: 'TPQ', Email: 'bukan-email' },
@@ -822,7 +822,7 @@ check('import ulang: NIS yang sudah ada ditolak, tidak digandakan', r.json.dibua
   check('import guru + biodata: 1 valid, 4 ditolak (ID kembar di file, ID sudah ada, email, NIK ilmiah)', r.json.dibuat === 1 && r.json.ditolak.length === 4 && r.json.ditolak.some((x) => /ID Guru GI-1/.test(x.alasan)) && r.json.ditolak.some((x) => /ID Guru G-001/.test(x.alasan)) && r.json.ditolak.some((x) => /Email tidak valid/.test(x.alasan)) && r.json.ditolak.some((x) => /angka ilmiah/.test(x.alasan)), JSON.stringify(r.json))
   const gi = (await a.req('GET', '/api/guru')).json.guru.find((g) => g.nama === 'Guru Impor Lengkap')
   r = await a.req('GET', `/api/guru/${gi.id}`)
-  check('import guru: Telepon -> HP, jenis kelamin Perempuan -> P, tanggal ISO, email', gi.hp === '081211112222' && r.json.detail.jenisKelamin === 'P' && r.json.detail.tanggalLahir === '1988-03-20' && r.json.detail.email === 'guru@contoh.id' && r.json.detail.idGuru === 'GI-1', JSON.stringify(r.json.detail))
+  check('import guru: Telepon -> HP, jenis kelamin Perempuan -> P, tanggal ISO, email', gi.hp === '081211112222' && r.json.detail.jenisKelamin === 'P' && r.json.detail.tanggalLahir === '1988-03-20' && r.json.detail.email === 'guru@contoh.id' && r.json.detail.noRekening === '9876543210' && r.json.detail.idGuru === 'GI-1', JSON.stringify(r.json.detail))
   for (const j of ['santri', 'guru']) {
     const t = await (await fetch(`${base}/api/import/template/${j}`, { headers: { cookie: a.cookie } })).text()
     check(`template ${j}: memuat kolom biodata dan baris contoh yang lolos validasi`, j === 'santri' ? /NIK Ayah.*NISN/.test(t) && t.includes('3201234567890123') : /ID Guru.*Email/.test(t) && t.includes('G-001'))

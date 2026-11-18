@@ -75,6 +75,7 @@ export const DETAIL_GURU = z.object({
   kodePos: angka(5, 'Kode pos'),
   rt: kosongAtau((v) => /^\d{1,3}$/.test(v), 'RT harus angka (maks 3 digit)'),
   rw: kosongAtau((v) => /^\d{1,3}$/.test(v), 'RW harus angka (maks 3 digit)'),
+  noRekening: kosongAtau((v) => /^\d{5,20}$/.test(v), 'No. rekening harus 5 sampai 20 digit angka'),
   email: kosongAtau((v) => v.length <= 120 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Email tidak valid'),
 })
 export type DetailGuru = z.infer<typeof DETAIL_GURU>

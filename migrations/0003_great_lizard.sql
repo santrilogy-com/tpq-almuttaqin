@@ -1,0 +1,1 @@
+ALTER TABLE `guru_detail` ADD `no_rekening` text DEFAULT '' NOT NULL;

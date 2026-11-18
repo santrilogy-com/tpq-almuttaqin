@@ -386,6 +386,7 @@ export const guruDetail = sqliteTable('guru_detail', {
   rt: text('rt').notNull().default(''),
   rw: text('rw').notNull().default(''),
   email: text('email').notNull().default(''),
+  noRekening: text('no_rekening').notNull().default(''),
   jenisKelamin: text('jenis_kelamin', { enum: ['', 'L', 'P'] }).notNull().default(''),
 })
 

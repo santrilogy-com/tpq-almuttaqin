@@ -212,12 +212,12 @@ const EXPORT: Record<string, Pembuat> = {
         [
           'Nama', 'Peran', 'Jenjang', 'Kelas', 'HP', 'Honor', 'Honor Lunas',
           'ID Guru', 'NIK', 'Tanggal Masuk', 'Status', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Nama Ibu Kandung',
-          'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW', 'No. Email Basmalah',
+          'Jalan/Dusun', 'Desa/Kecamatan', 'Kode Pos', 'RT', 'RW', 'Email', 'No. Rekening Basmalah',
         ],
         ...rows.map(({ g, kelas: k, d }) => [
           g.nama, g.peranGuru, g.jenjang, k, g.hp, g.honor, g.honorLunas ? 'Lunas' : 'Belum',
           d?.idGuru, d?.nik, d?.tanggalMasuk, d?.status, d?.jenisKelamin, d?.tempatLahir, d?.tanggalLahir, d?.namaIbuKandung,
-          d?.jalan, d?.desaKecamatan, d?.kodePos, d?.rt, d?.rw, d?.email,
+          d?.jalan, d?.desaKecamatan, d?.kodePos, d?.rt, d?.rw, d?.email, d?.noRekening,
         ]),
       ]
     },

@@ -35,7 +35,7 @@ Lalu isi **Identitas dan Tarif**: nama lembaga, kepala, logo, dan tarif SPP per 
 **Biodata lengkap**: formulir Tambah/Ubah santri punya 4 tab (Identitas, Sekolah, Keluarga, Orang tua) dan formulir guru 3 tab
 (Pribadi, Alamat & kontak, Kepegawaian). Hanya nama (dan NIS/jenis kelamin untuk santri) yang wajib; sisanya boleh dikosongkan
 dan dilengkapi nanti. NIK/No KK harus 16 digit, NISN 10 digit, kode pos 5 digit; kolom yang salah ditandai merah dan formulir
-berpindah ke tab yang bermasalah. *ID Murid* sama dengan NIS. Data ini sensitif (NIK, penghasilan orang tua): kolom biodata
+berpindah ke tab yang bermasalah. *ID Murid* sama dengan NIS. Guru punya kolom *No. Rekening Basmalah* (angka 5 sampai 20 digit) di tab Kepegawaian. Data ini sensitif (NIK, penghasilan orang tua): kolom biodata
 pada ekspor CSV santri/guru hanya dimuat untuk Pimpinan.
 
 ## 4. Kegiatan harian
